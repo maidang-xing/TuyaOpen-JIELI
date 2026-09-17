@@ -1,0 +1,9 @@
+# Local vendor SDK is supplied separately and is not part of this platform repo.
+AC79_AIoT_SDK/
+
+# Generated build and Python artifacts.
+.build/
+dist/
+__pycache__/
+*.pyc
+*.log
