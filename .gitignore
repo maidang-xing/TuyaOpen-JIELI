@@ -1,5 +1,5 @@
 # Local vendor SDK is supplied separately and is not part of this platform repo.
-AC79_AIoT_SDK/
+# AC79_AIoT_SDK is tracked as a git submodule pinned to the vendor release.
 
 # Generated build and Python artifacts.
 .build/

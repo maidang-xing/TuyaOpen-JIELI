@@ -44,7 +44,7 @@ static uint8_t s_ble_scan_rsp_data[JIELI_BLE_ADV_DATA_MAX];
 static uint8_t s_ble_adv_data_len;
 static uint8_t s_ble_scan_rsp_data_len;
 
-#define JIELI_ATT_LOCAL_PAYLOAD_SIZE (128)
+#define JIELI_ATT_LOCAL_PAYLOAD_SIZE (200)
 #define JIELI_ATT_SEND_CBUF_SIZE     (512)
 #define JIELI_ATT_RAM_BUFSIZE                                                               \
     (ATT_CTRL_BLOCK_SIZE + JIELI_ATT_LOCAL_PAYLOAD_SIZE + JIELI_ATT_SEND_CBUF_SIZE)
@@ -161,10 +161,24 @@ static int jieli_ble_uuid_matches(const TKL_BLE_UUID_T *uuid, uint8_t uuid_type,
 
 static void jieli_ble_att_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
 {
-    (void)packet_type;
     (void)channel;
-    (void)packet;
-    (void)size;
+    if (packet == NULL || size < 6 || packet_type != HCI_EVENT_PACKET) {
+        return;
+    }
+
+    if (hci_event_packet_get_type(packet) == ATT_EVENT_MTU_EXCHANGE_COMPLETE) {
+        uint16_t mtu = att_event_mtu_exchange_complete_get_MTU(packet);
+        if (mtu <= 3) {
+            printf("[JIELI][BLE] invalid ATT MTU:%u\n", mtu);
+            return;
+        }
+        uint16_t payload = mtu - 3;
+        if (payload < 20) {
+            payload = 20;
+        }
+        ble_cmd_ret_e result = ble_user_cmd_prepare(BLE_CMD_ATT_MTU_SIZE, 1, payload);
+        printf("[JIELI][BLE] ATT MTU:%u payload:%u set_send_mtu:%d\n", mtu, payload, result);
+    }
 }
 
 static uint16_t jieli_ble_att_read_callback(uint16_t connection_handle, uint16_t attribute_handle, uint16_t offset,
@@ -172,7 +186,10 @@ static uint16_t jieli_ble_att_read_callback(uint16_t connection_handle, uint16_t
 {
     uint16_t value_len;
     uint16_t copy_len;
-    TKL_BLE_GATT_PARAMS_EVT_T event;
+    /* The vendor stack dispatches ATT callbacks on the btstack task, whose
+     * stack is sized for the vendor examples. Keep the wide TKL event off
+     * that stack; ATT requests are serialized, so a shared static is safe. */
+    static TKL_BLE_GATT_PARAMS_EVT_T event;
 
     (void)connection_handle;
     if (attribute_handle == JIELI_HANDLE_GAP_NAME) {
@@ -227,7 +244,14 @@ static int jieli_ble_att_write_callback(uint16_t connection_handle, uint16_t att
                                         uint16_t transaction_mode, uint16_t offset, uint8_t *buffer,
                                         uint16_t buffer_size)
 {
-    TKL_BLE_GATT_PARAMS_EVT_T event;
+    /* Runs on the btstack task. One printf line costs ~5ms of UART time at
+     * 115200; during the large (197-byte) provisioning write that stall made
+     * the controller NACK inbound PDUs, and the resulting "[LE_BB]conn nack"
+     * flood then starved the log channel itself until every task stopped
+     * reporting (livelock, monitor_capture.log 2026-09-18 21.025 onward).
+     * Keep this callback log-free and stack-light; ble_mgr reports the queued
+     * payload from the workqueue where blocking is harmless. */
+    static TKL_BLE_GATT_PARAMS_EVT_T event;
 
     (void)transaction_mode;
     if (buffer == NULL) {
@@ -286,6 +310,9 @@ void ble_profile_init(void)
                     jieli_ble_att_read_callback, jieli_ble_att_write_callback);
     att_server_register_packet_handler(jieli_ble_att_packet_handler);
     le_l2cap_register_packet_handler(jieli_ble_att_packet_handler);
+
+    uint16_t default_mtu_result = ble_vendor_set_default_att_mtu(JIELI_ATT_LOCAL_PAYLOAD_SIZE);
+    printf("[JIELI][BLE] default ATT MTU:%u result:%u\n", JIELI_ATT_LOCAL_PAYLOAD_SIZE, default_mtu_result);
 
     /* btstack_init() may replace the callback installed before stack start;
      * register it again after the stack invokes this profile hook. */
@@ -483,7 +510,8 @@ static void jieli_hci_event_handler(uint8_t packet_type, uint16_t channel, uint8
         event.gap_event.disconnect.role = s_connection_role;
         event.gap_event.disconnect.reason = hci_event_disconnection_complete_get_reason(packet);
         if (s_connection_role == TKL_BLE_ROLE_SERVER) {
-            ble_user_cmd_prepare(BLE_CMD_ATT_SEND_INIT, 4, event.conn_handle, 0, 0, 0);
+            ble_cmd_ret_e result = ble_user_cmd_prepare(BLE_CMD_ATT_SEND_INIT, 4, event.conn_handle, 0, 0, 0);
+            printf("[JIELI][BLE] ATT_SEND_INIT release conn:%u result:%d\n", event.conn_handle, result);
         }
         if (s_gap_callback != NULL) {
             s_gap_callback(&event);
@@ -548,8 +576,11 @@ static void jieli_hci_event_handler(uint8_t packet_type, uint16_t channel, uint8
             memcpy(event.gap_event.connect.peer_addr.addr, peer_addr, sizeof(peer_addr));
             s_client_conn_handle = event.conn_handle;
             if (s_connection_role == TKL_BLE_ROLE_SERVER) {
-                ble_user_cmd_prepare(BLE_CMD_ATT_SEND_INIT, 4, event.conn_handle, s_att_ram_buffer,
-                                     sizeof(s_att_ram_buffer), JIELI_ATT_LOCAL_PAYLOAD_SIZE);
+                ble_cmd_ret_e result = ble_user_cmd_prepare(BLE_CMD_ATT_SEND_INIT, 4, event.conn_handle,
+                                                             s_att_ram_buffer, sizeof(s_att_ram_buffer),
+                                                             JIELI_ATT_LOCAL_PAYLOAD_SIZE);
+                printf("[JIELI][BLE] ATT_SEND_INIT conn:%u payload:%u ram:%u result:%d\n", event.conn_handle,
+                       JIELI_ATT_LOCAL_PAYLOAD_SIZE, (unsigned)sizeof(s_att_ram_buffer), result);
             }
             if (s_connection_role == TKL_BLE_ROLE_CLIENT) {
                 user_client_init(s_client_conn_handle, s_search_profile_buffer, sizeof(s_search_profile_buffer));
@@ -956,7 +987,10 @@ static OPERATE_RET jieli_ble_att_send(uint16_t conn_handle, uint16_t char_handle
     }
     /* This adapter initializes the single-link ATT sender on each server
      * connection, matching the AC79 SDK's le_net_cfg example. */
-    return jieli_ble_cmd_result(ble_user_cmd_prepare(BLE_CMD_ATT_SEND_DATA, 4, char_handle, p_data, length, operation));
+    ble_cmd_ret_e result = ble_user_cmd_prepare(BLE_CMD_ATT_SEND_DATA, 4, char_handle, p_data, length, operation);
+    printf("[JIELI][BLE] ATT_SEND_DATA conn:%u attr:0x%04x len:%u op:%u result:%d\n", conn_handle, char_handle,
+           length, operation, result);
+    return jieli_ble_cmd_result(result);
 }
 
 OPERATE_RET tkl_ble_gatts_value_notify(uint16_t conn_handle, uint16_t char_handle, uint8_t *p_data, uint16_t length)

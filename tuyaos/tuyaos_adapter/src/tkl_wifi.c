@@ -1,6 +1,8 @@
 #include "tkl_wifi.h"
 #include "tkl_memory.h"
 #include "tkl_system.h"
+#include "tkl_thread.h"
+#include "tkl_queue.h"
 #include "tuya_error_code.h"
 
 #include "lwip/port/lwip.h"
@@ -106,14 +108,91 @@ static OPERATE_RET jieli_result(int result)
     return (result == 0) ? OPRT_OK : OPRT_COM_ERROR;
 }
 
+static int jieli_parse_ipv4(const char *text, uint8_t address[4])
+{
+    unsigned int a;
+    unsigned int b;
+    unsigned int c;
+    unsigned int d;
+    char tail;
+
+    if (!text || !address || sscanf(text, "%u.%u.%u.%u%c", &a, &b, &c, &d, &tail) != 4 || a > 255 || b > 255 ||
+        c > 255 || d > 255) {
+        return -1;
+    }
+    address[0] = (uint8_t)a;
+    address[1] = (uint8_t)b;
+    address[2] = (uint8_t)c;
+    address[3] = (uint8_t)d;
+    return 0;
+}
+
+static int jieli_set_ap_lan_info(const WF_AP_CFG_IF_S *cfg)
+{
+    uint8_t ip[4];
+    uint8_t mask[4];
+    uint8_t gateway[4];
+    struct lan_setting setting = {0};
+
+    if (jieli_parse_ipv4(cfg->ip.ip, ip) != 0 || jieli_parse_ipv4(cfg->ip.mask, mask) != 0 ||
+        jieli_parse_ipv4(cfg->ip.gw, gateway) != 0 || ip[3] == 255) {
+        return -1;
+    }
+
+    setting.WIRELESS_IP_ADDR0 = ip[0];
+    setting.WIRELESS_IP_ADDR1 = ip[1];
+    setting.WIRELESS_IP_ADDR2 = ip[2];
+    setting.WIRELESS_IP_ADDR3 = ip[3];
+    setting.WIRELESS_NETMASK0 = mask[0];
+    setting.WIRELESS_NETMASK1 = mask[1];
+    setting.WIRELESS_NETMASK2 = mask[2];
+    setting.WIRELESS_NETMASK3 = mask[3];
+    setting.WIRELESS_GATEWAY0 = gateway[0];
+    setting.WIRELESS_GATEWAY1 = gateway[1];
+    setting.WIRELESS_GATEWAY2 = gateway[2];
+    setting.WIRELESS_GATEWAY3 = gateway[3];
+    setting.SERVER_IPADDR1 = ip[0];
+    setting.SERVER_IPADDR2 = ip[1];
+    setting.SERVER_IPADDR3 = ip[2];
+    setting.SERVER_IPADDR4 = ip[3];
+    setting.CLIENT_IPADDR1 = ip[0];
+    setting.CLIENT_IPADDR2 = ip[1];
+    setting.CLIENT_IPADDR3 = ip[2];
+    setting.CLIENT_IPADDR4 = (uint8_t)(ip[3] + 1);
+    setting.SUB_NET_MASK1 = mask[0];
+    setting.SUB_NET_MASK2 = mask[1];
+    setting.SUB_NET_MASK3 = mask[2];
+    setting.SUB_NET_MASK4 = mask[3];
+    return net_set_lan_info(&setting);
+}
+
+static int jieli_wifi_event_cb(void *priv, int event);
+
+/* Resident STA worker infrastructure (defined next to
+ * tkl_wifi_station_connect); started early from tkl_wifi_init(). */
+static OPERATE_RET jieli_wifi_worker_start(void);
+
 static int jieli_wifi_event_cb(void *priv, int event)
 {
     (void)priv;
+    printf("[JIELI][WIFI] native event:%d\n", event);
     if (!s_wifi_event_cb) {
         return 0;
     }
 
     switch (event) {
+    case JIELI_WIFI_MODULE_INIT:
+        /* tkl_wifi_init() defers the native start, so apply the vendor-module
+         * knobs here, on the first real wifi_on() from start_ap/station_connect.
+         * Keep connect non-blocking and the best-SSID auto reconnect off so
+         * provisioning credentials are the only thing the module dials. */
+        wifi_set_connect_sta_block(0);
+        wifi_set_sta_connect_best_ssid(0);
+        break;
+    case JIELI_WIFI_AP_START:
+        /* The AP transition is asynchronous and may restore STA auto-connect. */
+        wifi_set_sta_connect_best_ssid(0);
+        break;
     case JIELI_WIFI_DHCP_SUCC:
         /* Association success only means the link is up. Tuya cloud needs a
          * valid IP/DNS route, so report WFE_CONNECTED only after DHCP. */
@@ -157,15 +236,23 @@ static uint8_t jieli_auth_mode(uint8_t mode)
 
 OPERATE_RET tkl_wifi_init(WIFI_EVENT_CB cb)
 {
-    int result;
+    OPERATE_RET rt;
 
     s_wifi_event_cb = cb;
     wifi_set_event_callback(jieli_wifi_event_cb);
-    wifi_set_connect_sta_block(0);
-    result = wifi_on();
-    if (result != 0 && !wifi_is_on()) {
-        return OPRT_COM_ERROR;
+    /* Keep the initial WiFi start from reconnecting an empty/stale STA entry
+     * while Tuya netcfg is using BLE provisioning.  Starting the native WiFi
+     * task here triggers a periodic empty-SSID scan that starves the wl82 BLE
+     * controller during the first large provisioning write.  Start WiFi
+     * lazily from the STA/AP entry points below. */
+    wifi_set_sta_connect_best_ssid(0);
+    /* Bring the resident STA worker up in this early, quiet window; creating
+     * it later from the BLE workqueue crashed the FreeRTOS list code. */
+    rt = jieli_wifi_worker_start();
+    if (rt != OPRT_OK) {
+        return rt;
     }
+    printf("[JIELI][WIFI] init registered, WiFi start is deferred\n");
     return OPRT_OK;
 }
 
@@ -238,17 +325,32 @@ OPERATE_RET tkl_wifi_release_ap(AP_IF_S *ap)
 
 OPERATE_RET tkl_wifi_start_ap(const WF_AP_CFG_IF_S *cfg)
 {
+    int result;
+
     if (!cfg) {
         return OPRT_INVALID_PARM;
+    }
+    /* NOTE: same caller-context hazard as STA if the AP netcfg path is ever
+     * re-enabled (wifi_on() on the caller's task); BLE-only netcfg does not
+     * reach this today. Route through a worker thread before turning the
+     * AP provisioning module back on. */
+    if (!wifi_is_on() && wifi_on() != 0) {
+        return OPRT_COM_ERROR;
     }
     /* Do not power down the shared WiFi/LwIP stack here; AP mode performs the
      * native mode transition and the BLE netcfg path runs concurrently. */
     wifi_set_sta_connect_best_ssid(0);
+    if (jieli_set_ap_lan_info(cfg) != 0) {
+        return OPRT_INVALID_PARM;
+    }
     if (cfg->chan) {
         wifi_set_channel(cfg->chan);
     }
     s_wifi_mode = WWM_SOFTAP;
-    return jieli_result(wifi_enter_ap_mode((char *)cfg->ssid, (char *)cfg->passwd));
+    result = wifi_enter_ap_mode((char *)cfg->ssid, (char *)cfg->passwd);
+    /* AP mode reinitialization may restore the SDK default STA auto-connect. */
+    wifi_set_sta_connect_best_ssid(0);
+    return jieli_result(result);
 }
 
 OPERATE_RET tkl_wifi_stop_ap(void)
@@ -343,8 +445,11 @@ OPERATE_RET tkl_wifi_set_work_mode(const WF_WK_MD_E mode)
         s_wifi_mode = mode;
         return jieli_result(wifi_off());
     case WWM_STATION:
+        /* Record the mode only. This call arrives on the BLE workqueue
+         * during netcfg completion; the module power-up runs on the
+         * tkl_wifi_station_connect() worker thread instead (see above). */
         s_wifi_mode = mode;
-        return jieli_result(wifi_on());
+        return OPRT_OK;
     case WWM_SOFTAP:
         /* netcfg supplies the SSID/password in tkl_wifi_start_ap(). */
         s_wifi_mode = mode;
@@ -419,18 +524,126 @@ OPERATE_RET tkl_wifi_station_fast_connect(const FAST_WF_CONNECTED_AP_INFO_T *fas
     return OPRT_NOT_SUPPORTED;
 }
 
+/*
+ * STA association worker.
+ *
+ * tkl_wifi_station_connect() is reached from the BLE workqueue (netcfg
+ * completion) and from netmgr retries. Creating a task at runtime from that
+ * context (os_task_create) and/or driving the native module bring-up from it
+ * repeatedly crashed the system with an AXI fault inside the FreeRTOS list
+ * code (2026-09-18 logs, identical with a 5120 and a 11264 byte workqueue
+ * stack, so not a plain overflow). The worker therefore runs as a resident
+ * task created once during tkl_wifi_init() -- the same early, quiet window
+ * the other TAL threads use -- and requests are queued to it. Outcomes reach
+ * Tuya through the WFE_* event callbacks.
+ */
+typedef struct {
+    char ssid[WIFI_SSID_LEN + 1];
+    char passwd[WIFI_PASSWD_LEN + 1];
+} jieli_sta_work_t;
+
+#define JIELI_WIFI_WORK_QUEUE_LEN 4
+
+static TKL_QUEUE_HANDLE s_sta_work_queue;
+static TKL_THREAD_HANDLE s_sta_worker_thread;
+
+static void jieli_sta_connect_work(jieli_sta_work_t *work)
+{
+    int result;
+
+    printf("[JIELI][WIFI] sta worker begin ssid_len:%u\n", (unsigned int)strlen(work->ssid));
+    if (!wifi_is_on() && wifi_on() != 0) {
+        printf("[JIELI][WIFI] sta worker wifi_on failed\n");
+        if (s_wifi_event_cb != NULL) {
+            s_wifi_event_cb(WFE_CONNECT_FAILED, NULL);
+        }
+    } else {
+        wifi_clear_scan_result();
+        wifi_set_sta_connect_best_ssid(0);
+        result = wifi_enter_sta_mode(work->ssid, work->passwd);
+        printf("[JIELI][WIFI] station connect ssid_len:%u passwd_len:%u native_result:%d\n",
+               (unsigned int)strlen(work->ssid), (unsigned int)strlen(work->passwd), result);
+        if (result != 0 && s_wifi_event_cb != NULL) {
+            /* A rejected association request produces no vendor event. */
+            s_wifi_event_cb(WFE_CONNECT_FAILED, NULL);
+        }
+    }
+    tkl_system_free(work);
+}
+
+static void jieli_wifi_worker(void *arg)
+{
+    jieli_sta_work_t *work = NULL;
+
+    (void)arg;
+    for (;;) {
+        /* tkl_queue_fetch() maps an infinite timeout to zero ticks, so poll
+         * with a bounded timeout instead of trying to block forever. */
+        if (tkl_queue_fetch(s_sta_work_queue, &work, 100) == OPRT_OK && work != NULL) {
+            jieli_sta_connect_work(work);
+            work = NULL;
+        }
+    }
+}
+
+static OPERATE_RET jieli_wifi_worker_start(void)
+{
+    OPERATE_RET rt;
+
+    if (s_sta_work_queue == NULL) {
+        rt = tkl_queue_create_init(&s_sta_work_queue, sizeof(void *), JIELI_WIFI_WORK_QUEUE_LEN);
+        if (rt != OPRT_OK) {
+            return rt;
+        }
+    }
+    if (s_sta_worker_thread == NULL) {
+        rt = tkl_thread_create(&s_sta_worker_thread, "tuya_wifi_sta", 6144, 3, jieli_wifi_worker, NULL);
+        if (rt != OPRT_OK) {
+            return rt;
+        }
+        printf("[JIELI][WIFI] sta worker resident\n");
+    }
+    return OPRT_OK;
+}
+
 OPERATE_RET tkl_wifi_station_connect(const int8_t *ssid, const int8_t *passwd)
 {
+    jieli_sta_work_t *work;
+    OPERATE_RET rt;
+
     if (!ssid || !passwd) {
         return OPRT_INVALID_PARM;
     }
+    if (s_sta_work_queue == NULL) {
+        return OPRT_COM_ERROR;
+    }
+    work = (jieli_sta_work_t *)tkl_system_calloc(1, sizeof(*work));
+    if (work == NULL) {
+        return OPRT_MALLOC_FAILED;
+    }
+    strncpy(work->ssid, (const char *)ssid, sizeof(work->ssid) - 1);
+    strncpy(work->passwd, (const char *)passwd, sizeof(work->passwd) - 1);
+
     s_wifi_mode = WWM_STATION;
-    return jieli_result(wifi_enter_sta_mode((char *)ssid, (char *)passwd));
+    rt = tkl_queue_post(s_sta_work_queue, &work, 0);
+    printf("[JIELI][WIFI] station connect queued ssid_len:%u rt:%d\n", (unsigned int)strlen(work->ssid), rt);
+    if (rt != OPRT_OK) {
+        tkl_system_free(work);
+        return rt;
+    }
+    return OPRT_OK;
 }
 
 OPERATE_RET tkl_wifi_station_disconnect(void)
 {
-    return jieli_result(wifi_off());
+    /* No-op, matching the ipc_ac7916a adapter. The netmgr connect path calls
+     * this before every association while the module may still be powered
+     * down (deferred start); driving the vendor wifi_off() sequence from the
+     * caller's task against an unpowered module raised the AXI fault in the
+     * FreeRTOS list code (2026-09-18 logs). A re-association simply issues a
+     * fresh wifi_enter_sta_mode() from the worker. */
+    s_wifi_mode = WWM_STATION;
+    return OPRT_OK;
 }
 
 OPERATE_RET tkl_wifi_station_get_conn_ap_rssi(int8_t *rssi)
