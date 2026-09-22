@@ -1,5 +1,11 @@
-# Local vendor SDK is supplied separately and is not part of this platform repo.
-# AC79_AIoT_SDK is tracked as a git submodule pinned to the vendor release.
+# chip/wl82/AC79_AIoT_SDK is tracked as a git submodule pinned to the vendor
+# release. The legacy root path below covers local checkouts that predate the
+# chip/ split and still hold the SDK at the module root.
+AC79_AIoT_SDK/
+
+# wl83 (AC792N) SDK is fetched manually until its port promotes it to a
+# submodule (see chip/wl83/README.md).
+chip/wl83/AC792_SDK/
 
 # Generated build and Python artifacts.
 .build/

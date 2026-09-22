@@ -1,4 +1,9 @@
-"""Host-side helpers for the TuyaOpen Jieli wl82 build bridge."""
+"""Host-side helpers for the TuyaOpen Jieli build bridge (multi-chip).
+
+One platform, several chips: each chip pins its own vendor SDK under
+chip/<cpu>/ and contributes a probe file used to locate a checkout on disk.
+Select the target with the JIELI_CHIP environment variable (default: wl82).
+"""
 
 from __future__ import annotations
 
@@ -10,8 +15,66 @@ from typing import Mapping, Optional
 
 
 MODULE_ROOT = Path(__file__).resolve().parent
-BOARD_BUILD_RELATIVE = Path("apps/demo/demo_hello/board/wl82")
-TOOLS_RELATIVE = Path("cpu/wl82/tools")
+
+
+class JielichipConfig:
+    """Per-chip layout of a vendor SDK checkout plus the build entry points."""
+
+    def __init__(self, name: str, cpu: str, sdk_dir: str, probe: Path,
+                 board_build_relative: Path, elf_relative: Path, tools_relative: Path,
+                 legacy_sdk_dirs=()):
+        self.name = name
+        self.cpu = cpu
+        self.sdk_dir = sdk_dir
+        self.probe = probe
+        self.board_build_relative = board_build_relative
+        self.elf_relative = elf_relative
+        self.tools_relative = tools_relative
+        self.legacy_sdk_dirs = tuple(legacy_sdk_dirs)
+
+
+JIELI_CHIPS = {
+    "wl82": JielichipConfig(
+        name="wl82",
+        cpu="wl82",
+        sdk_dir="chip/wl82/AC79_AIoT_SDK",
+        # Legacy layout kept as a disk fallback: the SDK used to sit at the
+        # module root and existing checkouts may still have it there.
+        legacy_sdk_dirs=("AC79_AIoT_SDK",),
+        probe=Path("apps/demo/demo_hello/board/wl82/Makefile"),
+        board_build_relative=Path("apps/demo/demo_hello/board/wl82"),
+        elf_relative=Path("cpu/wl82/tools/sdk.elf"),
+        tools_relative=Path("cpu/wl82/tools"),
+    ),
+    # wl83 (AC792N) bring-up placeholder. The layout entries follow the
+    # fw-AC792_SDK tree but have NOT been validated by a build yet; pin them
+    # when the port starts (see chip/wl83/README.md).
+    "wl83": JielichipConfig(
+        name="wl83",
+        cpu="wl83",
+        sdk_dir="chip/wl83/AC792_SDK",
+        legacy_sdk_dirs=(),
+        probe=Path("sdk/Makefile"),
+        board_build_relative=Path("sdk/apps/demo"),
+        elf_relative=Path("sdk/cpu/wl83/tools/sdk.elf"),
+        tools_relative=Path("sdk/cpu/wl83/tools"),
+    ),
+}
+
+
+def resolve_chip(environ: Optional[Mapping[str, str]] = None):
+    env = os.environ if environ is None else environ
+    name = env.get("JIELI_CHIP", "wl82").strip() or "wl82"
+    chip = JIELI_CHIPS.get(name)
+    if chip is None:
+        raise BuildError(f"unknown JIELI_CHIP '{name}'; expected one of {sorted(JIELI_CHIPS)}")
+    return chip
+
+
+# Retained as module-level constants for the wl82 default path; new callers
+# should use resolve_chip() instead.
+BOARD_BUILD_RELATIVE = JIELI_CHIPS["wl82"].board_build_relative
+TOOLS_RELATIVE = JIELI_CHIPS["wl82"].tools_relative
 
 
 TOOL_ALIASES = {
@@ -203,21 +266,24 @@ def resolve_sdk_root(
     module_root: Path = MODULE_ROOT,
 ) -> Path:
     env = os.environ if environ is None else environ
+    chip = resolve_chip(env)
     configured = env.get("JIELI_SDK_ROOT", "").strip()
     candidates = []
     if configured:
         candidates.append(Path(configured).expanduser())
-    candidates.append((module_root / "AC79_AIoT_SDK").resolve())
+    candidates.append((module_root / chip.sdk_dir).resolve())
+    for legacy in chip.legacy_sdk_dirs:
+        candidates.append((module_root / legacy).resolve())
     candidates.append((module_root / "../../../AC79_AIoT_SDK").resolve())
 
     for candidate in candidates:
-        if (candidate / "apps/demo/demo_hello/board/wl82/Makefile").is_file():
+        if (candidate / chip.probe).is_file():
             return candidate
 
     searched = ", ".join(str(path) for path in candidates)
     raise BuildError(
-        "AC79 SDK not found; set JIELI_SDK_ROOT to a fw-AC79_AIoT_SDK checkout. "
-        f"Searched: {searched}"
+        f"AC79 SDK not found for chip '{chip.name}'; set JIELI_SDK_ROOT to a "
+        f"fw-AC79_AIoT_SDK checkout. Searched: {searched}"
     )
 
 
@@ -256,7 +322,9 @@ def resolve_tool_dir(
 def build_make_command(sdk_root: Path, tool_dir: Path, jobs: int = 1) -> list[str]:
     if jobs < 1:
         raise ValueError("jobs must be at least 1")
-    board_dir = sdk_root / BOARD_BUILD_RELATIVE
+    chip = resolve_chip()
+    board_dir = sdk_root / chip.board_build_relative
+    elf_target = "../../../../../" + chip.elf_relative.as_posix()
     command = [
         "make",
         "-C",
@@ -264,7 +332,7 @@ def build_make_command(sdk_root: Path, tool_dir: Path, jobs: int = 1) -> list[st
         f"TOOL_DIR={tool_dir}",
         f"-j{jobs}",
         "pre_build",
-        "../../../../../cpu/wl82/tools/sdk.elf",
+        elf_target,
     ]
     if os.name == "nt":
         command.insert(4, "LINK_AT=0")

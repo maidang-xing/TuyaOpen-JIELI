@@ -1,7 +1,10 @@
-"""TuyaOpen flash bridge for Jieli AC7916A boards.
+"""TuyaOpen flash bridge for Jieli AC79x boards.
 
 On Windows, use the downloader shipped with the local AC79 SDK by default.
 JIELI_FLASH_CMD remains available for board-specific uploader overrides.
+The chip is selected via the JIELI_CHIP environment variable (default: wl82)
+and falls back to probing the per-chip SDK directories on disk, including the
+legacy wl82 layout where the SDK sat at the module root.
 """
 
 from __future__ import annotations
@@ -16,7 +19,30 @@ from typing import Any
 
 
 MODULE_ROOT = Path(__file__).resolve().parent
-SDK_TOOLS_RELATIVE = Path("AC79_AIoT_SDK/cpu/wl82/tools")
+
+# (sdk_subdir, tools_subdir, isd -dev argument, boot address)
+_FLASH_CHIPS = {
+    "wl82": ("chip/wl82/AC79_AIoT_SDK", "cpu/wl82/tools", "wl82", "0x1c02000"),
+    # wl83 (AC792N): entry kept for the bring-up; verify -dev/-boot against the
+    # vendor docs before first use (chip/wl83/README.md).
+    "wl83": ("chip/wl83/AC792_SDK", "sdk/cpu/wl83/tools", "wl83", "0x1c02000"),
+}
+
+
+def _resolve_flash_chip() -> tuple[str, Path, str, str] | None:
+    name = os.environ.get("JIELI_CHIP", "wl82").strip() or "wl82"
+    entry = _FLASH_CHIPS.get(name)
+    if entry is None:
+        return None
+    sdk_dir, tools_subdir, dev, boot = entry
+    candidates = [MODULE_ROOT / sdk_dir / tools_subdir]
+    if name == "wl82":
+        # Legacy layout fallback for checkouts predating the chip/ split.
+        candidates.append(MODULE_ROOT / "AC79_AIoT_SDK" / "cpu/wl82" / "tools")
+    for tools_dir in candidates:
+        if (tools_dir / "isd_download.exe").is_file():
+            return dev, tools_dir, dev, boot
+    return None
 
 
 def _split_command(command_text: str) -> list[str]:
@@ -41,7 +67,10 @@ def _default_flash_command(image: Path) -> tuple[list[str], Path] | None:
     if os.name != "nt":
         return None
 
-    tools_dir = MODULE_ROOT / SDK_TOOLS_RELATIVE
+    resolved = _resolve_flash_chip()
+    if resolved is None:
+        return None
+    dev, tools_dir, _, boot_addr = resolved
     executable = tools_dir / "isd_download.exe"
     config = tools_dir / "isd_config.ini"
     uboot = tools_dir / "uboot.boot"
@@ -56,9 +85,9 @@ def _default_flash_command(image: Path) -> tuple[list[str], Path] | None:
             "-gen2",
             "-tonorflash",
             "-dev",
-            "wl82",
+            dev,
             "-boot",
-            "0x1c02000",
+            boot_addr,
             "-div1",
             "-wait",
             "300",
