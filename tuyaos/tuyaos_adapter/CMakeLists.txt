@@ -1,0 +1,55 @@
+set(JIELI_ADAPTER_NAME jieli_tuya_adapter)
+set(JIELI_ADAPTER_SRC
+    ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_output.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_system.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_uart.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_thread.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_mutex.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_semaphore.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_queue.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_sleep.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_flash.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_ota.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_assert.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_bluetooth.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/system/tuyaopen_license.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_network.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_wifi.c
+)
+
+add_library(${JIELI_ADAPTER_NAME} STATIC ${JIELI_ADAPTER_SRC})
+target_include_directories(${JIELI_ADAPTER_NAME}
+    PUBLIC
+        ${CMAKE_CURRENT_LIST_DIR}/include
+        ${CMAKE_CURRENT_LIST_DIR}/include/system
+        ${CMAKE_CURRENT_LIST_DIR}/include/driver
+        ${TOP_SOURCE_DIR}/tools/porting/adapter/system
+        ${TOP_SOURCE_DIR}/tools/porting/adapter/uart
+        ${TOP_SOURCE_DIR}/tools/porting/adapter/init/include
+        ${TOP_SOURCE_DIR}/tools/porting/adapter/utilities/include
+        ${TOP_SOURCE_DIR}/tools/porting/adapter/security
+        ${TOP_SOURCE_DIR}/tools/porting/adapter/flash
+        ${TOP_SOURCE_DIR}/tools/porting/adapter/network
+        ${TOP_SOURCE_DIR}/tools/porting/adapter/wifi
+        ${TOP_SOURCE_DIR}/tools/porting/adapter/bluetooth
+        ${TOP_SOURCE_DIR}/tools/porting/adapter/timer
+        ${TOP_SOURCE_DIR}/src/common/include
+        ${JIELI_SDK_ROOT}/include_lib
+        ${JIELI_SDK_ROOT}/include_lib/btstack
+        ${JIELI_SDK_ROOT}/include_lib/btstack/le
+        ${JIELI_SDK_ROOT}/include_lib/btctrler
+        ${JIELI_SDK_ROOT}/include_lib/btctrler/port/wl82
+        ${JIELI_SDK_ROOT}/include_lib/net
+        ${JIELI_SDK_ROOT}/include_lib/driver
+        ${JIELI_SDK_ROOT}/include_lib/driver/device
+        ${JIELI_SDK_ROOT}/include_lib/driver/cpu/wl82
+        ${JIELI_SDK_ROOT}/include_lib/system
+        ${JIELI_SDK_ROOT}/include_lib/utils
+        ${JIELI_SDK_ROOT}/include_lib/utils/syscfg
+        ${JIELI_SDK_ROOT}/include_lib/utils/event
+        ${JIELI_SDK_ROOT}/include_lib/net/lwip_2_2_0
+        ${JIELI_SDK_ROOT}/include_lib/net/lwip_2_2_0/lwip/src/include
+        ${JIELI_SDK_ROOT}/include_lib/net/lwip_2_2_0/lwip/src/include/compat
+        ${JIELI_SDK_ROOT}/include_lib/net/lwip_2_2_0/lwip/port
+        ${JIELI_SDK_ROOT}/include_lib
+)

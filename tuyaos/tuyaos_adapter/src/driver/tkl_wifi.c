@@ -1,0 +1,705 @@
+#include "tkl_wifi.h"
+#include "tkl_memory.h"
+#include "tkl_system.h"
+#include "tkl_thread.h"
+#include "tkl_queue.h"
+#include "tuya_error_code.h"
+
+#include "lwip/port/lwip.h"
+
+#include <stdio.h>
+#include <string.h>
+
+static WIFI_EVENT_CB s_wifi_event_cb;
+static WF_WK_MD_E s_wifi_mode = WWM_STATION;
+
+/* The wl82 SDK's wifi_def.h uses a C++-only enum underlying-type syntax.
+ * Keep the small ABI-facing declarations C-compatible in the Tuya adapter. */
+enum jieli_wifi_state {
+    JIELI_WIFI_DISCONNECT,
+    JIELI_WIFI_CONNECT_SUCC,
+    JIELI_WIFI_CONNECT_NO_SSID,
+    JIELI_WIFI_CONNECT_ASSOC_FAIL,
+    JIELI_WIFI_CONNECT_ASSOC_TIMEOUT,
+    JIELI_WIFI_STATE_DHCP_SUCC,
+    JIELI_WIFI_STATE_DHCP_TIMEOUT,
+};
+
+enum jieli_wifi_event {
+    JIELI_WIFI_MODULE_INIT,
+    JIELI_WIFI_MODULE_START,
+    JIELI_WIFI_MODULE_STOP,
+    JIELI_WIFI_MODULE_START_ERR,
+    JIELI_WIFI_AP_START,
+    JIELI_WIFI_AP_STOP,
+    JIELI_WIFI_STA_START,
+    JIELI_WIFI_STA_STOP,
+    JIELI_WIFI_STA_SCAN_COMPLETED,
+    JIELI_WIFI_STA_CONNECT_SUCC,
+    JIELI_WIFI_STA_CONNECT_NO_SSID,
+    JIELI_WIFI_STA_CONNECT_ASSOC_FAIL,
+    JIELI_WIFI_STA_CONNECT_ASSOC_TIMEOUT,
+    JIELI_WIFI_STA_DISCONNECT,
+    JIELI_WIFI_SMP_CFG_START,
+    JIELI_WIFI_SMP_CFG_STOP,
+    JIELI_WIFI_SMP_CFG_TIMEOUT,
+    JIELI_WIFI_SMP_CFG_COMPLETED,
+    JIELI_WIFI_DHCP_SUCC,
+    JIELI_WIFI_DHCP_TIMEOUT,
+};
+
+enum jieli_wifi_auth_mode {
+    JIELI_WIFI_AUTH_OPEN,
+    JIELI_WIFI_AUTH_WEP,
+    JIELI_WIFI_AUTH_WAPI,
+    JIELI_WIFI_AUTH_WPA,
+    JIELI_WIFI_AUTH_WPA2,
+    JIELI_WIFI_AUTH_WPA_WPA2,
+    JIELI_WIFI_AUTH_WPA3,
+};
+
+struct jieli_wifi_scan_info {
+    unsigned char ssid_len;
+    char ssid[33];
+    unsigned char mac_addr[6];
+    char rssi;
+    char snr;
+    char rssi_db;
+    char rssi_rsv;
+    char channel_number;
+    unsigned char signal_strength;
+    unsigned char signal_quality;
+    unsigned char supported_rates[16];
+    /* wifi_def.h declares WIFI_802_11_AUTH_MODE with an 8-bit underlying
+     * type.  Do not use a C enum here: on this toolchain a plain enum is
+     * 32-bit and would shift the stride of every result after the first AP. */
+    uint8_t auth_mode;
+};
+
+struct jieli_wifi_mode_info {
+    int mode;
+    char *ssid;
+    char *pwd;
+};
+
+extern void wifi_set_event_callback(int (*cb)(void *, int));
+extern int wifi_on(void);
+extern int wifi_is_on(void);
+extern int wifi_off(void);
+extern void wifi_set_connect_sta_block(int block);
+extern int wifi_get_mac(unsigned char *mac);
+extern int wifi_set_mac(char *mac);
+extern unsigned int wifi_get_channel(void);
+extern void wifi_set_channel(unsigned char channel);
+extern void wifi_get_bssid(unsigned char bssid[6]);
+extern void wifi_get_mode_cur_info(struct jieli_wifi_mode_info *info);
+extern int wifi_enter_sta_mode(char *ssid, char *password);
+extern int wifi_enter_ap_mode(char *ssid, char *password);
+extern void wifi_set_sta_connect_best_ssid(unsigned char enable);
+extern int wifi_scan_req(void);
+extern struct jieli_wifi_scan_info *wifi_get_scan_result(unsigned int *count);
+extern void wifi_clear_scan_result(void);
+extern char wifi_get_rssi(void);
+extern enum jieli_wifi_state wifi_get_sta_connect_state(void);
+extern int wifi_enter_smp_cfg_mode(void);
+
+static OPERATE_RET jieli_result(int result)
+{
+    return (result == 0) ? OPRT_OK : OPRT_COM_ERROR;
+}
+
+static int jieli_parse_ipv4(const char *text, uint8_t address[4])
+{
+    unsigned int a;
+    unsigned int b;
+    unsigned int c;
+    unsigned int d;
+    char tail;
+
+    if (!text || !address || sscanf(text, "%u.%u.%u.%u%c", &a, &b, &c, &d, &tail) != 4 || a > 255 || b > 255 ||
+        c > 255 || d > 255) {
+        return -1;
+    }
+    address[0] = (uint8_t)a;
+    address[1] = (uint8_t)b;
+    address[2] = (uint8_t)c;
+    address[3] = (uint8_t)d;
+    return 0;
+}
+
+static int jieli_set_ap_lan_info(const WF_AP_CFG_IF_S *cfg)
+{
+    uint8_t ip[4];
+    uint8_t mask[4];
+    uint8_t gateway[4];
+    struct lan_setting setting = {0};
+
+    if (jieli_parse_ipv4(cfg->ip.ip, ip) != 0 || jieli_parse_ipv4(cfg->ip.mask, mask) != 0 ||
+        jieli_parse_ipv4(cfg->ip.gw, gateway) != 0 || ip[3] == 255) {
+        return -1;
+    }
+
+    setting.WIRELESS_IP_ADDR0 = ip[0];
+    setting.WIRELESS_IP_ADDR1 = ip[1];
+    setting.WIRELESS_IP_ADDR2 = ip[2];
+    setting.WIRELESS_IP_ADDR3 = ip[3];
+    setting.WIRELESS_NETMASK0 = mask[0];
+    setting.WIRELESS_NETMASK1 = mask[1];
+    setting.WIRELESS_NETMASK2 = mask[2];
+    setting.WIRELESS_NETMASK3 = mask[3];
+    setting.WIRELESS_GATEWAY0 = gateway[0];
+    setting.WIRELESS_GATEWAY1 = gateway[1];
+    setting.WIRELESS_GATEWAY2 = gateway[2];
+    setting.WIRELESS_GATEWAY3 = gateway[3];
+    setting.SERVER_IPADDR1 = ip[0];
+    setting.SERVER_IPADDR2 = ip[1];
+    setting.SERVER_IPADDR3 = ip[2];
+    setting.SERVER_IPADDR4 = ip[3];
+    setting.CLIENT_IPADDR1 = ip[0];
+    setting.CLIENT_IPADDR2 = ip[1];
+    setting.CLIENT_IPADDR3 = ip[2];
+    setting.CLIENT_IPADDR4 = (uint8_t)(ip[3] + 1);
+    setting.SUB_NET_MASK1 = mask[0];
+    setting.SUB_NET_MASK2 = mask[1];
+    setting.SUB_NET_MASK3 = mask[2];
+    setting.SUB_NET_MASK4 = mask[3];
+    return net_set_lan_info(&setting);
+}
+
+static int jieli_wifi_event_cb(void *priv, int event);
+
+/* Resident STA worker infrastructure (defined next to
+ * tkl_wifi_station_connect); started early from tkl_wifi_init(). */
+static OPERATE_RET jieli_wifi_worker_start(void);
+
+static int jieli_wifi_event_cb(void *priv, int event)
+{
+    (void)priv;
+    printf("[JIELI][WIFI] native event:%d\n", event);
+    if (!s_wifi_event_cb) {
+        return 0;
+    }
+
+    switch (event) {
+    case JIELI_WIFI_MODULE_INIT:
+        /* tkl_wifi_init() defers the native start, so apply the vendor-module
+         * knobs here, on the first real wifi_on() from start_ap/station_connect.
+         * Keep connect non-blocking and the best-SSID auto reconnect off so
+         * provisioning credentials are the only thing the module dials. */
+        wifi_set_connect_sta_block(0);
+        wifi_set_sta_connect_best_ssid(0);
+        break;
+    case JIELI_WIFI_AP_START:
+        /* The AP transition is asynchronous and may restore STA auto-connect. */
+        wifi_set_sta_connect_best_ssid(0);
+        break;
+    case JIELI_WIFI_DHCP_SUCC:
+        /* Association success only means the link is up. Tuya cloud needs a
+         * valid IP/DNS route, so report WFE_CONNECTED only after DHCP. */
+        s_wifi_event_cb(WFE_CONNECTED, NULL);
+        break;
+    case JIELI_WIFI_STA_CONNECT_NO_SSID:
+    case JIELI_WIFI_STA_CONNECT_ASSOC_FAIL:
+    case JIELI_WIFI_STA_CONNECT_ASSOC_TIMEOUT:
+        s_wifi_event_cb(WFE_CONNECT_FAILED, NULL);
+        break;
+    case JIELI_WIFI_STA_DISCONNECT:
+    case JIELI_WIFI_DHCP_TIMEOUT:
+    case JIELI_WIFI_MODULE_STOP:
+        s_wifi_event_cb(WFE_DISCONNECTED, NULL);
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
+
+static uint8_t jieli_auth_mode(uint8_t mode)
+{
+    switch (mode) {
+    case JIELI_WIFI_AUTH_OPEN:
+        return WAAM_OPEN;
+    case JIELI_WIFI_AUTH_WEP:
+        return WAAM_WEP;
+    case JIELI_WIFI_AUTH_WPA:
+        return WAAM_WPA_PSK;
+    case JIELI_WIFI_AUTH_WPA2:
+        return WAAM_WPA2_PSK;
+    case JIELI_WIFI_AUTH_WPA_WPA2:
+        return WAAM_WPA_WPA2_PSK;
+    case JIELI_WIFI_AUTH_WPA3:
+        return WAAM_WPA_WPA3_SAE;
+    default:
+        return WAAM_UNKNOWN;
+    }
+}
+
+OPERATE_RET tkl_wifi_init(WIFI_EVENT_CB cb)
+{
+    OPERATE_RET rt;
+
+    s_wifi_event_cb = cb;
+    wifi_set_event_callback(jieli_wifi_event_cb);
+    /* Keep the initial WiFi start from reconnecting an empty/stale STA entry
+     * while Tuya netcfg is using BLE provisioning.  Starting the native WiFi
+     * task here triggers a periodic empty-SSID scan that starves the wl82 BLE
+     * controller during the first large provisioning write.  Start WiFi
+     * lazily from the STA/AP entry points below. */
+    wifi_set_sta_connect_best_ssid(0);
+    /* Bring the resident STA worker up in this early, quiet window; creating
+     * it later from the BLE workqueue crashed the FreeRTOS list code. */
+    rt = jieli_wifi_worker_start();
+    if (rt != OPRT_OK) {
+        return rt;
+    }
+    printf("[JIELI][WIFI] init registered, WiFi start is deferred\n");
+    return OPRT_OK;
+}
+
+OPERATE_RET tkl_wifi_scan_ap(const int8_t *ssid, AP_IF_S **ap_ary, uint32_t *num)
+{
+    uint32_t count = 0;
+    struct jieli_wifi_scan_info *result;
+    AP_IF_S *aps;
+    uint32_t out_count = 0;
+
+    if (!ap_ary || !num) {
+        return OPRT_INVALID_PARM;
+    }
+    *ap_ary = NULL;
+    *num = 0;
+
+    if (wifi_scan_req() != 0) {
+        return OPRT_COM_ERROR;
+    }
+    for (uint32_t retry = 0; retry < 100; ++retry) {
+        result = wifi_get_scan_result(&count);
+        if (result && count) {
+            break;
+        }
+        tkl_system_delay(100);
+    }
+    if (!result || count == 0) {
+        wifi_clear_scan_result();
+        return OPRT_OK;
+    }
+
+    aps = (AP_IF_S *)tkl_system_calloc(count, sizeof(AP_IF_S));
+    if (!aps) {
+        wifi_clear_scan_result();
+        return OPRT_MALLOC_FAILED;
+    }
+    for (uint32_t i = 0; i < count; ++i) {
+        /* TuyaOpen reserves one byte for the terminator in WIFI_SSID_LEN. */
+        if (result[i].ssid_len > WIFI_SSID_LEN) {
+            continue;
+        }
+        if (ssid && (strlen((const char *)ssid) != result[i].ssid_len ||
+                     memcmp(ssid, result[i].ssid, result[i].ssid_len) != 0)) {
+            continue;
+        }
+        aps[out_count].channel = (uint8_t)result[i].channel_number;
+        aps[out_count].rssi = result[i].rssi;
+        memcpy(aps[out_count].bssid, result[i].mac_addr, sizeof(aps[out_count].bssid));
+        aps[out_count].s_len = result[i].ssid_len;
+        memcpy(aps[out_count].ssid, result[i].ssid, result[i].ssid_len);
+        aps[out_count].ssid[result[i].ssid_len] = '\0';
+        aps[out_count].security = jieli_auth_mode(result[i].auth_mode);
+        ++out_count;
+    }
+    wifi_clear_scan_result();
+    if (!out_count) {
+        tkl_system_free(aps);
+        return OPRT_OK;
+    }
+    *ap_ary = aps;
+    *num = out_count;
+    return OPRT_OK;
+}
+
+OPERATE_RET tkl_wifi_release_ap(AP_IF_S *ap)
+{
+    tkl_system_free(ap);
+    return OPRT_OK;
+}
+
+OPERATE_RET tkl_wifi_start_ap(const WF_AP_CFG_IF_S *cfg)
+{
+    int result;
+
+    if (!cfg) {
+        return OPRT_INVALID_PARM;
+    }
+    /* NOTE: same caller-context hazard as STA if the AP netcfg path is ever
+     * re-enabled (wifi_on() on the caller's task); BLE-only netcfg does not
+     * reach this today. Route through a worker thread before turning the
+     * AP provisioning module back on. */
+    if (!wifi_is_on() && wifi_on() != 0) {
+        return OPRT_COM_ERROR;
+    }
+    /* Do not power down the shared WiFi/LwIP stack here; AP mode performs the
+     * native mode transition and the BLE netcfg path runs concurrently. */
+    wifi_set_sta_connect_best_ssid(0);
+    if (jieli_set_ap_lan_info(cfg) != 0) {
+        return OPRT_INVALID_PARM;
+    }
+    if (cfg->chan) {
+        wifi_set_channel(cfg->chan);
+    }
+    s_wifi_mode = WWM_SOFTAP;
+    result = wifi_enter_ap_mode((char *)cfg->ssid, (char *)cfg->passwd);
+    /* AP mode reinitialization may restore the SDK default STA auto-connect. */
+    wifi_set_sta_connect_best_ssid(0);
+    return jieli_result(result);
+}
+
+OPERATE_RET tkl_wifi_stop_ap(void)
+{
+    s_wifi_mode = WWM_POWERDOWN;
+    return jieli_result(wifi_off());
+}
+
+OPERATE_RET tkl_wifi_set_cur_channel(const uint8_t chan)
+{
+    wifi_set_channel(chan);
+    return OPRT_OK;
+}
+
+OPERATE_RET tkl_wifi_get_cur_channel(uint8_t *chan)
+{
+    if (!chan) {
+        return OPRT_INVALID_PARM;
+    }
+    *chan = (uint8_t)wifi_get_channel();
+    return OPRT_OK;
+}
+
+OPERATE_RET tkl_wifi_set_sniffer(const BOOL_T en, const SNIFFER_CALLBACK cb)
+{
+    (void)en;
+    (void)cb;
+    return OPRT_NOT_SUPPORTED;
+}
+
+static void jieli_ip_to_text(uint32_t value, char *text, size_t text_size)
+{
+    ip4addr_ntoa_r((const ip4_addr_t *)&value, text, text_size);
+}
+
+OPERATE_RET tkl_wifi_get_ip(const WF_IF_E wf, NW_IP_S *ip)
+{
+    struct netif_info info;
+    (void)wf;
+    if (!ip) {
+        return OPRT_INVALID_PARM;
+    }
+    memset(ip, 0, sizeof(*ip));
+    memset(&info, 0, sizeof(info));
+    lwip_get_netif_info(WIFI_NETIF, &info);
+    jieli_ip_to_text(info.ip, ip->ip, sizeof(ip->ip));
+    jieli_ip_to_text(info.netmask, ip->mask, sizeof(ip->mask));
+    jieli_ip_to_text(info.gw, ip->gw, sizeof(ip->gw));
+    return OPRT_OK;
+}
+
+OPERATE_RET tkl_wifi_get_ipv6(const WF_IF_E wf, NW_IP_TYPE type, NW_IP_S *ip)
+{
+    (void)wf;
+    (void)type;
+    if (!ip) {
+        return OPRT_INVALID_PARM;
+    }
+    memset(ip, 0, sizeof(*ip));
+    return OPRT_NOT_SUPPORTED;
+}
+
+OPERATE_RET tkl_wifi_set_ip(const WF_IF_E wf, NW_IP_S *ip)
+{
+    (void)wf;
+    (void)ip;
+    return OPRT_NOT_SUPPORTED;
+}
+
+OPERATE_RET tkl_wifi_set_mac(const WF_IF_E wf, const NW_MAC_S *mac)
+{
+    (void)wf;
+    if (!mac) {
+        return OPRT_INVALID_PARM;
+    }
+    return jieli_result(wifi_set_mac((char *)mac->mac));
+}
+
+OPERATE_RET tkl_wifi_get_mac(const WF_IF_E wf, NW_MAC_S *mac)
+{
+    (void)wf;
+    if (!mac) {
+        return OPRT_INVALID_PARM;
+    }
+    return jieli_result(wifi_get_mac(mac->mac));
+}
+
+OPERATE_RET tkl_wifi_set_work_mode(const WF_WK_MD_E mode)
+{
+    switch (mode) {
+    case WWM_POWERDOWN:
+        s_wifi_mode = mode;
+        return jieli_result(wifi_off());
+    case WWM_STATION:
+        /* Record the mode only. This call arrives on the BLE workqueue
+         * during netcfg completion; the module power-up runs on the
+         * tkl_wifi_station_connect() worker thread instead (see above). */
+        s_wifi_mode = mode;
+        return OPRT_OK;
+    case WWM_SOFTAP:
+        /* netcfg supplies the SSID/password in tkl_wifi_start_ap(). */
+        s_wifi_mode = mode;
+        return OPRT_OK;
+    case WWM_SNIFFER:
+        s_wifi_mode = mode;
+        return jieli_result(wifi_enter_smp_cfg_mode());
+    default:
+        return OPRT_NOT_SUPPORTED;
+    }
+}
+
+OPERATE_RET tkl_wifi_get_work_mode(WF_WK_MD_E *mode)
+{
+    struct jieli_wifi_mode_info info;
+    if (!mode) {
+        return OPRT_INVALID_PARM;
+    }
+    memset(&info, 0, sizeof(info));
+    wifi_get_mode_cur_info(&info);
+    switch (info.mode) {
+    case 1:
+        *mode = WWM_STATION;
+        break;
+    case 2:
+        *mode = WWM_SOFTAP;
+        break;
+    case 4:
+        *mode = WWM_SNIFFER;
+        break;
+    default:
+        *mode = s_wifi_mode;
+        break;
+    }
+    return OPRT_OK;
+}
+
+OPERATE_RET tkl_wifi_get_connected_ap_info(FAST_WF_CONNECTED_AP_INFO_T **fast_ap_info)
+{
+    if (fast_ap_info) {
+        *fast_ap_info = NULL;
+    }
+    return OPRT_NOT_SUPPORTED;
+}
+
+OPERATE_RET tkl_wifi_get_bssid(uint8_t *mac)
+{
+    if (!mac) {
+        return OPRT_INVALID_PARM;
+    }
+    wifi_get_bssid(mac);
+    return OPRT_OK;
+}
+
+OPERATE_RET tkl_wifi_set_country_code(const COUNTRY_CODE_E ccode)
+{
+    return ccode == COUNTRY_CODE_CN ? OPRT_OK : OPRT_NOT_SUPPORTED;
+}
+
+OPERATE_RET tkl_wifi_set_rf_calibrated(void) { return OPRT_OK; }
+
+OPERATE_RET tkl_wifi_set_lp_mode(const BOOL_T enable, const uint8_t dtim)
+{
+    (void)enable;
+    (void)dtim;
+    return OPRT_OK;
+}
+
+OPERATE_RET tkl_wifi_station_fast_connect(const FAST_WF_CONNECTED_AP_INFO_T *fast_ap_info)
+{
+    (void)fast_ap_info;
+    return OPRT_NOT_SUPPORTED;
+}
+
+/*
+ * STA association worker.
+ *
+ * tkl_wifi_station_connect() is reached from the BLE workqueue (netcfg
+ * completion) and from netmgr retries. Creating a task at runtime from that
+ * context (os_task_create) and/or driving the native module bring-up from it
+ * repeatedly crashed the system with an AXI fault inside the FreeRTOS list
+ * code (2026-09-18 logs, identical with a 5120 and a 11264 byte workqueue
+ * stack, so not a plain overflow). The worker therefore runs as a resident
+ * task created once during tkl_wifi_init() -- the same early, quiet window
+ * the other TAL threads use -- and requests are queued to it. Outcomes reach
+ * Tuya through the WFE_* event callbacks.
+ */
+typedef struct {
+    char ssid[WIFI_SSID_LEN + 1];
+    char passwd[WIFI_PASSWD_LEN + 1];
+} jieli_sta_work_t;
+
+#define JIELI_WIFI_WORK_QUEUE_LEN 4
+
+static TKL_QUEUE_HANDLE s_sta_work_queue;
+static TKL_THREAD_HANDLE s_sta_worker_thread;
+
+static void jieli_sta_connect_work(jieli_sta_work_t *work)
+{
+    int result;
+
+    printf("[JIELI][WIFI] sta worker begin ssid_len:%u\n", (unsigned int)strlen(work->ssid));
+    if (!wifi_is_on() && wifi_on() != 0) {
+        printf("[JIELI][WIFI] sta worker wifi_on failed\n");
+        if (s_wifi_event_cb != NULL) {
+            s_wifi_event_cb(WFE_CONNECT_FAILED, NULL);
+        }
+    } else {
+        wifi_clear_scan_result();
+        wifi_set_sta_connect_best_ssid(0);
+        result = wifi_enter_sta_mode(work->ssid, work->passwd);
+        printf("[JIELI][WIFI] station connect ssid_len:%u passwd_len:%u native_result:%d\n",
+               (unsigned int)strlen(work->ssid), (unsigned int)strlen(work->passwd), result);
+        if (result != 0 && s_wifi_event_cb != NULL) {
+            /* A rejected association request produces no vendor event. */
+            s_wifi_event_cb(WFE_CONNECT_FAILED, NULL);
+        }
+    }
+    tkl_system_free(work);
+}
+
+static void jieli_wifi_worker(void *arg)
+{
+    jieli_sta_work_t *work = NULL;
+
+    (void)arg;
+    for (;;) {
+        /* tkl_queue_fetch() maps an infinite timeout to zero ticks, so poll
+         * with a bounded timeout instead of trying to block forever. */
+        if (tkl_queue_fetch(s_sta_work_queue, &work, 100) == OPRT_OK && work != NULL) {
+            jieli_sta_connect_work(work);
+            work = NULL;
+        }
+    }
+}
+
+static OPERATE_RET jieli_wifi_worker_start(void)
+{
+    OPERATE_RET rt;
+
+    if (s_sta_work_queue == NULL) {
+        rt = tkl_queue_create_init(&s_sta_work_queue, sizeof(void *), JIELI_WIFI_WORK_QUEUE_LEN);
+        if (rt != OPRT_OK) {
+            return rt;
+        }
+    }
+    if (s_sta_worker_thread == NULL) {
+        rt = tkl_thread_create(&s_sta_worker_thread, "tuya_wifi_sta", 6144, 3, jieli_wifi_worker, NULL);
+        if (rt != OPRT_OK) {
+            return rt;
+        }
+        printf("[JIELI][WIFI] sta worker resident\n");
+    }
+    return OPRT_OK;
+}
+
+OPERATE_RET tkl_wifi_station_connect(const int8_t *ssid, const int8_t *passwd)
+{
+    jieli_sta_work_t *work;
+    OPERATE_RET rt;
+
+    if (!ssid || !passwd) {
+        return OPRT_INVALID_PARM;
+    }
+    if (s_sta_work_queue == NULL) {
+        return OPRT_COM_ERROR;
+    }
+    work = (jieli_sta_work_t *)tkl_system_calloc(1, sizeof(*work));
+    if (work == NULL) {
+        return OPRT_MALLOC_FAILED;
+    }
+    strncpy(work->ssid, (const char *)ssid, sizeof(work->ssid) - 1);
+    strncpy(work->passwd, (const char *)passwd, sizeof(work->passwd) - 1);
+
+    s_wifi_mode = WWM_STATION;
+    rt = tkl_queue_post(s_sta_work_queue, &work, 0);
+    printf("[JIELI][WIFI] station connect queued ssid_len:%u rt:%d\n", (unsigned int)strlen(work->ssid), rt);
+    if (rt != OPRT_OK) {
+        tkl_system_free(work);
+        return rt;
+    }
+    return OPRT_OK;
+}
+
+OPERATE_RET tkl_wifi_station_disconnect(void)
+{
+    /* No-op, matching the ipc_ac7916a adapter. The netmgr connect path calls
+     * this before every association while the module may still be powered
+     * down (deferred start); driving the vendor wifi_off() sequence from the
+     * caller's task against an unpowered module raised the AXI fault in the
+     * FreeRTOS list code (2026-09-18 logs). A re-association simply issues a
+     * fresh wifi_enter_sta_mode() from the worker. */
+    s_wifi_mode = WWM_STATION;
+    return OPRT_OK;
+}
+
+OPERATE_RET tkl_wifi_station_get_conn_ap_rssi(int8_t *rssi)
+{
+    if (!rssi) {
+        return OPRT_INVALID_PARM;
+    }
+    *rssi = wifi_get_rssi();
+    return OPRT_OK;
+}
+
+OPERATE_RET tkl_wifi_station_get_status(WF_STATION_STAT_E *stat)
+{
+    if (!stat) {
+        return OPRT_INVALID_PARM;
+    }
+    switch (wifi_get_sta_connect_state()) {
+    case JIELI_WIFI_CONNECT_SUCC:
+        *stat = WSS_CONN_SUCCESS;
+        break;
+    case JIELI_WIFI_STATE_DHCP_SUCC:
+        *stat = WSS_GOT_IP;
+        break;
+    case JIELI_WIFI_CONNECT_NO_SSID:
+        *stat = WSS_NO_AP_FOUND;
+        break;
+    case JIELI_WIFI_CONNECT_ASSOC_FAIL:
+    case JIELI_WIFI_CONNECT_ASSOC_TIMEOUT:
+        *stat = WSS_CONN_FAIL;
+        break;
+    default:
+        *stat = WSS_IDLE;
+        break;
+    }
+    return OPRT_OK;
+}
+
+OPERATE_RET tkl_wifi_send_mgnt(const uint8_t *buf, const uint32_t len)
+{
+    (void)buf;
+    (void)len;
+    return OPRT_NOT_SUPPORTED;
+}
+
+OPERATE_RET tkl_wifi_register_recv_mgnt_callback(const BOOL_T enable, const WIFI_REV_MGNT_CB recv_cb)
+{
+    (void)enable;
+    (void)recv_cb;
+    return OPRT_NOT_SUPPORTED;
+}
+
+OPERATE_RET tkl_wifi_ioctl(WF_IOCTL_CMD_E cmd, void *args)
+{
+    if (cmd == WFI_CONNECT_CMD && args) {
+        WF_IOCTL_CONN_T *conn = (WF_IOCTL_CONN_T *)args;
+        return tkl_wifi_station_connect((const int8_t *)conn->ssid, (const int8_t *)conn->passwd);
+    }
+    return OPRT_NOT_SUPPORTED;
+}
