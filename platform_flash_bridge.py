@@ -78,6 +78,25 @@ def _default_flash_command(image: Path) -> tuple[list[str], Path] | None:
     if not all(path.is_file() for path in (executable, config, uboot, cfg_tool)):
         return None
 
+    # The vendor tool erases the entire VM reserved area (0x10e000-0x3fd000,
+    # ~3MB) on every flash by default, which includes the TuyaOpen KV
+    # partition at 0x311000. Generate a copy of isd_config.ini with
+    # VM_OPT=1 ("do not operate on the VM area when downloading code",
+    # per isd_config_rule.c) so provisioning data survives re-flashing.
+    # Set JIELI_FLASH_ERASE_VM=1 to restore the stock erase behaviour.
+    if os.environ.get("JIELI_FLASH_ERASE_VM", "").strip() != "1":
+        keepvm_config = tools_dir / "isd_config_keepvm.ini"
+        try:
+            content = config.read_text(encoding="utf-8", errors="replace")
+            if "VM_OPT=0" in content:
+                keepvm_config.write_text(
+                    content.replace("VM_OPT=0", "VM_OPT=1", 1),
+                    encoding="utf-8",
+                )
+                config = keepvm_config
+        except OSError:
+            pass  # fall back to the stock config
+
     return (
         [
             str(executable),
