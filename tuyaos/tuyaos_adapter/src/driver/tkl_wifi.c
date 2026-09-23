@@ -3,6 +3,7 @@
 #include "tkl_system.h"
 #include "tkl_thread.h"
 #include "tkl_queue.h"
+#include "tkl_jieli_chip_mac.h"
 #include "tuya_error_code.h"
 
 #include "lwip/port/lwip.h"
@@ -558,6 +559,19 @@ static void jieli_sta_connect_work(jieli_sta_work_t *work)
             s_wifi_event_cb(WFE_CONNECT_FAILED, NULL);
         }
     } else {
+        /* The vendor driver derives its MAC from flash_uid XOR rand32()
+         * when the syscfg entry is unusable, so it drifts on every boot
+         * (2026-09-23 logs).  Pin the on-air and reported MAC to the
+         * deterministic flash-UUID derivation before associating. */
+        uint8_t chip_mac[6];
+        jieli_chip_mac(chip_mac);
+        if (wifi_set_mac((char *)chip_mac) == 0) {
+            printf("[JIELI][WIFI] chip mac %02x:%02x:%02x:%02x:%02x:%02x\n",
+                   chip_mac[0], chip_mac[1], chip_mac[2],
+                   chip_mac[3], chip_mac[4], chip_mac[5]);
+        } else {
+            printf("[JIELI][WIFI] wifi_set_mac failed, vendor MAC stays\n");
+        }
         wifi_clear_scan_result();
         wifi_set_sta_connect_best_ssid(0);
         result = wifi_enter_sta_mode(work->ssid, work->passwd);

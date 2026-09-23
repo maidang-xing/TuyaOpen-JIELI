@@ -14,12 +14,17 @@ from jieli_build import (
     BuildError,
     TOOLS_RELATIVE,
     build_make_command,
+    build_ota_package_command,
+    configure_tuya_reserved_area,
     create_staging_tree,
     find_qio_artifact,
+    find_ug_artifact,
     resolve_sdk_root,
     resolve_tool_path,
     resolve_tool_dir,
+    sanitize_host_path,
     tuya_qio_name,
+    tuya_ug_name,
 )
 
 
@@ -88,6 +93,31 @@ def _run_postbuild(sdk_root: Path, tool_dir: Path, env: dict[str, str]) -> None:
     _run(["bash", str(script), "sdk"], tools_dir, env)
 
 
+def _generate_ota_package(sdk_root: Path, tool_dir: Path, env: dict[str, str]) -> None:
+    """Produce the dual-bank OTA payload (db_update_files_data.bin).
+
+    The Windows build path skips the vendor download script, so drive the
+    packaging step of isd_download directly.  Without -wait/-reboot the tool
+    only packages files and reports "Device Offline" (~1s), which keeps it
+    safe inside an unattended build.  "Device Offline" exits with a negative
+    status, so success is judged by the produced package, not the exit code.
+    """
+    if os.name != "nt":
+        # The Linux postbuild path (download.sh) already packages the OTA
+        # payload together with the flash image when dual-bank is defined.
+        return
+    tools_dir = sdk_root / TOOLS_RELATIVE
+    app_image = tools_dir / "app.bin"
+    if not app_image.is_file():
+        raise BuildError(f"Jieli app image missing for OTA packaging: {app_image}")
+    executable = tools_dir / "isd_download.exe"
+    if not executable.is_file():
+        raise BuildError(f"Jieli downloader missing for OTA packaging: {executable}")
+    command = build_ota_package_command(tools_dir, app_image)
+    print(f"[JIELI] run: {shlex.join(command)}")
+    subprocess.run(command, cwd=tools_dir, env=env, check=False)
+
+
 def build(params: dict[str, str]) -> Path:
     sdk_root = resolve_sdk_root()
     tool_dir = resolve_tool_dir(sdk_root)
@@ -113,7 +143,11 @@ def build(params: dict[str, str]) -> Path:
     jobs = max(1, int(os.environ.get("JIELI_BUILD_JOBS", "1")))
     env = os.environ.copy()
     env["PATH"] = os.pathsep.join(
-        (str(tool_dir), str(sdk_root / "tools/utils"), env.get("PATH", ""))
+        (
+            str(tool_dir),
+            str(sdk_root / "tools/utils"),
+            sanitize_host_path(env.get("PATH", "")),
+        )
     )
     env["OBJDUMP"] = str(resolve_tool_path(tool_dir, "objdump"))
     env["OBJSIZEDUMP"] = str(resolve_tool_path(tool_dir, "objsizedump"))
@@ -126,6 +160,11 @@ def build(params: dict[str, str]) -> Path:
     if not elf.is_file() or elf.stat().st_size == 0:
         raise BuildError(f"Jieli linker did not produce {elf}")
 
+    # make pre_build regenerates isd_config.ini from the vendor rule file;
+    # carve the TuyaOpen flash window into it before packaging/flashing so
+    # the dual-bank layout leaves our partitions alone.
+    configure_tuya_reserved_area(tools_dir / "isd_config.ini")
+
     _run_postbuild(build_root, tool_dir, env)
     package = find_qio_artifact(tools_dir)
 
@@ -133,6 +172,13 @@ def build(params: dict[str, str]) -> Path:
     output = output_dir / tuya_qio_name(params)
     shutil.copy2(package, output)
     print(f"[JIELI] artifact: {output}")
+
+    if full_stack and env.get("JIELI_GEN_OTA", "1").strip() != "0":
+        _generate_ota_package(build_root, tool_dir, env)
+        ota_package = find_ug_artifact(tools_dir)
+        ota_output = output_dir / tuya_ug_name(params)
+        shutil.copy2(ota_package, ota_output)
+        print(f"[JIELI] ota artifact: {ota_output}")
     return output
 
 
@@ -140,7 +186,9 @@ def clean() -> None:
     sdk_root = resolve_sdk_root()
     tool_dir = resolve_tool_dir(sdk_root)
     env = os.environ.copy()
-    env["PATH"] = os.pathsep.join((str(tool_dir), env.get("PATH", "")))
+    env["PATH"] = os.pathsep.join(
+        (str(tool_dir), sanitize_host_path(env.get("PATH", "")))
+    )
     _run(
         ["make", "-C", str(sdk_root / "apps/demo/demo_hello/board/wl82"),
          f"TOOL_DIR={tool_dir}", "clean"],

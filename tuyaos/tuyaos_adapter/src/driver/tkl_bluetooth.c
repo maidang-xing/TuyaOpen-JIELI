@@ -12,6 +12,7 @@
 #include "ble/hci_ll.h"
 #include "le_common_define.h"
 #include "le_user.h"
+#include "tkl_jieli_chip_mac.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -658,6 +659,23 @@ static void jieli_ble_apply_advertising(void)
     }
 }
 
+/*
+ * Obtain the EDR source address for the BLE address derivation WITHOUT the
+ * vendor bt_get_mac_addr().  That function rejects entries it cannot CRC
+ * verify ("key_mac no crc") and then falls back to the WiFi MAC, which
+ * polls forever while the deferred TKL WiFi start keeps the module powered
+ * down - the 2026-09-23 livelock.  Its syscfg_write() persistence does not
+ * survive a reboot either (and the vendor fallback mixes rand32() into the
+ * flash-UID hash), so derive the address deterministically from the factory
+ * flash UUID: same value on every boot, no storage involved.
+ */
+static void jieli_local_bt_mac(u8 *mac)
+{
+    jieli_chip_mac(mac);
+    printf("[JIELI][BLE] chip mac %02x:%02x:%02x:%02x:%02x:%02x\n",
+           mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+}
+
 OPERATE_RET tkl_ble_stack_init(uint8_t role)
 {
     uint8_t jieli_role;
@@ -675,16 +693,18 @@ OPERATE_RET tkl_ble_stack_init(uint8_t role)
     memset(&s_ble_adv_params, 0, sizeof(s_ble_adv_params));
 
     /* The AC79 controller does not derive the LE address from the EDR
-     * address automatically.  Match the vendor BLE examples so the
-     * controller never starts with the erased FF:FF:FF:FF:FF:FF address. */
+     * address automatically.  Derive it from our own MAC source: the
+     * vendor MAC getter deadlocks on its WiFi fallback when the deferred
+     * WiFi start has not powered the module up yet (2026-09-23). */
     void lmp_set_sniff_disable(void);
-    const u8 *bt_get_mac_addr(void);
     void lib_make_ble_address(u8 *ble_address, u8 *edr_address);
     int le_controller_set_mac(void *addr);
+    u8 source_mac[6];
     u8 ble_addr[6];
 
+    jieli_local_bt_mac(source_mac);
     lmp_set_sniff_disable();
-    lib_make_ble_address(ble_addr, (u8 *)bt_get_mac_addr());
+    lib_make_ble_address(ble_addr, source_mac);
     if (le_controller_set_mac(ble_addr) != 0) {
         return OPRT_COM_ERROR;
     }

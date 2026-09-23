@@ -10,6 +10,9 @@ set(JIELI_ADAPTER_SRC
     ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_sleep.c
     ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_flash.c
     ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_ota.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_gpio.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_timer.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_watchdog.c
     ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_assert.c
     ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_bluetooth.c
     ${CMAKE_CURRENT_LIST_DIR}/src/system/tuyaopen_license.c
@@ -33,6 +36,8 @@ target_include_directories(${JIELI_ADAPTER_NAME}
         ${TOP_SOURCE_DIR}/tools/porting/adapter/wifi
         ${TOP_SOURCE_DIR}/tools/porting/adapter/bluetooth
         ${TOP_SOURCE_DIR}/tools/porting/adapter/timer
+        ${TOP_SOURCE_DIR}/tools/porting/adapter/gpio
+        ${TOP_SOURCE_DIR}/tools/porting/adapter/watchdog
         ${TOP_SOURCE_DIR}/src/common/include
         ${JIELI_SDK_ROOT}/include_lib
         ${JIELI_SDK_ROOT}/include_lib/btstack

@@ -6,20 +6,32 @@
 #include <string.h>
 
 /*
- * The wl82 image reserves the upper part of the 4 MiB flash for Tuya data.
- * The exact bootloader layout is board-owned; keep these offsets in one place
- * so a board can override them when its production partition table is known.
+ * TuyaOpen data lives in a vendor reserved flash window (TUYA_ADR/OPT=1 in
+ * the generated isd_config.ini, injected by jieli_build.py after make
+ * pre_build).  The dual-bank OTA layout gives the second app bank the area
+ * between the code boundary and the first reserved region and protects it
+ * as code, so the window must stay above that bank and below the vendor
+ * USER area at 0x3F5000.  Measured FLASH INFO with a ~1.06 MiB app:
+ *
+ *   bank0 [0x2000, 0x1CD000)   running app (protected as code)
+ *   app2  [0x1CD000, 0x397000) OTA target bank, ~1.86 MiB capacity
+ *   VM/BTIF [0x397000, 0x3A0000) vendor areas (placed automatically)
+ *   TUYA  [0x3A0000, 0x3F5000) this window, OPT=1 (never erased/protected)
+ *   USER  [0x3F5000, 0x3F6000) vendor area
+ *
+ * The exact offsets are kept here in one place so a board can override them
+ * when its production partition table is known.
  */
 #define JIELI_FLASH_SIZE       (4U * 1024U * 1024U)
 #define JIELI_FLASH_BLOCK      (4U * 1024U)
-#define JIELI_KV_KEY_START     0x00300000U
+#define JIELI_KV_KEY_START     0x003A0000U
 #define JIELI_KV_KEY_SIZE      JIELI_FLASH_BLOCK
-#define JIELI_KV_DATA_START    0x00301000U
+#define JIELI_KV_DATA_START    0x003A1000U
 #define JIELI_KV_DATA_SIZE     (64U * 1024U)
-#define JIELI_UF_START         0x00311000U
-#define JIELI_UF_SIZE          (512U * 1024U)
-#define JIELI_RCD_START        0x00391000U
-#define JIELI_RCD_SIZE         (256U * 1024U)
+#define JIELI_UF_START         0x003B1000U
+#define JIELI_UF_SIZE          (192U * 1024U)
+#define JIELI_RCD_START        0x003E1000U
+#define JIELI_RCD_SIZE         (80U * 1024U)
 
 static OPERATE_RET jieli_flash_check_range(uint32_t addr, uint32_t size)
 {

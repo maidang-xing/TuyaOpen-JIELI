@@ -22,15 +22,22 @@ def main() -> int:
         print("[JIELI] build setup failed: make not found", file=sys.stderr)
         return 1
 
-    postbuild = sdk_root / "cpu/wl82/tools/download.sh"
-    if not postbuild.is_file():
-        print(f"[JIELI] build setup failed: postbuild script not found: {postbuild}", file=sys.stderr)
+    # The postbuild script is (re)generated from download.c by make pre_build
+    # on every build, so a fresh checkout only carries the source.  Validate
+    # the source plus whatever generated variant exists.
+    tools = sdk_root / "cpu/wl82/tools"
+    postbuild = next(
+        (name for name in ("download.sh", "download.bat") if (tools / name).is_file()),
+        "download.c",
+    )
+    if not (tools / postbuild).is_file():
+        print(f"[JIELI] build setup failed: postbuild source not found: {tools}", file=sys.stderr)
         return 1
 
     print(f"[JIELI] SDK: {sdk_root}")
     print(f"[JIELI] toolchain: {tool_dir}")
     print(f"[JIELI] make: {make}")
-    print(f"[JIELI] postbuild: {postbuild}")
+    print(f"[JIELI] postbuild: {tools / postbuild}")
     return 0
 
 
