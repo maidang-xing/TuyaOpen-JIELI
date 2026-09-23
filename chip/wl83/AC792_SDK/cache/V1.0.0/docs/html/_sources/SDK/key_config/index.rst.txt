@@ -1,0 +1,12 @@
+按键配置
+##############
+
+.. toctree::
+   :maxdepth: 1
+
+   iokey.rst
+   adkey.rst
+   touchkey.rst
+
+
+

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AHS-NN &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../_static/js/custom.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>AHS-NN</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="ahs-nn">
+<h1>AHS-NN<a class="headerlink" href="#ahs-nn" title="Permalink to this headline"></a></h1>
+<p>acoustic howling suppress</p>
+<section id="id1">
+<h2>功能介绍<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<p>通过神经网络算法进行啸叫抑制</p>
+</section>
+<section id="id2">
+<h2>使用注意事项<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>该算法支持的数据帧格式为：16bit、1channel、256points（使能该算法后，sdk会默认配置，不可自行修改）。</p></li>
+<li><p>数据流延时配置：DAC延时 &gt; 播放同步延时 &gt; 数据帧长（16ms）。</p></li>
+<li><p>资源消耗：Ram：172812 Bytes，Mips：400 MHz。请根据项目功能需求自行评估。</p></li>
+<li><p>默认仅支持将AHS-NN接在“麦克风音效”框图之内，若需要接到其他框图（如“媒体”）中，需要参考mic_effect.c中的配置自行移植。</p></li>
+<li><p>支持导出算法前后数据分析查看：</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">//数据写卡导出，需要使能AUDIO_DATA_EXPORT_VIA_UART</span>
+<span class="c1">//串口写卡工具配置3通道，每通道512byte</span>
+<span class="c1">//通道0：原始数据</span>
+<span class="c1">//通道1：dac参考数据</span>
+<span class="c1">//通道2：算法处理后数据</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">const_audio_howling_ahs_data_export</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">  </span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>dac采样率需要配置为16k的倍数，建议配置全局采样率为48k。</p></li>
+<li><p>需要将AHS-NN接在播放同步之前，可以添加一个Fade节点以规避开ADC的po声。数据流串接如下图所示：
+<img alt="ahs-nn" src="../../_images/ahs_nn.png" /></p></li>
+<li><p>若输入为IIS_RX，输出为DAC，需要额外使能该const变量：</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> * ahs算法所处的数据流输入为iis，输出为dac时需要使能。</span>
+<span class="cm"> * 由于src输入输出buffer复用问题，建议采样率配置:iis(16k)-&gt;dac(32k/48k)。</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">const_audio_howling_ahs_iis_in_dac_out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

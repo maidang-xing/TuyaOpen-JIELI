@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2.8.2. MIDI &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../_static/js/custom.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="2.8.3. 编码器节点" href="encoder_node.html" />
+    <link rel="prev" title="2.8.1. 编解码格式" href="codec.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">2. 音频配置</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../DAC_cfg.html">2.1. DAC配置</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADC_cfg.html">2.2. ADC配置</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../IIS_cfg.html">2.3. IIS配置</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../PDM_cfg.html">2.4. PDM配置</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../General_cfg.html">2.5. 通用音频配置</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../phone_call_cfg.html">2.6. 通话配置</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../audio_algo_cfg.html">2.7. 音频算法配置</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">2.8. 编解码配置</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="codec.html">2.8.1. 编解码格式</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">2.8.2. MIDI</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">2.8.2.1. MIDI介绍</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">2.8.2.2. MIDI文件解码</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">2.8.2.3. MIDI文件解码模式</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">2.8.2.4. MIDI文件解码功能</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id19">2.8.2.5. MIDI琴</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id24">2.8.2.6. MIDI琴模式</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id26">2.8.2.7. MIDI琴功能</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="encoder_node.html">2.8.3. 编码器节点</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../music_palyback.html">2.9. 音乐播放配置</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../kws.html">2.10. 离线语音识别KWS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Hi_Res_Audio/index.html">2.11. Hi-Res Audio</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../audio_delay.html">2.12. 延时配置（Delay）</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html"><span class="section-number">2. </span>音频配置</a> &raquo;</li>
+          <li><a href="index.html"><span class="section-number">2.8. </span>编解码配置</a> &raquo;</li>
+      <li><span class="section-number">2.8.2. </span>MIDI</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="midi">
+<h1><span class="section-number">2.8.2. </span>MIDI<a class="headerlink" href="#midi" title="Permalink to this headline"></a></h1>
+<section id="id1">
+<h2><span class="section-number">2.8.2.1. </span>MIDI介绍<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<p>MIDI全称是乐器数字接口(Musical Instrument Digital Interface)，是 20 世纪 80 年代初为解决电声乐器之间的通信问题而提出的，编曲界最广泛的音乐标准格式.MIDI用音符的数字控制信号来记录音乐。一首完整的MIDI音乐只有几十KB大，而能包含数十条音乐轨道。其传输的不是声音信号，而是音符、控制参数等指令,它指示MIDI设备要做什么，怎么做，如演奏哪个音符、多大音量等。MIDI功能支持 MIDI文件解码 和 MIDI琴 两种应用。</p>
+<ol class="arabic simple">
+<li><p>“ <em>MIDI</em> 文件解码”；</p></li>
+<li><p>“ <em>MIDI</em> 琴”；</p></li>
+</ol>
+<section id="id2">
+<h3><span class="section-number">2.8.2.1.1. </span>MIDI文件解码需要<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.音色库（工具生成的.mdb文件）
+2.MIDI文件（工具转换后的.mid文件或者.mfa文件）
+3.midi_api.c
+4.midi_dec_api.h
+5.MIDI_DEC_API.H
+MIDI琴需要：
+1.音色库（工具生成的.mdb文件）
+2.midi_ctrl_api.c
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>3.midi_ctl_api.h
+4.MIDI_CTRL_API.H
+其中：（音色库和MIDI文件文件详细操作步骤可见midi工具章节）
+1.音色库为我司MIDI工具生成的
+2.MIDI文件文件是midi歌曲经过MIDI工具转换生成的文件
+</pre></div>
+</div>
+<p><strong>备注:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">工具</span> <span class="n">音色库</span> <span class="n">转换后的音源文件</span>
+<span class="n">旧版工具</span> <span class="o">.</span><span class="n">mda</span> <span class="o">.</span><span class="n">mid</span>
+<span class="n">新版工具</span> <span class="o">.</span><span class="n">mdb</span> <span class="o">.</span><span class="n">mfa</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id3">
+<h2><span class="section-number">2.8.2.2. </span>MIDI文件解码<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<section id="midiconst">
+<h3><span class="section-number">2.8.2.2.1. </span>MIDI文件解码相关const变量控制<a class="headerlink" href="#midiconst" title="Permalink to this headline"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>midi相关功能与相关const变量关联，目前const变量会在lib_media_config.c文件控制，
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li><p>const int MAINTRACK_USE_CHN = 0; //0:用track号来区分1:用channel号来区分。</p></li>
+<li><p>const int MAX_DEC_PLAYER_CNT = 8; //MIDI文件解码最大同时发声的key数,范围[1,31]</p></li>
+<li><p>const int MAX_CTR_PLAYER_CNT = 8; //midi琴最大同时发声的key数,范围[1,31]</p></li>
+<li><p>const int NOTE_OFF_TRIGGER = 0; //midi琴note_off回调 1 ：time传 0 时，不会回调 0 ：time
+传 0 时，回调</p></li>
+<li><p>const int MIDI_MAX_MARK_CNT = 0; //该变量控制MIDI解码最大mark数量</p></li>
+</ol>
+</section>
+</section>
+<section id="id4">
+<h2><span class="section-number">2.8.2.3. </span>MIDI文件解码模式<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h2>
+<p>数据流如下图， midi文件解码走普通文件解码的流程，把mfa 后缀名的文件放在sd 卡或者U盘里面，当成普通音乐文件解码
+<img alt="alt text" src="../../../_images/image.png" />
+要使用midi琴解码或者 midi文件解码需要开如下宏
+<img alt="alt text" src="../../../_images/image-1.png" /></p>
+<p>midi琴解码和 midi 文件解码都需要配置midi音色文件，音色文件可以放在 sd卡 或者内置flash， 注意当音色文件放在内置flash的时候，音色文件需要放在文件夹里面，且文件夹没有子文件夹，以保证文件地址四字节对齐，如下图
+<img alt="alt text" src="../../../_images/image-2.png" />
+<img alt="alt text" src="../../../_images/image-3.png" /></p>
+</section>
+<section id="id5">
+<h2><span class="section-number">2.8.2.4. </span>MIDI文件解码功能<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h2>
+<section id="id6">
+<h3><span class="section-number">2.8.2.4.1. </span>midi解码功能<a class="headerlink" href="#id6" title="Permalink to this headline"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>midi解码功能流程可以认为和普通音频文件播放一样，midi文件解码初始化相关的代码都在
+audio_dec_midi_file.c 里面，接下来介绍的midi 功能配置都可以在这个文件里面的init
+_midi_info_val 里面配置，如下图
+</pre></div>
+</div>
+<p><img alt="alt text" src="../../../_images/image-6.png" /></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>midi解码
+MIDI解码方式一共有 4 种，分别是：
+1.正常解码模式（CMD_MIDI_CTRL_MODE_0）
+2.OKON模式（CMD_MIDI_CTRL_MODE_1）
+3.只推消息不出声模式（暂不支持）（CMD_MIDI_CTRL_MODE_2）
+4.外部引用替换模式（CMD_MIDI_CTRL_MODE_W2S）
+用户可以通过CMD_MIDI_CTRL_MODE命令来切换这 4 种解码模式。
+</pre></div>
+</div>
+</section>
+<section id="midiokon">
+<h3><span class="section-number">2.8.2.4.2. </span>midi解码OKON功能<a class="headerlink" href="#midiokon" title="Permalink to this headline"></a></h3>
+<p>OKON全称“One Key One On”，意思是单次播放一个音符。
+OKON简单使用流程：
+1.用户先使用CMD_MIDI_CTRL_MODE切换到OKON模式。
+2.初始化中置上MELODY_PLAY_ENABLE使能位
+3.调用CMD_MIDI_GOON进行单个音符的播放。</p>
+<p>midi解码okon播放
+OKON工作模式有 3 种：</p>
+<p>1.主旋律OKON，副旋律正常播放；（CMD_MIDI_OKON_MODE_0）</p>
+<p>2.主副旋律一起OKON；（CMD_MIDI_OKON_MODE_1）</p>
+<p>3.只有主旋律OKON，副旋律不发声（CMD_MIDI_OKON_MODE_2）</p>
+<p>OKON回调音符有 2 种：
+1.melody_trigger回调当前音符（CMD_MIDI_MELODY_KEY_0）
+2.melody_trigger回调下一个音符（CMD_MIDI_MELODY_KEY_1）
+用户可以通过调用CMD_MIDI_OKON_MODE命令，配置MIDI_OKON_MODE结构体参数传入
+解码器进行更换配置。:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MIDI_OKON_MODE</span> <span class="n">midi_okon_mode_test</span><span class="p">;</span>
+<span class="n">midi_okon_mode_test</span><span class="o">.</span><span class="n">Melody_Key_Mode</span><span class="o">=</span><span class="n">CMD_MIDI_MELODY_KEY_0</span><span class="p">;</span> <span class="o">//</span><span class="n">goon时回调当前音符</span>
+<span class="n">midi_okon_mode_test</span><span class="o">.</span><span class="n">OKON_Mode</span><span class="o">=</span> <span class="n">CMD_MIDI_OKON_MODE_1</span><span class="p">;</span> <span class="o">//</span><span class="n">主副旋一起okon</span>
+<span class="n">midi_ioctrl</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">CMD_MIDI_OKON_MODE</span><span class="p">,</span> <span class="p">(</span><span class="n">void</span> <span class="o">*</span><span class="p">)</span><span class="n">midi_okon_mode_test</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>备注:
+只有主旋律OKON副旋律不发声的工作模式，在解码过程中有可能长时间占用CPU，所以需要
+在wdt_clear_trigger()函数中调用清狗函数，否则有可能会导致系统复位！
+只需在初始化中注册即可，sdk 默认已经在audio_dec_midi_file.c文件里面加了</p>
+<section id="id7">
+<h4><span class="section-number">2.8.2.4.2.1. </span>下面介绍如何设置对应的主旋律。<a class="headerlink" href="#id7" title="Permalink to this headline"></a></h4>
+</section>
+<section id="okon">
+<h4><span class="section-number">2.8.2.4.2.2. </span>OKON模式需要确定主旋律来播放音符。<a class="headerlink" href="#okon" title="Permalink to this headline"></a></h4>
+<p>初始化时，系统会判断const变量MAINTRACK_USE_CHN的值，值为 0 通过轨道
+(track)号选择主旋律，值为 1 通过通道(channal)号选择主旋律。</p>
+<p>修改init_info-&gt;mainTrack_info.chn的值可以在初始化中确定主旋律，有效范围是0~15。
+若让系统自动选择第一个音符所在轨道或通道为主旋律，则选择 17 。</p>
+<p>Sdk中的默认配置如下：</p>
+<p>注意，通过轨道(track)号选择主旋律时，mainTrack_info.chn的值与乐谱制作软件的轨
+道号一致；
+通过通道(channal)号选择主旋律时，mainTrack_info.chn的值需要比乐谱制作软件的通
+道号小 1 ，即mainTrack_info.chn的值为 0 时，对应乐谱中的 1 号通道作为主旋律；
+MIDI文件制作时，一个轨道只能对应一个通道，但是一个通道可以对应多个轨道；
+例如音轨 1 、音轨 2 对应通道 1 ，音轨 3 对应通道 2 ，那么以轨道(track)号选择主旋律
+时，mainTrack_info.chn设置为 1 ，则音轨 1 为主旋律；
+以通道(channal)号选择主旋律时，mainTrack_info.chn设置为 0 ，则通道 1 对应的音轨
+1 和音轨 2 一起成为主旋律。
+下面介绍快速打断功能：
+在只有主旋律OKON副旋律不发声的模式下，可以置上MAIN_INTERRUPT_ENABLE使能
+位开启快速打断功能。
+上一个音符未结束而下一个音符到来时，未开启快速打断，两个音符会叠加在一起直至上一
+个音符结束；
+开启快速打断后，会加快上一个音符的衰减，使其迅速消失减少叠加时间。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>init_info-&gt;moledy_stop_info.priv = NULL;
+init_info-&gt;moledy_stop_info.main_chn_enable = 1;//
+, 为midi解码音符结束仅回调主旋律的音符； 0 为midi解码音符结束会回调所有音符
+init_info-&gt;moledy_stop_info.melody_stop_trigger = midi_melody_stop_trigger;
+//u32 midi_melody_stop_trigger(void *priv, u8 key, u8␣
+,chn)函数，其参数priv是私有参数，key是音符，chn是音符通道。
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id8">
+<h3><span class="section-number">2.8.2.4.3. </span>5.3 midi解码修改任意通道乐器功能<a class="headerlink" href="#id8" title="Permalink to this headline"></a></h3>
+<p>midi解码时，可以修改任意通道的乐器。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>MIDI_PROG_CHNL_CTRL prog_chnl_test;
+prog_chnl_test.prog = 3; //目标乐器序号
+prog_chnl_test.chnl = 0; //目标通道
+prog_chnl_test.enable = 1; //使能
+midi_dsc_config(p_dec_obj, CMD_MIDI_SET_PROG, &amp;prog_chnl_test); //
+,设置 0 通道的乐器为 3 乐器；
+</pre></div>
+</div>
+</section>
+<section id="id9">
+<h3><span class="section-number">2.8.2.4.4. </span>5.4 midi解码修改主通道或者所以通道的乐器功能<a class="headerlink" href="#id9" title="Permalink to this headline"></a></h3>
+<p>该功能可以在MIDI运行中动态设置，将CMD_MIDI_SET_CHN_PROG命令和配置好的结构体参数传入解码器；
+置上SET_PROG_ENABLE使能位即可。
+midi解码时，可以修改任意通道的乐器。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>MIDI_PROG_CTRL_STRUCT prog_ctrl_test;
+prog_ctrl_test.prog = 0; //乐器号
+prog_ctrl_test.replace_mode = 0; //
+,→选 0 是只更变主旋律的乐器，选 1 是更变所有旋律的乐器。暂不支持单独更变副旋律的乐器；
+prog_ctrl_test.ex_vol = 0; //音量配置，该值会将音量改变为原来的(ex_vol /1024)倍；值为 1024 则不改变音量
+midi_ioctrl(stream, CMD_MIDI_SET_CHN_PROG, (void *)prog_ctrl_test);
+</pre></div>
+</div>
+</section>
+<section id="midimark">
+<h3><span class="section-number">2.8.2.4.5. </span>5.5 midi解码mark播放.<a class="headerlink" href="#midimark" title="Permalink to this headline"></a></h3>
+<p>v1.9.0版本支持midi歌曲里可自由选择从哪个mark点到哪个mark点循环，用户需要在初始化中
+置上MARK_ENABLE使能。
+const int MIDI_MAX_MARK_CNT = 4; //midi解码最大支持的mark数,该值会影响midi运算buf，
+该变量已在app_config.c配置
+mark播放配置:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>MIDI_MARK_PARAM mark_info;
+mark_info.mark_start = 1; //
+,→控制mark播放的开始位置，设置为 1 ，即为第一个mark点
+mark_info.mark_end = 3; //控制mark播放的结束位置(需要大于mark_
+,→start)，设置为 3 ，即为第三个mark点
+mark_info.loop_enable = 1; //控制mark点之间是否循环播放
+mark_info.mark_enable = 1; //控制mark播放使能
+midi_dec_confing_api(dec_obj, CMD_MIDI_SET_MARK, (void *)&amp;mark_info);
+</pre></div>
+</div>
+</section>
+<section id="id10">
+<h3><span class="section-number">2.8.2.4.6. </span>5.6 midi解码小节回调<a class="headerlink" href="#id10" title="Permalink to this headline"></a></h3>
+<p>MIDI运行中可以实现回退到之前的小节，需要在初始化中置上SAVE_DIV_ENBALE使能位。
+该功能不支持连续回退小节，例如回退了 8 个小节后，需要再次经过 8 个小节才能进行下一次回 退，否则可能会导致小节混乱。 该功能只能在MIDI运行时才能实现。初始化中置上SAVE_DIV_ENBALE使能位，并将
+CMD_MIDI_SEEK_BACK_N命令和配置好的结构体参数传入解码器即可。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>MIDI_SEEK_BACK_STRUCT seek_back_test;
+seek_back_test.seek_back_n = 8; //回退 8 个小节（回退小节数范围为0~8 ，值为 1 时回退到当前小节起始位置）
+midi_ioctrl(stream, CMD_MIDI_SEEK_BACK_N, (void *)seek_back_test);
+</pre></div>
+</div>
+</section>
+<section id="id11">
+<h3><span class="section-number">2.8.2.4.7. </span>5.7 midi解码调整外部音量功能<a class="headerlink" href="#id11" title="Permalink to this headline"></a></h3>
+<p>MIDI解码能够实现每个通道/轨道单独调节音量的功能，该功能需要置上EX_VOL_ENABLE使
+能位。该功能可以在MIDI运行中动态设置，运行中想要单独关闭某一通道/轨道的声音，可以将该通道/轨道音量设为 0 。初始化中置上EX_CH_VOL_PARM使能位，将CMD_MIDI_SET_EX_VOL命令和配置好的结构体参数传入即可。:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>EX_CH_VOL_PARM vol_info_test;
+vol_info_test.cc_vol[1] = 4096; //通道 1 的轨道音量设置为4096(原音量)
+vol_info_test.ex_vol_use_chn = 0; //0轨道音量， 1 通道音量
+midi_ioctrl(stream, CMD_MIDI_SET_EX_VOL, (void *)vol_info_test);
+</pre></div>
+</div>
+</section>
+<section id="id12">
+<h3><span class="section-number">2.8.2.4.8. </span>5.8 midi解码移半音功能<a class="headerlink" href="#id12" title="Permalink to this headline"></a></h3>
+<p>MIDI解码能够实现每个通道单独偏移n个半音，该功能需要置上SEMITONE_ENABLE使能位。
+SDK中默认没有对该功能进行初始化，用户可自行添加。
+该功能可以在MIDI运行中动态设置。在初始化中置上SEMITONE_ENABLE使能位并将
+CMD_MIDI_SET_SEMITONE命令和配置好的结构体参数传入即可。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MIDI_SEMITONE_CTRL_STRUCT</span> <span class="n">semitone_ctrl_test</span><span class="p">;</span>
+<span class="n">semitone_ctrl_test</span><span class="o">.</span><span class="n">key_diff</span><span class="p">[</span> <span class="mi">1</span> <span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="p">;</span> <span class="o">//</span><span class="n">通道</span> <span class="mi">1</span> <span class="n">移</span> <span class="mi">2</span> <span class="n">个半音</span>
+<span class="n">midi_ioctrl</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">CMD_MIDI_SET_SEMITONE</span><span class="p">,</span> <span class="p">(</span><span class="n">void</span><span class="o">*</span><span class="p">)</span><span class="n">semitone_ctrl_test</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id13">
+<h3><span class="section-number">2.8.2.4.9. </span>5.9 midi解码更改节奏和衰减功能.<a class="headerlink" href="#id13" title="Permalink to this headline"></a></h3>
+<p>MIDI解码能够强制改变节奏、每个通道的衰减程度以及mute阈值水平。
+该功能可以在MIDI运行中动态设置。在初始化中置上MELODY_ENABLE使能位，并将
+CMD_MIDI_CTRL_TEMPO命令和配置好的结构体参数传入即可。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MIDI_PLAY_CTRL_TEMPO</span> <span class="n">midi_tempo_test</span><span class="p">;</span>
+<span class="n">midi_tempo_test</span><span class="o">.</span><span class="n">tempo_val</span> <span class="o">=</span> <span class="mi">1042</span> <span class="p">;</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">inti</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">CTRL_CHANNEL_NUM</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">midi_tempo_test</span><span class="o">.</span><span class="n">decay_val</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span> <span class="p">((</span><span class="n">u16</span><span class="p">)</span> <span class="mi">31</span> <span class="o">&lt;&lt;</span> <span class="mi">11</span> <span class="p">)</span><span class="o">|</span> <span class="mi">1024</span> <span class="p">;</span>
+<span class="p">}</span>
+<span class="n">midi_tempo_test</span><span class="o">.</span><span class="n">mute_threshold</span> <span class="o">=</span><span class="p">(</span><span class="n">u16</span><span class="p">)</span> <span class="mi">1</span> <span class="n">L</span><span class="o">&lt;&lt;</span> <span class="mi">29</span> <span class="p">;</span>
+<span class="n">midi_ioctrl</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">CMD_MIDI_CTRL_TEMPO</span><span class="p">,</span> <span class="p">(</span><span class="n">void</span><span class="o">*</span><span class="p">)</span><span class="n">midi_tempo_test</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id14">
+<h3><span class="section-number">2.8.2.4.10. </span>5.10 midi解码每拍回调的使能<a class="headerlink" href="#id14" title="Permalink to this headline"></a></h3>
+<p>在初始化中置上BEAT_TRIG_ENABLE使能位，节拍来时会回调:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>init_info-&gt;beat_info.priv = NULL;
+init_info-&gt;beat_info.beat_trigger = midi_beat_trigger;
+//u32 midi_beat_trigger(void *priv, u8 val1, u8␣
+,val2)函数，其中参数priv是私有参数，val1是一节多少拍，vel是每拍多少分音符。
+</pre></div>
+</div>
+</section>
+<section id="id15">
+<h3><span class="section-number">2.8.2.4.11. </span>5.11 midi解码小节回调功能.<a class="headerlink" href="#id15" title="Permalink to this headline"></a></h3>
+<p>在初始化中置上TIM_DIV_ENABLE使能位，小节开始会回调函数:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>init_info-&gt;tmDiv_info.priv = NULL;
+init_info-&gt;tmDiv_info.timeDiv_trigger = midi_timeDiv_trigger;
+//u32 midi_timeDiv_trigger(void *priv)函数，priv是私有参数。
+</pre></div>
+</div>
+</section>
+<section id="id16">
+<h3><span class="section-number">2.8.2.4.12. </span>5.12 midi解码主旋律音符结束回调使能<a class="headerlink" href="#id16" title="Permalink to this headline"></a></h3>
+<p>在初始化中置上MELODY_STOP_ENABLE使能位，节拍来时会回调:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>init_info-&gt;moledy_stop_info.priv = NULL;
+init_info-&gt;moledy_stop_info.main_chn_enable = 1;//
+,→ 1 为midi解码音符结束仅回调主旋律的音符； 0 为midi解码音符结束会回调所有音符
+init_info-&gt;moledy_stop_info.melody_stop_trigger = midi_melody_stop_trigger;
+//u32 midi_melody_stop_trigger(void *priv, u8 key, u8␣
+,→chn)函数，其参数priv是私有参数，key是音符，chn是音符通道。
+</pre></div>
+</div>
+</section>
+<section id="id17">
+<h3><span class="section-number">2.8.2.4.13. </span>5.13 midi解码限幅器功能<a class="headerlink" href="#id17" title="Permalink to this headline"></a></h3>
+<p>midi声音削顶采用限幅器的方法进行处理，可用CMD_MIDI_LIMITER_TRIGGER命令设置在midi库中回调限幅器的运行函数，可视化的也可直接在数据流里面加一个drc节点。</p>
+</section>
+<section id="id18">
+<h3><span class="section-number">2.8.2.4.14. </span>5.14 相关函数.<a class="headerlink" href="#id18" title="Permalink to this headline"></a></h3>
+<section id="void-midi-init-midi-init-struct-init-info">
+<h4><span class="section-number">2.8.2.4.14.1. </span>5.14.1 void midi_init(MIDI_INIT_STRUCT *init_info).<a class="headerlink" href="#void-midi-init-midi-init-struct-init-info" title="Permalink to this headline"></a></h4>
+<p>此函数为midi解码初始化时需要初始化相关功能，功能都在这个函数里面配置</p>
+<ol class="arabic simple">
+<li><p>init_info：MIDI初始化结构体。</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>备注: 该初始化最基本的播放功能必须初始化节奏功能
+OKON功能则初始化的时候需要置上MELODY_PLAY_ENABLE，并且要初始化指定主轨道
+</pre></div>
+</div>
+</section>
+<section id="void-midi-ioctrl-struct-jlstream-stream-u32-cmd-void-priv">
+<h4><span class="section-number">2.8.2.4.14.2. </span>5.14.2 void midi_ioctrl(struct jlstream *stream, u32 cmd, void *priv)<a class="headerlink" href="#void-midi-ioctrl-struct-jlstream-stream-u32-cmd-void-priv" title="Permalink to this headline"></a></h4>
+<p>此函数为midi解码配置相关参数使用。</p>
+<p>1，stream:打开的音乐播放数据流句柄
+2，cmd ：命令
+3，priv：参数</p>
+<p>调用示例：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>struct file_player *file_player = get_music_file_player();
+
+if（file_player）{
+    midi_ioctrl(file_player-&gt;stream,CMD_MIDI_GOON,NULL);
+}
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="id19">
+<h2><span class="section-number">2.8.2.5. </span>MIDI琴<a class="headerlink" href="#id19" title="Permalink to this headline"></a></h2>
+<section id="id20">
+<h3><span class="section-number">2.8.2.5.1. </span>本“MIDI琴”模块将介绍以下部分：<a class="headerlink" href="#id20" title="Permalink to this headline"></a></h3>
+</section>
+<section id="id21">
+<h3><span class="section-number">2.8.2.5.2. </span>1. “ MIDI 琴模式”；<a class="headerlink" href="#id21" title="Permalink to this headline"></a></h3>
+</section>
+<section id="id22">
+<h3><span class="section-number">2.8.2.5.3. </span>2. “ MIDI 琴功能”；<a class="headerlink" href="#id22" title="Permalink to this headline"></a></h3>
+</section>
+<section id="id23">
+<h3><span class="section-number">2.8.2.5.4. </span>6.1 MIDI琴相关const变量控制<a class="headerlink" href="#id23" title="Permalink to this headline"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>midi相关功能与相关const变量关联，目前const变量会在lib_media_config.c文件控制，
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li><p>const int MAINTRACK_USE_CHN = 0; //0:用track号来区分1:用channel号来区分。</p></li>
+<li><p>const int MAX_DEC_PLAYER_CNT = 8; //MIDI文件解码最大同时发声的key数,范围[1,31]</p></li>
+<li><p>const int MAX_CTR_PLAYER_CNT = 8; //midi琴最大同时发声的key数,范围[1,31]</p></li>
+<li><p>const int NOTE_OFF_TRIGGER = 0; //midi琴note_off回调 1 ：time传 0 时，不会回调 0 ：time
+传 0 时，回调</p></li>
+<li><p>const int MIDI_MAX_MARK_CNT = 0; //该变量控制MIDI解码最大mark数量</p></li>
+</ol>
+</section>
+</section>
+<section id="id24">
+<h2><span class="section-number">2.8.2.6. </span>MIDI琴模式<a class="headerlink" href="#id24" title="Permalink to this headline"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>SDK里提供了一个midi琴的模式，该模式为示例如何使用midi琴。
+下面大致介绍midi琴模式流程。
+</pre></div>
+</div>
+<section id="id25">
+<h3><span class="section-number">2.8.2.6.1. </span>7.1 MIDI琴模式流程<a class="headerlink" href="#id25" title="Permalink to this headline"></a></h3>
+<p>midi 琴 按键解码需要新建数据流，或者直接使用 MIDI 数据流图，如下图：
+<img alt="alt text" src="../../../_images/image-7.png" />
+<img alt="alt text" src="../../../_images/image-8.png" />
+midi 琴解码主要代码在audio_dec_midi_ctrl.c 里面，文件里面有初始化和出声的demo
+，如下图：
+<img alt="alt text" src="../../../_images/image-10.png" />
+midi琴的 音色文件配置见上面的midi 文件解码介绍，音色文件可以放在内置flash或者外置sd卡，如放在外置sd卡需要提高sd卡时钟，默认12M可能出现卡顿，放在内置flash速度较快</p>
+</section>
+</section>
+<section id="id26">
+<h2><span class="section-number">2.8.2.7. </span>MIDI琴功能<a class="headerlink" href="#id26" title="Permalink to this headline"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>本章介绍有关midi琴功能。
+</pre></div>
+</div>
+<section id="id27">
+<h3><span class="section-number">2.8.2.7.1. </span>8.1 MIDI琴<a class="headerlink" href="#id27" title="Permalink to this headline"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>下面介绍相关midi琴功能：
+1.“ midi 琴修改任意通道乐器功能”；
+2.“ midi 琴更改节奏和衰减功能”；
+3.“ midi 琴调整外部音量功能”；
+4.“ midi 琴移半音功能”；
+5.“ midi 琴颤音功能”；
+6.“ midi 琴弯音轮功能”；
+7.“ midi 琴播放单个音符”；
+8.“ midi 琴关闭单个音符”；
+</pre></div>
+</div>
+</section>
+<section id="id28">
+<h3><span class="section-number">2.8.2.7.2. </span>8.2 midi琴修改任意通道乐器功能.<a class="headerlink" href="#id28" title="Permalink to this headline"></a></h3>
+<p>midi琴，可以修改任意通道的乐器。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>MIDI_PROG_CHNL_CTRL prog_chnl_test;
+prog_chnl_test.prog = 3; //目标乐器序号
+prog_chnl_test.chnl = 0; //目标通道
+prog_chnl_test.enable = 1; //使能
+midi_ctrl_ioctrl(stream,CMD_MIDI_SET_PROG,&amp;prog_chnl_test)
+,→设置 0 通道的乐器为 3 乐器；
+</pre></div>
+</div>
+</section>
+<section id="id29">
+<h3><span class="section-number">2.8.2.7.3. </span>8.3 midi琴更改节奏和衰减功能<a class="headerlink" href="#id29" title="Permalink to this headline"></a></h3>
+<p>MIDI琴能够强制改变节奏、每个通道的衰减程度以及mute阈值水平。
+该功能可以在MIDI运行中动态设置。在初始化中置上MELODY_ENABLE使能位，并将
+CMD_MIDI_CTRL_TEMPO命令和配置好的结构体参数传入即可。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MIDI_PLAY_CTRL_TEMPO</span> <span class="n">midi_tempo_test</span><span class="p">;</span>
+<span class="n">midi_tempo_test</span><span class="o">.</span><span class="n">tempo_val</span> <span class="o">=</span> <span class="mi">1042</span> <span class="p">;</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">inti</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">CTRL_CHANNEL_NUM</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">midi_tempo_test</span><span class="o">.</span><span class="n">decay_val</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span> <span class="p">((</span><span class="n">u16</span><span class="p">)</span> <span class="mi">31</span> <span class="o">&lt;&lt;</span> <span class="mi">11</span> <span class="p">)</span><span class="o">|</span> <span class="mi">1024</span> <span class="p">;</span>
+<span class="p">}</span>
+<span class="n">midi_tempo_test</span><span class="o">.</span><span class="n">mute_threshold</span> <span class="o">=</span><span class="p">(</span><span class="n">u16</span><span class="p">)</span> <span class="mi">1</span> <span class="n">L</span><span class="o">&lt;&lt;</span> <span class="mi">29</span> <span class="p">;</span>
+<span class="n">midi_crrl_ioctrl</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">CMD_MIDI_CTRL_TEMPO</span><span class="p">,</span> <span class="p">(</span><span class="n">void</span><span class="o">*</span><span class="p">)</span><span class="n">midi_tempo_test</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id30">
+<h3><span class="section-number">2.8.2.7.4. </span>8.4 midi琴调整外部音量功能<a class="headerlink" href="#id30" title="Permalink to this headline"></a></h3>
+<p>MIDI琴能够实现每个通道/轨道单独调节音量的功能，该功能需要置上EX_VOL_ENABLE使能
+位。该功能可以在MIDI运行中动态设置，运行中想要单独关闭某一通道/轨道的声音，可以将该通道/轨道音量设为 0 。初始化中置上EX_CH_VOL_PARM使能位，将CMD_MIDI_SET_EX_VOL命令和配置好的结构体参数传入即可。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>EX_CH_VOL_PARM vol_info_test;
+vol_info_test.cc_vol[1] = 4096; //通道 1 的轨道音量设置为4096(原音量)
+vol_info_test.ex_vol_use_chn = 0; //0轨道音量， 1 通道音量
+midi_ctrl_ioctrl(stream, CMD_MIDI_SET_EX_VOL, (void *)vol_info_test);
+</pre></div>
+</div>
+</section>
+<section id="id31">
+<h3><span class="section-number">2.8.2.7.5. </span>8.5 midi琴移半音功能<a class="headerlink" href="#id31" title="Permalink to this headline"></a></h3>
+<p>MIDI琴能够实现每个通道单独偏移n个半音，该功能需要置上SEMITONE_ENABLE使能位。
+SDK中默认没有对该功能进行初始化，用户可自行添加。
+该功能可以在MIDI运行中动态设置。在初始化中置上SEMITONE_ENABLE使能位并将
+CMD_MIDI_SET_SEMITONE命令和配置好的结构体参数传入即可。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MIDI_SEMITONE_CTRL_STRUCT</span> <span class="n">semitone_ctrl_test</span><span class="p">;</span>
+<span class="n">semitone_ctrl_test</span><span class="o">.</span><span class="n">key_diff</span><span class="p">[</span> <span class="mi">1</span> <span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="p">;</span> <span class="o">//</span><span class="n">通道</span> <span class="mi">1</span> <span class="n">移</span> <span class="mi">2</span> <span class="n">个半音</span>
+<span class="n">midi_ctrl_ioctrl</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">CMD_MIDI_SET_SEMITONE</span><span class="p">,</span> <span class="p">(</span><span class="n">void</span><span class="o">*</span><span class="p">)</span><span class="n">semitone_ctrl_test</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="id32">
+<h3><span class="section-number">2.8.2.7.6. </span>8.6 midi琴颤音功能.<a class="headerlink" href="#id32" title="Permalink to this headline"></a></h3>
+<p>MIDI琴能够实现每个通道单独偏移n个半音，该功能需要置上SEMITONE_ENABLE使能位。
+通过命令MIDI_CTRL_VEL_VIBRATE实现</p>
+</section>
+<section id="id33">
+<h3><span class="section-number">2.8.2.7.7. </span>8.7 midi琴弯音轮功能<a class="headerlink" href="#id33" title="Permalink to this headline"></a></h3>
+<p>midi琴可以动态调整音高。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">void</span> <span class="n">midi_ctrl_pitch_bend</span><span class="p">(</span><span class="n">struct</span> <span class="n">jlstream</span> <span class="o">*</span><span class="n">stream</span><span class="p">,</span> <span class="n">u16</span> <span class="n">pitch_val</span><span class="p">,</span> <span class="n">u8</span> <span class="n">chn</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>实现弯音轮功能
+该函数实现配置音符的弯音轮效果，其中参数：
+1.stream:数据流句柄；
+2.pitch_val：音高设置；(范围1 ~ 32768)
+3.chn：对应通道；</p>
+</section>
+<section id="id34">
+<h3><span class="section-number">2.8.2.7.8. </span>8.8 midi琴播放单个音符<a class="headerlink" href="#id34" title="Permalink to this headline"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">void</span> <span class="n">midi_ctrl_note_on</span><span class="p">(</span><span class="n">struct</span> <span class="n">jlstream</span> <span class="o">*</span><span class="n">stream</span><span class="p">,</span> <span class="n">u8</span> <span class="n">nkey</span><span class="p">,</span> <span class="n">u8</span> <span class="n">nvel</span><span class="p">,</span> <span class="n">u8</span> <span class="n">chn</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>实现播放单个音符功能
+该函数实现播放单个音符，其中参数：
+1.stream：数据流句柄
+2.nkey：音符，对应音色库序号（0~127）
+3.nvel：模拟按下力度（范围0~127，部分乐器（如钢琴）有效，不同力度会使按下后的余
+音长短不同；）
+4.chn：发声通道（范围0~15）</p>
+</section>
+<section id="id35">
+<h3><span class="section-number">2.8.2.7.9. </span>8.9 midi琴关闭单个音符<a class="headerlink" href="#id35" title="Permalink to this headline"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">void</span> <span class="n">midi_ctrl_note_off</span><span class="p">(</span><span class="n">struct</span> <span class="n">jlstream</span> <span class="o">*</span><span class="n">stream</span><span class="p">,</span> <span class="n">u8</span> <span class="n">nkey</span><span class="p">,</span> <span class="n">u8</span> <span class="n">nvel</span><span class="p">,</span> <span class="n">u16</span> <span class="n">decay_time</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>实现关闭单个音符功能
+该函数实现播放单个音符，其中参数：
+1.stream：数据流句柄；
+2.nkey：音符，对应音色库序号（0~127）
+3.nvel：模拟按下力度（范围0~127，部分乐器（如钢琴）有效，不同力度会使按下后的余
+音长短不同；）
+4.chn：发声通道（范围0~15）</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="codec.html" class="btn btn-neutral float-left" title="2.8.1. 编解码格式" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="encoder_node.html" class="btn btn-neutral float-right" title="2.8.3. 编码器节点" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

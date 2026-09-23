@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TWS配对连接及通讯介绍 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../../_static/js/custom.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>TWS配对连接及通讯介绍</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tws">
+<h1>TWS配对连接及通讯介绍<a class="headerlink" href="#tws" title="Permalink to this headline"></a></h1>
+<p>TWS配对连接的流程文件路径：apps/earphone/mode/bt -&gt; bt_tws.c, tws_dual_conn.c</p>
+<section id="id1">
+<h2>TWS配对连接流程图<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<a class="reference internal image-reference" href="../../../../_images/TWS开机流程.png"><img alt="../../../../_images/TWS开机流程.png" src="../../../../_images/TWS开机流程.png" style="width: 650px; height: 720px;" /></a>
+<ul class="simple">
+<li><dl class="simple">
+<dt>上图TWS业务流程简述如下：</dt><dd><ul>
+<li><p>TWS设备间分配对和连接两个逻辑；</p></li>
+<li><p>首次开机，无tws info，会根据配对码pair_code先进行TWS配对（打印pc），TWS连接成功（即TWS配对成功，pc打印消失），配对超时则等待配对（打印p），直到TWS的连接成功；</p></li>
+<li><p>TWS配对过的设备（有tws info），开机后，会设置本地和对端设备的TWS地址，根据TWS对端地址进行TWS连接（打印pc），如果连接失败，会同时开启可发现可连接（打印IP）和TWS根据地址的可被连接（打印p），直到TWS的连接成功。</p></li>
+<li><p>注意：</p></li>
+<li><p>以上只是简单的业务流程叙述，具体应用开发可根据下述章节介绍的TWS相关函数进行自定义的流程开发。</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<section id="twspc">
+<h3>TWS没有连接上之前可以看到“p”、“c”的打印。<a class="headerlink" href="#twspc" title="Permalink to this headline"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/********edr蓝牙相关状态debug打印说明***********************</span>
+<span class="cm">*** tws快连page:             打印 &#39;c&#39;(小写)</span>
+<span class="cm">*** tws快连page_scan:        打印 &#39;p&#39;(小写)</span>
+<span class="cm">*** 等待被发现inquiry_scan   打印 &#39;I&#39;(大写)</span>
+<span class="cm">*** 回连手机page:            打印 &#39;C&#39;(大写)</span>
+<span class="cm">*** 等待手机连接page_scan:   打印 &#39;P&#39;(大写)</span>
+<span class="cm">*********************************************************/</span><span class="w"></span>
+<span class="c1">// 上述pc打印既根据“pair_code”的也根据“TWS地址”来进行TWS设备快连的状态来显示</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id2">
+<h2>TWS初始化<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<p>蓝牙初始化成功后会有个BT_STATUS_INIT_OK事件上来，然后执行bt_tws_poweron函数。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm">* @brief 开机TWS初始化</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">bt_tws_poweron</span><span class="p">();</span><span class="w"></span>
+</pre></div>
+</div>
+<p>获取可视化工具界面配置生成的pair_code，只有pair_code相同的设备，才能进行配对。</p>
+<img alt="../../../../_images/pair_code.png" src="../../../../_images/pair_code.png" />
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u16</span><span class="w"> </span><span class="n">pair_code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0xAABB</span><span class="p">;</span><span class="w"></span>
+<span class="n">syscfg_read</span><span class="p">(</span><span class="n">CFG_TWS_PAIR_CODE_ID</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">pair_code</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span><span class="w"></span>
+<span class="n">printf</span><span class="p">(</span><span class="s">&quot;tws pair_code:0x%x</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">pair_code</span><span class="p">);</span><span class="w"></span>
+<span class="n">tws_api_set_pair_code</span><span class="p">(</span><span class="n">pair_code</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h2>TWS设备相关的基本概念（了解即可）<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<img alt="../../../../_images/tws_addr.png" src="../../../../_images/tws_addr.png" />
+<section id="cfg-tws-remote-addr">
+<h3>CFG_TWS_REMOTE_ADDR<a class="headerlink" href="#cfg-tws-remote-addr" title="Permalink to this headline"></a></h3>
+<p>TWS的对端地址</p>
+<p>如果有对端设备地址说明当前设备曾经与别的设备TWS配对过，则对记录的对端设备地址进行快连，否则开始自动配对。</p>
+</section>
+<section id="cfg-tws-local-addr">
+<h3>CFG_TWS_LOCAL_ADDR<a class="headerlink" href="#cfg-tws-local-addr" title="Permalink to this headline"></a></h3>
+<p>TWS的本地地址</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">bt_get_tws_local_addr</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">addr</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="cfg-tws-common-addr">
+<h3>CFG_TWS_COMMON_ADDR<a class="headerlink" href="#cfg-tws-common-addr" title="Permalink to this headline"></a></h3>
+<p>蓝牙mac地址，提供给手机搜索连接时使用的地址，如果TWS未配对，则mac地址为VM或BTIF区域存储的地址，如果TWS已配对，则mac地址会被改为TWS的公共地址</p>
+<p>TWS配对之后的公共地址，TWS配对过程根据远端和本地地址进行策略计算得到（默认），也可以通过在代码重写 <strong>tws_host_get_common_addr</strong> 进行指定，例如配置了 <strong>CONFIG_TWS_COMMON_ADDR_USED_LEFT</strong> 则重写该接口为：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> * 获取TWS配对后的MAC地址</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">tws_api_get_local_addr</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">addr</span><span class="p">);</span><span class="w"></span>
+
+
+<span class="cp">#if CONFIG_TWS_COMMON_ADDR_SELECT != CONFIG_TWS_COMMON_ADDR_AUTO</span>
+<span class="cm">/**</span>
+<span class="cm">* @brief TWS底层获取TWS共同地址</span>
+<span class="cm">*</span>
+<span class="cm">* @param remote_mac_addr 远端的蓝牙地址</span>
+<span class="cm">* @param common_addr 最后确定的共同地址</span>
+<span class="cm">* @param channel 声道信息</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">tws_host_get_common_addr</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">remote_mac_addr</span><span class="p">,</span><span class="w"> </span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">common_addr</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">channel</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="cp">#if CONFIG_TWS_COMMON_ADDR_SELECT == CONFIG_TWS_COMMON_ADDR_USED_LEFT</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">channel</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;L&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">memcpy</span><span class="p">(</span><span class="n">common_addr</span><span class="p">,</span><span class="w"> </span><span class="n">bt_get_mac_addr</span><span class="p">(),</span><span class="w"> </span><span class="mi">6</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">memcpy</span><span class="p">(</span><span class="n">common_addr</span><span class="p">,</span><span class="w"> </span><span class="n">remote_mac_addr</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="cp">#elif CONFIG_TWS_COMMON_ADDR_SELECT == CONFIG_TWS_COMMON_ADDR_USED_RIGHT</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">channel</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;R&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">memcpy</span><span class="p">(</span><span class="n">common_addr</span><span class="p">,</span><span class="w"> </span><span class="n">bt_get_mac_addr</span><span class="p">(),</span><span class="w"> </span><span class="mi">6</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">memcpy</span><span class="p">(</span><span class="n">common_addr</span><span class="p">,</span><span class="w"> </span><span class="n">remote_mac_addr</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="cp">#elif CONFIG_TWS_COMMON_ADDR_SELECT == CONFIG_TWS_COMMON_ADDR_USED_MASTER</span>
+<span class="w">    </span><span class="n">memcpy</span><span class="p">(</span><span class="n">common_addr</span><span class="p">,</span><span class="w"> </span><span class="n">bt_get_mac_addr</span><span class="p">(),</span><span class="w"> </span><span class="mi">6</span><span class="p">);</span><span class="w"></span>
+<span class="cp">#endif</span>
+<span class="p">}</span><span class="w"></span>
+<span class="cp">#endif</span>
+</pre></div>
+</div>
+</section>
+<section id="id4">
+<h3>TWS未配对快连相关代码<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm">* @brief 获取TWS对端设备地址</span>
+<span class="cm">*</span>
+<span class="cm">* @param addr TWS对端设备地址</span>
+<span class="cm">* @return 获取成功会返回地址长度</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="n">u8</span><span class="w"> </span><span class="nf">tws_get_sibling_addr</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">addr</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">result</span><span class="p">);</span><span class="w"></span>
+<span class="c1">// 以上TWS对端设备地址获取成功说明成交配对过</span>
+
+<span class="c1">// 未配对消息：APP_MSG_TWS_UNPAIRED</span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief TWS根据pair_code进行自动配对</span>
+<span class="cm">* 打印pc</span>
+<span class="cm">*</span>
+<span class="cm">* @param timeout:超时时间，0表示不超时</span>
+<span class="cm">*</span>
+<span class="cm">* @return 0表示调用成功，-EFAULT表示已连接手机或者tws连接已存在</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">tws_api_auto_pair</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">timeout</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 取消TWS等待的配对</span>
+<span class="cm">* 取消打印pc</span>
+<span class="cm">*</span>
+<span class="cm">* @return 获取成功会返回地址长度</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">tws_api_cancle_wait_pair</span><span class="p">();</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 开启等待并连接相同pair_code的设备的配对</span>
+<span class="cm">* 只打印p</span>
+<span class="cm">*</span>
+<span class="cm">* @param pair_code ：暂无作用</span>
+<span class="cm">* @param name : 不为空会打开手机链路的可发现可连接</span>
+<span class="cm">* @param timeout_ms:超时时间，0表示不超时</span>
+<span class="cm">*</span>
+<span class="cm">* @return 获取成功会返回地址长度</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">tws_api_wait_pair_by_code</span><span class="p">(</span><span class="n">u16</span><span class="w"> </span><span class="n">pair_code</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">timeout_ms</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h3>TWS快连+已配对快连相关代码<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// 已配对消息：APP_MSG_TWS_PAIRED</span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 设置TWS对端设备A的地址作为快连地址</span>
+<span class="cm">*</span>
+<span class="cm">* @param addr: 快连地址</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">tws_api_set_sibling_addr</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">addr</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/*</span>
+<span class="cm"> * 获取tws对方地址</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">tws_api_get_sibling_addr</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">addr</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 当前TWS当前设备B的地址作为被快连的地址</span>
+<span class="cm">*</span>
+<span class="cm">* @param addr: 被快连地址</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">tws_api_set_quick_connect_addr</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">addr</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 开始搜索并连接已经配对过的TWS设备，同时让自己可被TWS连接</span>
+<span class="cm">* 根据蓝牙地址对已经配对的设备进行快连，</span>
+<span class="cm">* 即当前设备B对A进行快连</span>
+<span class="cm">* 打印pc</span>
+<span class="cm">*</span>
+<span class="cm">* @param timeout: 单位ms， 0 表示不超时</span>
+<span class="cm">* @return 0: 函数调用成功</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">tws_api_create_connection</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">timeout</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 打开TWS等待连接，调用之后，tws处于等待连接状态，可以被已经配对过的tws连接</span>
+<span class="cm">* 常用于断开连接的时候</span>
+<span class="cm">* 即当前设备B可以被A快连。</span>
+<span class="cm">* 打印p</span>
+<span class="cm">*</span>
+<span class="cm">* @param timeout: 单位ms， 0 表示不超时</span>
+<span class="cm">* @return 0: 函数调用成功</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">tws_api_wait_connection</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">timeout</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 取消TWS设备根据蓝牙地址进行的快连</span>
+<span class="cm">* 取消打印pc</span>
+<span class="cm">*</span>
+<span class="cm">* @return 0: 函数调用成功</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">tws_api_cancle_create_connection</span><span class="p">();</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 设置当前TWS设备的音频channel</span>
+<span class="cm">*</span>
+<span class="cm">* @param channel: &#39;L&#39;/&#39;R&#39;/&#39;U&#39;</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">tws_api_set_local_channel</span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="n">channel</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h3>TWS消息相关代码<a class="headerlink" href="#id6" title="Permalink to this headline"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm">* @brief tws状态消息处理函数</span>
+<span class="cm">*</span>
+<span class="cm">* @param msg tws状态消息</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">bt_tws_connction_status_event_handler</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">// 开发常用TWS相关消息</span>
+<span class="k">enum</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+<span class="w">    </span><span class="n">TWS_EVENT_CONNECTED</span><span class="p">,</span><span class="w">                            </span><span class="c1">// TWS已连接</span>
+<span class="w">    </span><span class="n">TWS_EVENT_CONNECTION_TIMEOUT</span><span class="p">,</span><span class="w">           </span><span class="c1">// TWS连接超时</span>
+<span class="w">    </span><span class="n">TWS_EVENT_CONNECTION_DETACH</span><span class="p">,</span><span class="w">            </span><span class="c1">// TWS连接断开</span>
+<span class="w">    </span><span class="n">TWS_EVENT_REMOVE_PAIRS</span><span class="p">,</span><span class="w">                         </span><span class="c1">// TWS移除配对</span>
+<span class="w">    </span><span class="n">TWS_EVENT_PHONE_LINK_DETACH</span><span class="p">,</span><span class="w">            </span><span class="c1">// TWS断开手机连接</span>
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+<span class="w">    </span><span class="n">TWS_EVENT_ROLE_SWITCH</span><span class="p">,</span><span class="w">                          </span><span class="c1">// TWS主从切换</span>
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id7">
+<h3>按键配对相关代码<a class="headerlink" href="#id7" title="Permalink to this headline"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// 按键发起配对消息：APP_MSG_TWS_START_PAIR</span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 通过配对码搜索TWS设备</span>
+<span class="cm">*</span>
+<span class="cm">* @return 0：函数调用成功；-EINVAL：TWS连接已存在；-ENOMEM：申请内存失败；-ENOENT：申请硬件资源失败</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">tws_api_search_sibling_by_code</span><span class="p">();</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 发送解除配对命令给对方, 成功后会收到TWS_EVENT_REMOVE_PAIRS事件</span>
+<span class="cm">*</span>
+<span class="cm">* @return 0：函数调用成功；-EINVAL：表示TWS未连接</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">tws_api_remove_pairs</span><span class="p">();</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id8">
+<h3>断开tws连接相关代码<a class="headerlink" href="#id8" title="Permalink to this headline"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm">* @brief 断开TWS连接</span>
+<span class="cm">* 常用于关机</span>
+<span class="cm">*</span>
+<span class="cm">* @param reason: 断开原因</span>
+<span class="cm">* @param timeout: 等待超时时间，为0则不等待直接返回</span>
+<span class="cm">*</span>
+<span class="cm">* @return 0</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">tws_api_detach</span><span class="p">(</span><span class="k">enum</span><span class="w"> </span><span class="n">tws_detach_reason</span><span class="w"> </span><span class="n">reason</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">timeout</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id9">
+<h2>TWS自动主从切换相关函数<a class="headerlink" href="#id9" title="Permalink to this headline"></a></h2>
+<p>与手机连接的情况，TWS之间可以根据程序底层策略自动选择哪边做主机哪边做从机，该功能只在使用公共地址的情况使用</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// 启动TWS自动主从切换</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">tws_api_auto_role_switch_enable</span><span class="p">();</span><span class="w"></span>
+<span class="c1">// 关闭TWS自动主从切换</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">tws_api_auto_role_switch_enable</span><span class="p">();</span><span class="w"></span>
+<span class="c1">// 调用后进行TWS主从切换</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">tws_api_role_switch</span><span class="p">();</span><span class="w"></span>
+</pre></div>
+</div>
+<p>使主从机的电量相对平衡，保证TWS设备的总体续航达到最大值</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// 详细见apps/earphone/mode/bt/bt_tws.c的代码实现</span>
+<span class="cm">/**</span>
+<span class="cm">* @brief TWS底层获取电池电量信息</span>
+<span class="cm">*</span>
+<span class="cm">* @return 当前设备电量信息</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="n">u16</span><span class="w"> </span><span class="nf">tws_host_get_battery_voltage</span><span class="p">();</span><span class="w"></span>
+<span class="cm">/**</span>
+<span class="cm">* @brief TWS底层通过设备电量大的做主机</span>
+<span class="cm">*</span>
+<span class="cm">*  @return 1:进行主从切换</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">bool</span><span class="w"> </span><span class="nf">tws_host_role_switch_by_power_balance</span><span class="p">(</span><span class="n">u16</span><span class="w"> </span><span class="n">m_voltage</span><span class="p">,</span><span class="w"> </span><span class="n">u16</span><span class="w"> </span><span class="n">s_voltage</span><span class="p">);</span><span class="w"></span>
+<span class="cm">/**</span>
+<span class="cm">* @brief TWS底层判断电量检测主从切换的间隔时间</span>
+<span class="cm">*</span>
+<span class="cm">* @return int 间隔时间</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">tws_host_role_switch_by_power_update_time</span><span class="p">();</span><span class="w"></span>
+</pre></div>
+</div>
+<p>选用rssi强度大的做TWS主机，保证通讯的稳定性。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// 详细见apps/earphone/mode/bt/bt_tws.c的代码实现</span>
+<span class="cm">/**</span>
+<span class="cm">* @brief a2dp播歌根据信号强度主从切换重写函数，可改变范围</span>
+<span class="cm">*</span>
+<span class="cm">* @param m_rssi 主机rssi</span>
+<span class="cm">* @param s_rssi 从机rssi</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">a2dp_role_switch_check_rssi</span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="n">master_rssi</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">slave_rssi</span><span class="p">);</span><span class="w"></span>
+<span class="cm">/**</span>
+<span class="cm">* @brief esco通话根据信号强度主从切换重写函数，可改变范围</span>
+<span class="cm">*</span>
+<span class="cm">* @param m_rssi 主机rssi</span>
+<span class="cm">* @param s_rssi 从机rssi</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">bool</span><span class="w"> </span><span class="nf">tws_esco_rs_rssi_check</span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="n">m_rssi</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">s_rssi</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id10">
+<h2>TWS间通讯<a class="headerlink" href="#id10" title="Permalink to this headline"></a></h2>
+<p>用于设备给TWS对端发送数据，常见于给TWS对端同步某些功能的开关状态等</p>
+<section id="id11">
+<h3>代码示例<a class="headerlink" href="#id11" title="Permalink to this headline"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// 定义TWS通讯ID，需要保证该ID不会被其他地方使用</span>
+<span class="cp">#define TWS_FUNC_ID_TWS_TEST        0x01234567</span>
+
+<span class="c1">// 发送数据, 要求 len &lt;= 512</span>
+<span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">malloc</span><span class="p">(</span><span class="n">data_len</span><span class="p">);</span><span class="w"></span>
+<span class="n">tws_api_send_data_to_sibling</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">data_len</span><span class="p">,</span><span class="w"> </span><span class="n">TWS_FUNC_ID_TWS_TEST</span><span class="p">);</span><span class="w"></span>
+<span class="n">free</span><span class="p">(</span><span class="n">data</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">// 注册TWS数据接收</span>
+<span class="cm">/**</span>
+<span class="cm">* @brief 接收TWS数据，这个函数在app_core任务中被调用</span>
+<span class="cm">*</span>
+<span class="cm">* @param data 接收的数据</span>
+<span class="cm">* @param len data的长度</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">tws_rx_from_sibling_in_task</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">len</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">prnitf</span><span class="p">(</span><span class="s">&quot;%s, %s, %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">__FILE__</span><span class="p">,</span><span class="w"> </span><span class="n">__FUNCTION__</span><span class="p">,</span><span class="w"> </span><span class="n">__LINE__</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">put_buf</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">free</span><span class="p">(</span><span class="n">data</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+<span class="cm">/**</span>
+<span class="cm">* @brief 接收TWS数据，这个函数在中断中被调用。发送端和接收端都会触发这个中断</span>
+<span class="cm">*</span>
+<span class="cm">* @param data 接收的数据</span>
+<span class="cm">* @param len data的长度</span>
+<span class="cm">* @param rx true：接收端；false：发送端</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">tws_rx_from_sibling_in_irq</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">u16</span><span class="w"> </span><span class="n">len</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">rx</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rx</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">rx_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">malloc</span><span class="p">(</span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">prnitf</span><span class="p">(</span><span class="s">&quot;local_rx:%d %x</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">len</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">u32</span><span class="p">)</span><span class="n">rx_data</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">memcpy</span><span class="p">(</span><span class="n">rx_data</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">put_buf</span><span class="p">(</span><span class="n">rx_data</span><span class="p">,</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// 如果需要，可以发送到任务里面处理数据</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">argv</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span><span class="w"></span>
+<span class="w">        </span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">tws_rx_from_sibling_in_task</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">rx_data</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">argv</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">len</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">os_taskq_post_type</span><span class="p">(</span><span class="s">&quot;app_core&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Q_CALLBACK</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">prnitf</span><span class="p">(</span><span class="s">&quot;tws_rx_from_sibling_in_irq taskq post err</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="n">free</span><span class="p">(</span><span class="n">rx_data</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+<span class="n">REGISTER_TWS_FUNC_STUB</span><span class="p">(</span><span class="n">tws_sync_func</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">func_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TWS_FUNC_ID_TWS_TEST</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">func</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">tws_rx_from_sibling_in_irq</span><span class="p">,</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

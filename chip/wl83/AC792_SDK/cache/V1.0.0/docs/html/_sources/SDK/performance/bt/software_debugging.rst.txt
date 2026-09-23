@@ -1,0 +1,169 @@
+软件调试
+========
+
+============   ====================== ============== =================
+**Date**       **Version**             **Authors**    **Changes**
+------------   ---------------------- -------------- -----------------
+2025/07/08     1.0                    Gw             初稿
+============   ====================== ============== =================
+
+
+系统及电源配置
+--------------
+
+- 时钟频率：可以通过 `void clock_dump(void)` 函数输出时钟系统信息。重点关注：
+
+  - PLL TARGET CLOCK
+  - HSP CLK
+  - SPI CLK
+
+.. code-block:: c
+    :linenos: 
+
+    //clock_dump:
+    [CLOCK]---sys clk set : 192000000
+    [CLOCK]---SYSPLL EN : 1
+    [CLOCK]---D_PLL EN  : 0
+    [CLOCK]---HSB CLK : 48000000
+    [CLOCK]---LSB CLK : 24000000
+    [CLOCK]---SFC CLK : 48000000
+    
+
+- 电源模式：在 `可视化工具` ---> `电源配置` ---> `时钟&电源` ---> `电源模式选择` ：
+
+  - LDO
+  - DCDC15
+
+- DCDC电感：SDK支持配置10uH或4.7uH，通过修改的 `dcdc_L` 值选择。
+
+  - 10uH(default)
+  - 4.7uH
+
+.. code-block:: c
+    :linenos: 
+
+    //power_config.c
+    enum DCDC_L {
+        DCDC_L_4p7uH,
+        DCDC_L_10uH,
+    };
+
+    const u32 dcdc_L = DCDC_L_10uH;
+
+.. warning:: DCDC电感参数必须软硬件对应。
+
+
+音频类配置
+----------
+
+- 最大延时：在 `可视化工具` ---> `蓝牙配置` ---> `经典蓝牙` ---> `A2DP自适应最大延时(msec)` ：
+
+  - 550(default)
+
+- 通用延时：在 `可视化工具` ---> `蓝牙配置` ---> `经典蓝牙` ---> `A2DP延时xxx(msec)` ：
+
+  - 300(default)
+
+- 解码格式：
+
+  - AAC
+  - SBC
+  - LDAC
+  - LHDC
+
+- 码率确认：
+
+  - AAC：通过bt_set_aac_bitrate配置码率。注：此配置为协商的建议值，实际码率不同型号手机不同。
+  - SBC：配置宏定义TCFG_BT_SBC_BITPOOL，具体数值转换参考下图或 `连接 <https://btcodecs.valdikss.org.ru/sbc-bitrate-calculator/>`_
+
+.. figure:: image/sw_debug_sbc.png
+   :align: center
+
+   SBC参数图
+
+- 音频流确认(SDK默认配置)：
+
+    - A2DP_RX 
+        - 网络时钟转本地时钟：Disable
+    - 蓝牙音频同步：
+        - 网络时钟配置：AUDIO_NETWORK_BT2_1
+        - 对齐模式：快速对齐
+    - DAC 
+        - dac通道延时(ms)：30
+        - dac延时保护时间(ms)：8
+        - DAC写入模式：BLOCK
+
+.. figure:: image/sw_debug_stream.png
+   :align: center
+   :width: 600px
+   :alt: jlstream图
+
+   jlstream图
+
+蓝牙类配置
+----------
+
+以下配置对距离测试均有影响，与金机对比时候建议使用相同用配置。
+
+- TWS功能：根据方案选择。
+- QoS功能：默认开启。
+- 1to2功能：默认开启。
+- BLE功能确认：根据方案开启。注意如果是仅广播功能，间隔interval=2S，或添加动态广播控制。
+- 频偏校准：测试距离前必须使用杰理测试盒确认频偏已经校准。
+
+参数修改 & 调试
+---------------
+
+- extws_cnt：TWS监听参数。
+- rx缓存buffer：蓝牙接收缓存.
+
+..  以下内容暂不对外
+    - 动态13dBm发射功率：动态发射功率控制。
+    - rf adc配置： `void set_rf_adc_clkset(u8 adc_clkset) 蓝牙初始化前，// 1:24MHz 0:48MHz`
+
+debug_edr_info
+^^^^^^^^^^^^^^
+
+若金机环境仍能出现问题，可以通过抓取日志和使用可视化分析工具进行分析问题。
+
+- 硬件环境：需要拉出打印接口，连接 `日志小板` 。
+- 软件配置： 在bt_mode_init函数开头第一句位置添加代码 `set_debug_edr_info(BIT(0)|BIT(1));`  。
+- 复现问题并提抓取日志，使用 `串口数据可视化工具分析` 。
+
+.. note:: 打印线尽量避开天线，避免整机RF性能有干扰。
+
+
+.. figure:: image/sw_debug_log_board.png
+   :align: center
+   :width: 300px
+   :alt: 日志小板
+
+   日志小板
+
+.. figure:: image/sw_debug_log_device.png
+   :align: center
+   :width: 300px
+   :alt: 示例样机
+
+   示例样机
+
+.. figure:: image/sw_debug_log_sample.png
+   :align: center
+   :width: 300px
+   :alt: 完整示例
+
+   完整示例
+
+
+- 串口数据可视化工具（不开放）
+  
+    - 工具最多支持两路log数据输入
+    - 添加 `set_debug_edr_info(BIT(0)|BIT(1));`代码后，设备log出现如下内容： 
+
+.. code-block:: c
+    :linenos: 
+
+    phone_rx_info=[role_r delay_r dec_num_err phone_rx_a2dp_err_cnt tws_forward_cnt tws_forward_timeout_cnt tws_rx_a2dp_cnt tws_rx_a2dp_timeout_cnt extws_cnt_set qos phone_rssi tws_rssi power_set]
+
+.. tip:: 
+  此时把收集的log日志转给珠海公司蓝牙部门分析即可

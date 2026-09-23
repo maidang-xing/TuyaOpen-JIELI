@@ -1,0 +1,30 @@
+# AEC回采方式
+
+## 软件回采
+**软件回采**：是指AEC的参考数据来源于数据流的PCM数据
+
+## 硬件回采
+**硬件回采**：是指使用ADC采样Speaker播放的信号作为AEC的参考信号
+
+### 使用场景
+- 带数字功放，且数字功放有音效处理
+- 立体声音箱
+
+### 使用方法
+- 1、确认当前硬回采的路数
+  - 回采路数可以是一路（单声道）或者两路（立体声）
+  - 目前最大支持两路硬回采
+ - 2、在通话算法节点里面配置使用硬回采，选择硬回采的MIC
+ ![CVP节点配置](./assets/bt_call_flow/call_flow1.png)
+ - 3、一路硬回采支持算法可以在可视化界面下的音频配置->音频算法配置->1mic算法选择中配置
+![CVP节点配置](./assets/bt_call_flow/call_flow5.png)
+ ![CVP节点配置](./assets/bt_call_flow/call_flow2.png)
+ - 4、两路硬回采只支持**SMS_TDE**算法，同时需要在audio_cvp.c文件将CONST_SMS_TDE_STEREO_REF_ENABLE配置为1
+  ![CVP节点配置](./assets/bt_call_flow/call_flow6.png)
+ ![CVP节点配置](./assets/bt_call_flow/call_flow3.png)
+ - 5、在ADC节点里面使能硬回采使用的MIC通道，并配置相关通道的参数
+ ![CVP节点配置](./assets/bt_call_flow/call_flow4.png)
+
+### 注意事项
+- （1）回采电路低通滤波设计是否合理
+- （2）确保功放最大功率输出时，ADC输入回采电压不超过芯片最大允许范围

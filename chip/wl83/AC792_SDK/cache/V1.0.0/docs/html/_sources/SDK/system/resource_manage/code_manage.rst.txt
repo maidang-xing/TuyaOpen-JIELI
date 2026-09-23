@@ -1,0 +1,91 @@
+代码大小优化帮助
+##############
+
+.. tip:: 
+  本章节主要适用于从杰理非可视化工程转到可视化工程的项目，因可视化工程会默认开启更多有优化效果的功能。
+
+减少项目功能的开启
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+减少功能数量是一个不错的减少代码量的方法。
+
+关闭一拖二功能（4KB）
+=============
+
+   .. figure:: imgs/1t2.png
+
+      .. :width: 320px
+      .. :height: 650px
+
+关闭多余的升级方式，如不需要ble升级可以关闭（1KB）
+=============
+
+   .. figure:: imgs/update_ble.png
+
+
+关闭播歌PLC功能（4KB）
+=============
+
+   .. figure:: imgs/music_plc.png
+
+关闭产测功能（1KB+）
+=============
+
+   .. figure:: imgs/music_test.png
+
+关闭ANC多场景滤波功能，生产环节关闭ANC调节
+=============
+
+   .. figure:: imgs/anc.png
+
+减少功能的特性
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+关闭BLE的特性
+=============
+
+   .. figure:: imgs/ble_feature.png
+
+该宏会配置TCFG_THIRD_PARTY_PROTOCOLS_SIMPLIFIED宏，移除三方协议的中间层，关闭ble多连接（29KB）和ble加密（15KB）
+
+.. tip:: 
+   如没有使用rcsp协议，可全局搜索并参考TCFG_THIRD_PARTY_PROTOCOLS_SIMPLIFIED宏相关的代码进行参考开发。
+
+关闭不需要的RCSP功能
+=============
+
+一般RCSP项目仅需要最简单的设备信息和升级功能
+
+   .. figure:: imgs/rcsp.png
+
+减少资源文件的占用
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+改小默认的VM大小
+=============
+
+   .. figure:: imgs/vm_size.png
+
+.. tip:: 
+   从40K改成8K，会导致测试盒串口升级失败
+
+代码压缩
+=============
+
+在RAM资源足够的情况下将代码放RAM进行代码压缩，开启TCFG_CODE_TO_RAM_COMPRESS_ENABLE宏，开启宏后默认一共压缩了7K，客户可根据自身需求进行删减。
+
+   .. figure:: imgs/code_compress.png
+
+   .. figure:: imgs/code_compress_sdk_ld.png
+
+提示音文件压缩
+=============
+
+   .. figure:: imgs/tone_compress.png
+
+其余参考优化链接
+=============
+
+- 详细见：
+
+   - 音频配置->音频代码优化 章节

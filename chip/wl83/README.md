@@ -1,29 +1,18 @@
-# wl83 / AC792N bring-up slot
+# AC792N_Develop_Board / WL83
 
-This directory hosts the AC792N (wl83) vendor SDK once its port starts. The
-SDK is intentionally **not** a git submodule yet so a plain
-`git clone --recursive` of the platform stays lightweight (wl82 remains the
-default and only supported chip today).
+The AC792N board builds the full TuyaOpen `switch_demo` image using the official `fw-AC792_SDK` checkout at `chip/wl83/AC792_SDK`.
 
-## Fetching the vendor SDK (when the port begins)
+- Local reference checkout: branch `release/AC792N_SDK_V3`, commit `5abd533ffe108c35e3232d581f064b58f1983341`.
+- Board profile: AC7926A reference configuration, 8 MiB Flash and 16 MiB DDR1.
+- UART log profile: UART0, TX PD1, RX PE11, 1,000,000 baud (`demo_hello/board/wl83/board_demo.h`).
+- Full-stack build command (from `apps/tuya_cloud/switch_demo`): `tos.py config set CONFIG_BOARD_CHOICE_AC792N_DEVELOP_BOARD=y CONFIG_JIELI_MINIMAL_HELLO=n CONFIG_JIELI_UART_LOG_PORT=0 CONFIG_JIELI_UART_LOG_BAUDRATE=1000000`, then `tos.py build` on Windows.
+- The full image includes the shared Tuya TKL Wi-Fi and BLE adapters, BLE provisioning, Tuya IoT, and switch DP code. WL83-specific differences include the Wi-Fi connection-state enum and BLE address lookup; its WPA/SAE path links `libcrypto_mbedtls.a`.
+- Verified on 2026-09-23: full `switch_demo` image built and linked for `wl83 / AC792N_Develop_Board`. The binary is generated under the project's `dist/` directory.
+- Flash command: `tos.py flash` selects WL83 SDK tools, `-dev wl83`, and boot address `0x103000`. Enter USB loader mode by holding `UPDATE` while cycling board power.
+- Monitor command: `tos.py monitor -p COMx`; baud defaults to the board's configured `CONFIG_JIELI_UART_LOG_BAUDRATE`.
 
-```bash
-cd platform/JIELI/chip/wl83
-git clone https://gitee.com/Jieli-Tech/fw-AC792_SDK.git
-# pin after validating, then promote to a submodule:
-#   git submodule add https://gitee.com/Jieli-Tech/fw-AC792_SDK.git AC792_SDK
-```
+The AC792 board was not connected to the host during this verification, so firmware was not flashed and Wi-Fi, BLE provisioning, cloud activation, DP reporting, and DP control have not yet been exercised on hardware. Serial wiring and UART capture also remain to be confirmed on the board.
 
-Docs: https://doc.zh-jieli.com/AC792/zh-cn/wifi_video_master/index.html
+The vendor SDK source is included directly at `chip/wl83/AC792_SDK` (release `AC792N_SDK_V3`, upstream commit `5abd533ffe108c35e3232d581f064b58f1983341`). Its `doc/` directory contains board schematic and layout references.
 
-## Known porting deltas vs wl82 (measured 2026-09, see tuyaos_adapter/include/chip_conf.h)
-
-- Vendor API surface is 58/59 identical; `bt_get_mac_addr()` is absent —
-  derive the BLE address from `le_controller_get_mac()` instead.
-- WiFi event enum: values 0..21 identical; >=22 shift because 792 inserts
-  five new events at 22. Never hand-copy extended values.
-- SDK layout differs (`sdk/` root, `cpu/wl83`), toolchain installs under
-  `/opt/jieli/common/bin` (pkgman.jieliapp.com), Windows IDE is Code::Blocks.
-- `jieli_build.py` carries a wl83 placeholder config (`JIELI_CHIP=wl83`);
-  its layout entries are unvalidated and must be pinned to the first
-  successful build.
+Official documentation: https://doc.zh-jieli.com/AC792/zh-cn/wifi_video_master/index.html

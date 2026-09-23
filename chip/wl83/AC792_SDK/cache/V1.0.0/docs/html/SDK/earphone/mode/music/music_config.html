@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>music模式配置 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../../_static/js/custom.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>music模式配置</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="music">
+<h1>music模式配置<a class="headerlink" href="#music" title="Permalink to this headline"></a></h1>
+<p>耳机SDK需要节省flash和ram空间，默认将music模式相关的配置关闭，需要手动打开。以下是一些music模式需要打开的配置项。</p>
+<p><strong>打开音乐模式</strong></p>
+<img alt="../../../../_images/music_config_001.png" src="../../../../_images/music_config_001.png" />
+<p><strong>解码格式配置</strong></p>
+<img alt="../../../../_images/music_config_002.png" src="../../../../_images/music_config_002.png" />
+<p><strong>配置SD卡</strong></p>
+<img alt="../../../../_images/music_config_003.png" src="../../../../_images/music_config_003.png" />
+<p><strong>配置U盘（可选）</strong></p>
+<img alt="../../../../_images/music_config_004.png" src="../../../../_images/music_config_004.png" />
+<p><strong>VDDIO提高到3.3V</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>SD卡、U盘的IO电压要求 &gt;= 3.3V。</p>
+</div>
+<img alt="../../../../_images/music_config_005.png" src="../../../../_images/music_config_005.png" />
+<p><strong>音乐模式音频流程图配置</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>也可以自己在其他流程图添加 本地音乐 支路</p>
+</div>
+<img alt="../../../../_images/music_config_006.png" src="../../../../_images/music_config_006.png" />
+<p><strong>提示音配置（可选）</strong></p>
+<img alt="../../../../_images/music_config_007.png" src="../../../../_images/music_config_007.png" />
+<p><strong>按键配置</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>用AD按键，IO按键按键数不够</p>
+</div>
+<img alt="../../../../_images/music_config_008.png" src="../../../../_images/music_config_008.png" />
+<p><strong>串口打印配置</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>注意串口默认DP，跟USB相关功能冲突，需要修改成其他IO</p>
+</div>
+<img alt="../../../../_images/music_config_009.png" src="../../../../_images/music_config_009.png" />
+<p><strong>USB读卡器功能兼容性注意</strong></p>
+<img alt="../../../../_images/music_config_010.png" src="../../../../_images/music_config_010.png" />
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

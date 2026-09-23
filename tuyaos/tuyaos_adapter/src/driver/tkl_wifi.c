@@ -4,6 +4,7 @@
 #include "tkl_thread.h"
 #include "tkl_queue.h"
 #include "tuya_error_code.h"
+#include "tkl_jieli_chip_mac.h"
 
 #include "lwip/port/lwip.h"
 
@@ -13,10 +14,14 @@
 static WIFI_EVENT_CB s_wifi_event_cb;
 static WF_WK_MD_E s_wifi_mode = WWM_STATION;
 
-/* The wl82 SDK's wifi_def.h uses a C++-only enum underlying-type syntax.
- * Keep the small ABI-facing declarations C-compatible in the Tuya adapter. */
+/* Both SDKs' wifi_def.h headers use C++-only enum underlying-type syntax.
+ * Keep the ABI declarations C-compatible, while preserving the per-chip
+ * wifi_sta_connect_state values (WL83 inserts CONNECTING after DISCONNECT). */
 enum jieli_wifi_state {
     JIELI_WIFI_DISCONNECT,
+#if defined(CONFIG_CPU_WL83)
+    JIELI_WIFI_CONNECTING,
+#endif
     JIELI_WIFI_CONNECT_SUCC,
     JIELI_WIFI_CONNECT_NO_SSID,
     JIELI_WIFI_CONNECT_ASSOC_FAIL,
@@ -422,11 +427,20 @@ OPERATE_RET tkl_wifi_set_ip(const WF_IF_E wf, NW_IP_S *ip)
 
 OPERATE_RET tkl_wifi_set_mac(const WF_IF_E wf, const NW_MAC_S *mac)
 {
+    OPERATE_RET rt;
+
     (void)wf;
     if (!mac) {
         return OPRT_INVALID_PARM;
     }
-    return jieli_result(wifi_set_mac((char *)mac->mac));
+    if (jieli_chip_mac_set_wifi(mac->mac) != 0) {
+        return OPRT_INVALID_PARM;
+    }
+    if (!wifi_is_on()) {
+        return OPRT_OK;
+    }
+    rt = jieli_result(wifi_set_mac((char *)mac->mac));
+    return rt;
 }
 
 OPERATE_RET tkl_wifi_get_mac(const WF_IF_E wf, NW_MAC_S *mac)
@@ -435,7 +449,7 @@ OPERATE_RET tkl_wifi_get_mac(const WF_IF_E wf, NW_MAC_S *mac)
     if (!mac) {
         return OPRT_INVALID_PARM;
     }
-    return jieli_result(wifi_get_mac(mac->mac));
+    return jieli_chip_mac_get_wifi(mac->mac) == 0 ? OPRT_OK : OPRT_COM_ERROR;
 }
 
 OPERATE_RET tkl_wifi_set_work_mode(const WF_WK_MD_E mode)
@@ -546,42 +560,56 @@ typedef struct {
 
 static TKL_QUEUE_HANDLE s_sta_work_queue;
 static TKL_THREAD_HANDLE s_sta_worker_thread;
+/* The vendor Wi-Fi connect path may retain these pointers after
+ * wifi_enter_sta_mode() returns. Keep the credentials in static storage, as
+ * the reference ipc_ac7916a adapter does with jl_on_ssid/jl_on_password. */
+static char s_sta_ssid[WIFI_SSID_LEN + 1];
+static char s_sta_passwd[WIFI_PASSWD_LEN + 1];
 
-static void jieli_sta_connect_work(jieli_sta_work_t *work)
+static void jieli_sta_connect_work(const jieli_sta_work_t *work)
 {
     int result;
 
-    printf("[JIELI][WIFI] sta worker begin ssid_len:%u\n", (unsigned int)strlen(work->ssid));
+    memcpy(s_sta_ssid, work->ssid, sizeof(s_sta_ssid));
+    memcpy(s_sta_passwd, work->passwd, sizeof(s_sta_passwd));
+    printf("[JIELI][WIFI] sta worker begin ssid_len:%u passwd_len:%u\n",
+           (unsigned int)strlen(s_sta_ssid), (unsigned int)strlen(s_sta_passwd));
     if (!wifi_is_on() && wifi_on() != 0) {
         printf("[JIELI][WIFI] sta worker wifi_on failed\n");
         if (s_wifi_event_cb != NULL) {
             s_wifi_event_cb(WFE_CONNECT_FAILED, NULL);
         }
     } else {
+        uint8_t mac[6];
+        if (jieli_chip_mac_get_wifi(mac) != 0 || wifi_set_mac((char *)mac) != 0) {
+            printf("[JIELI][WIFI] sta worker MAC setup failed\n");
+            if (s_wifi_event_cb != NULL) {
+                s_wifi_event_cb(WFE_CONNECT_FAILED, NULL);
+            }
+            return;
+        }
         wifi_clear_scan_result();
         wifi_set_sta_connect_best_ssid(0);
-        result = wifi_enter_sta_mode(work->ssid, work->passwd);
+        result = wifi_enter_sta_mode(s_sta_ssid, s_sta_passwd);
         printf("[JIELI][WIFI] station connect ssid_len:%u passwd_len:%u native_result:%d\n",
-               (unsigned int)strlen(work->ssid), (unsigned int)strlen(work->passwd), result);
+               (unsigned int)strlen(s_sta_ssid), (unsigned int)strlen(s_sta_passwd), result);
         if (result != 0 && s_wifi_event_cb != NULL) {
             /* A rejected association request produces no vendor event. */
             s_wifi_event_cb(WFE_CONNECT_FAILED, NULL);
         }
     }
-    tkl_system_free(work);
 }
 
 static void jieli_wifi_worker(void *arg)
 {
-    jieli_sta_work_t *work = NULL;
+    jieli_sta_work_t work;
 
     (void)arg;
     for (;;) {
         /* tkl_queue_fetch() maps an infinite timeout to zero ticks, so poll
          * with a bounded timeout instead of trying to block forever. */
-        if (tkl_queue_fetch(s_sta_work_queue, &work, 100) == OPRT_OK && work != NULL) {
-            jieli_sta_connect_work(work);
-            work = NULL;
+        if (tkl_queue_fetch(s_sta_work_queue, &work, 100) == OPRT_OK) {
+            jieli_sta_connect_work(&work);
         }
     }
 }
@@ -591,7 +619,7 @@ static OPERATE_RET jieli_wifi_worker_start(void)
     OPERATE_RET rt;
 
     if (s_sta_work_queue == NULL) {
-        rt = tkl_queue_create_init(&s_sta_work_queue, sizeof(void *), JIELI_WIFI_WORK_QUEUE_LEN);
+        rt = tkl_queue_create_init(&s_sta_work_queue, sizeof(jieli_sta_work_t), JIELI_WIFI_WORK_QUEUE_LEN);
         if (rt != OPRT_OK) {
             return rt;
         }
@@ -608,7 +636,7 @@ static OPERATE_RET jieli_wifi_worker_start(void)
 
 OPERATE_RET tkl_wifi_station_connect(const int8_t *ssid, const int8_t *passwd)
 {
-    jieli_sta_work_t *work;
+    jieli_sta_work_t work = {0};
     OPERATE_RET rt;
 
     if (!ssid || !passwd) {
@@ -617,18 +645,13 @@ OPERATE_RET tkl_wifi_station_connect(const int8_t *ssid, const int8_t *passwd)
     if (s_sta_work_queue == NULL) {
         return OPRT_COM_ERROR;
     }
-    work = (jieli_sta_work_t *)tkl_system_calloc(1, sizeof(*work));
-    if (work == NULL) {
-        return OPRT_MALLOC_FAILED;
-    }
-    strncpy(work->ssid, (const char *)ssid, sizeof(work->ssid) - 1);
-    strncpy(work->passwd, (const char *)passwd, sizeof(work->passwd) - 1);
+    strncpy(work.ssid, (const char *)ssid, sizeof(work.ssid) - 1);
+    strncpy(work.passwd, (const char *)passwd, sizeof(work.passwd) - 1);
 
     s_wifi_mode = WWM_STATION;
     rt = tkl_queue_post(s_sta_work_queue, &work, 0);
-    printf("[JIELI][WIFI] station connect queued ssid_len:%u rt:%d\n", (unsigned int)strlen(work->ssid), rt);
+    printf("[JIELI][WIFI] station connect queued ssid_len:%u rt:%d\n", (unsigned int)strlen(work.ssid), rt);
     if (rt != OPRT_OK) {
-        tkl_system_free(work);
         return rt;
     }
     return OPRT_OK;

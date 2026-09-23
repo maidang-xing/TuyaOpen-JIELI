@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>6.5. 省电容麦 FAQ &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../_static/js/custom.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="6.6. IIS FAQ" href="IIS_FAQ.html" />
+    <link rel="prev" title="6.4. ADC FAQ" href="ADC_FAQ.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">6. 音频FAQ</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Licensing_FAQ.html">6.1. 授权FAQ（Licensing）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DAC_FAQ/index.html">6.2. DAC FAQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ClassD_FAQ.html">6.3. Class-D FAQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ADC_FAQ.html">6.4. ADC FAQ</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">6.5. 省电容麦 FAQ</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">6.5.1. 注意事项</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">6.5.2. 音频指标差</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">6.5.3. 采集声音异常</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="IIS_FAQ.html">6.6. IIS FAQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bt_music_FAQ.html">6.7. 蓝牙音乐FAQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bt_call_FAQ.html">6.8. 蓝牙通话FAQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Codec_FAQ.html">6.9. 编解码FAQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="HiRes_FAQ.html">6.10. Hi-Res Audio FAQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="UART_Data_Export_FAQ.html">6.11. 串口数据导出FAQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="JLStudio_Audio_Flow_FAQ.html">6.12. 可视化音频流FAQ</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html"><span class="section-number">6. </span>音频FAQ</a> &raquo;</li>
+      <li><span class="section-number">6.5. </span>省电容麦 FAQ</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="faq">
+<h1><span class="section-number">6.5. </span>省电容麦 FAQ<a class="headerlink" href="#faq" title="Permalink to this headline"></a></h1>
+<p>适用系列：JL706N、JL707N、AW32N、JL710N</p>
+<p><mark>省电容麦使用指引：</mark><a class="reference internal" href="../audio_config/mic_capless_manual.html"><span class="doc std std-doc">点击跳转🔗</span></a></p>
+<section id="id1">
+<h2><span class="section-number">6.5.1. </span>注意事项<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<p>省电容MIC需要使用最低ADC增益档位（推荐0dB，ADC节点中配置），在数据流中使用Limiter/DRC进行数字放大并限幅<br></p>
+</section>
+<section id="id2">
+<h2><span class="section-number">6.5.2. </span>音频指标差<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p><strong>问题现象</strong>：若AP机与芯片端均提供直流偏置，会出现THD+N等指标测试异常的情况</p></li>
+<li><p><strong>原因分析</strong>：使用AP机测试省电容mic性能时，仅需要由AP机提供直流偏置（大小参考VCM偏置），芯片端不需要提供偏置</p></li>
+<li><p><strong>使用示例</strong>：</p>
+<ul>
+<li><p>AP机配置输出偏置电压<br>
+<img alt="" src="../../_images/mic_capless_0.png" /></p></li>
+<li><p>芯片端配置不输出偏置<br>
+<img alt="" src="../../_images/mic_capless_1.png" /></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="id3">
+<h2><span class="section-number">6.5.3. </span>采集声音异常<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p><strong>问题现象</strong>：喊话无声或仅吹气有声</p></li>
+<li><p><strong>原因分析</strong>：测量mic脚直流电压，若与配置的vcm电压值有较大偏差，可判定为trim异常，需要使用debug开关查看打印确认延时。</p></li>
+<li><p><strong>使用示例</strong>：</p>
+<ul>
+<li><p>debug步骤：<br>
+1、打开 const_mic_capless_open_delay_debug，可打印打开adc后，mic_bias需要多长时间才能达到/接近稳定的电压值<br>
+2、将该延时配置到 open_delay_ms 中<br>
+3、关闭 const_mic_capless_open_delay_debug<br>
+4、打开 const_mic_capless_trim_delay_debug，可打印第一次trim后，mic_bias需要多长时间才能达到/接近稳定的电压值<br>
+5、将该延时配置到 trim_delay_ms 中<br>
+6、关闭 const_mic_capless_trim_delay_debug<br><br></p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ADC_FAQ.html" class="btn btn-neutral float-left" title="6.4. ADC FAQ" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="IIS_FAQ.html" class="btn btn-neutral float-right" title="6.6. IIS FAQ" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

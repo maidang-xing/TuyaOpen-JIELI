@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>复位系统 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../_static/js/custom.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>复位系统</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="id1">
+<h1>复位系统<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h1>
+<p>1、系统的复位流程，为保证各系统的正确运行，主系统的复位可导致子系统复位，反之亦如此，如下图sys reset：</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../../../_images/reset.svg"><img alt="复位" src="../../../_images/reset.svg" width="500" /></a>
+</figure>
+<section id="id2">
+<h2>复位原因<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<p>系统复位的原因包括两种，第一种为系统复位源，第二种为自定义的复位源，例如断言软复位、异常软复位，是系统复位源的扩展，提供扩展信息、调试功能等</p>
+</section>
+<section id="reset-source-dump">
+<h2>reset_source_dump<a class="headerlink" href="#reset-source-dump" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><p>打印及记录复位源，调用此函数之后才能够使用判断复位源接口。</p>
+</div></blockquote>
+<p>原型:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">reset_source_dump</span><span class="p">();</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="is-reset-source">
+<h2>is_reset_source<a class="headerlink" href="#is-reset-source" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><p>判断是否为指定复位源。</p>
+</div></blockquote>
+<p>原型:</p>
+<p>}；</p>
+<blockquote>
+<div><p>u8 is_reset_source(enum RST_REASON index);</p>
+</div></blockquote>
+<p>参数:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 69%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>index</p></td>
+<td><p>复位源</p></td>
+</tr>
+<tr class="row-even"><td><p>返回值</p></td>
+<td><p>是否为指定复位源</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="system-reset">
+<h2>system_reset<a class="headerlink" href="#system-reset" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><p>调用该函数可以使系统软复位，并且可标记是什么类型的复位。</p>
+</div></blockquote>
+<p>原型:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">enum</span><span class="w"> </span><span class="n">RESET_FLAG</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">RESET_FLAG_NULL</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">EXCEPTION_FLAG</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">ASSERT_FLAG</span><span class="p">,</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="c1">//RESET_FLAG在RESET_REASON中偏移32位来标记</span>
+<span class="c1">//即：</span>
+<span class="c1">//EXCEPTION_FLAG ---- RESET_REASON的32位</span>
+<span class="c1">//ASSERT_FLAG ---- RESET_REASON的32位</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">system_reset</span><span class="p">(</span><span class="k">enum</span><span class="w"> </span><span class="n">RESET_FLAG</span><span class="w"> </span><span class="n">flag</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>参数:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 69%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>flag</p></td>
+<td><p>需要标记的复位信息</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<dl class="simple">
+<dt>示例：</dt><dd><p>system_reset(EXCEPTION_FLAG),复位之后可通过is_reset_source(P33_EXCEPTION_SOFT_RST)读取该复位源为异常复位</p>
+</dd>
+</dl>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

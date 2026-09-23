@@ -1,0 +1,18 @@
+# Frequency Compressor
+## 功能介绍
+检测信号的幅度如果超过所设定的阈值，则按比例压缩输入信号所设置的频率的幅度
+
+## 参数介绍
+- **nSecton:** frequency compressor的中心频率的个数 改变走申请buf重新初始化
+- **FC:** frequency compressor的中心频率
+- **Q：** frequency compressor的Q值
+- **Attack Time:** frequency compressor的启动时间;
+- **Release Time:** frequency compressor的释放时间;
+- **Threshold:** frequency compressor的阈值，阈值以下frequency compressor不生效;
+- **Ratio:** 输入信号超过阈值的压缩比例;
+- **Rms Time:** rms检测时间;   改变走申请buf重新初始化
+- **Gain:** 输入信号或者检测信号的增益;
+- **Type:** 滤波器类型;
+- **Gain Type:** 增益作用域，增益作用于检测或者输入信号或者检测与输入信号;
+- **Bypass：** 勾选后当前的段不运行;  改变走申请buf 重新初始化
+

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build and package a TuyaOpen example with the Jieli wl82 SDK."""
+"""Build and package a TuyaOpen example with a Jieli chip SDK."""
 
 from __future__ import annotations
 
@@ -12,10 +12,10 @@ from pathlib import Path
 
 from jieli_build import (
     BuildError,
-    TOOLS_RELATIVE,
     build_make_command,
     create_staging_tree,
     find_qio_artifact,
+    resolve_chip,
     resolve_sdk_root,
     resolve_tool_path,
     resolve_tool_dir,
@@ -42,8 +42,8 @@ def _run(command: list[str], cwd: Path, env: dict[str, str]) -> None:
 
 
 def _generate_raw_app_bin(elf: Path, tools_dir: Path, tool_dir: Path) -> Path:
-    """Generate the raw AC79 application image when host-client is absent."""
-    sections = (".text", ".data", ".ram0_data", ".cache_ram_data", ".dynamic_data")
+    """Generate the raw image with the section layout of the selected SDK."""
+    sections = resolve_chip().raw_app_sections
     objcopy = resolve_tool_path(tool_dir, "objcopy")
     if not objcopy.is_file():
         raise BuildError(f"Jieli objcopy not found: {objcopy}")
@@ -71,7 +71,8 @@ def _generate_raw_app_bin(elf: Path, tools_dir: Path, tool_dir: Path) -> Path:
 
 
 def _run_postbuild(sdk_root: Path, tool_dir: Path, env: dict[str, str]) -> None:
-    tools_dir = sdk_root / TOOLS_RELATIVE
+    chip = resolve_chip()
+    tools_dir = sdk_root / chip.sdk_source_relative / chip.tools_relative
     command_text = env.get("JIELI_POSTBUILD_CMD", "").strip()
     if command_text:
         _run(shlex.split(command_text), tools_dir, env)
@@ -89,6 +90,11 @@ def _run_postbuild(sdk_root: Path, tool_dir: Path, env: dict[str, str]) -> None:
 
 
 def build(params: dict[str, str]) -> Path:
+    chip = params.get("CONFIG_CHIP_CHOICE", "wl82").strip() or "wl82"
+    if chip not in ("wl82", "wl83"):
+        raise BuildError(f"unsupported Jieli chip '{chip}'")
+    os.environ["JIELI_CHIP"] = chip
+    full_stack = params.get("CONFIG_JIELI_MINIMAL_HELLO") != "y"
     sdk_root = resolve_sdk_root()
     tool_dir = resolve_tool_dir(sdk_root)
     tuyaopen_root = Path(params.get("OPEN_ROOT", ""))
@@ -100,7 +106,6 @@ def build(params: dict[str, str]) -> Path:
     staging_root = output_dir.parent / "jieli-staging"
     header_dir_text = params.get("OPEN_HEADER_DIR", "").split()
     header_dir = Path(header_dir_text[0]) if header_dir_text else None
-    full_stack = params.get("CONFIG_JIELI_MINIMAL_HELLO") != "y"
     tuya_lib_dir = Path(params.get("OPEN_LIBS_DIR", "")) if full_stack else None
     build_root = create_staging_tree(
         sdk_root,
@@ -109,11 +114,14 @@ def build(params: dict[str, str]) -> Path:
         header_dir,
         full_stack=full_stack,
         tuya_lib_dir=tuya_lib_dir,
+        uart_log_port=int(params.get("CONFIG_JIELI_UART_LOG_PORT", "1" if chip == "wl82" else "0")),
+        uart_log_baudrate=int(params.get("CONFIG_JIELI_UART_LOG_BAUDRATE", "1000000")),
     )
     jobs = max(1, int(os.environ.get("JIELI_BUILD_JOBS", "1")))
     env = os.environ.copy()
+    vendor_source_root = sdk_root / resolve_chip().sdk_source_relative
     env["PATH"] = os.pathsep.join(
-        (str(tool_dir), str(sdk_root / "tools/utils"), env.get("PATH", ""))
+        (str(tool_dir), str(vendor_source_root / "tools/utils"), env.get("PATH", ""))
     )
     env["OBJDUMP"] = str(resolve_tool_path(tool_dir, "objdump"))
     env["OBJSIZEDUMP"] = str(resolve_tool_path(tool_dir, "objsizedump"))
@@ -121,8 +129,9 @@ def build(params: dict[str, str]) -> Path:
     command = build_make_command(build_root, tool_dir, jobs)
     _run(command, build_root, env)
 
-    tools_dir = build_root / TOOLS_RELATIVE
-    elf = tools_dir / "sdk.elf"
+    profile = resolve_chip()
+    tools_dir = build_root / profile.sdk_source_relative / profile.tools_relative
+    elf = build_root / profile.sdk_source_relative / profile.elf_relative
     if not elf.is_file() or elf.stat().st_size == 0:
         raise BuildError(f"Jieli linker did not produce {elf}")
 
@@ -136,17 +145,27 @@ def build(params: dict[str, str]) -> Path:
     return output
 
 
-def clean() -> None:
+def clean(param_dir: Path, params: dict[str, str]) -> None:
+    """Remove only generated bridge outputs, without shelling into the SDK."""
+    chip_name = params.get("CONFIG_CHIP_CHOICE", "wl82").strip() or "wl82"
+    if chip_name not in ("wl82", "wl83"):
+        raise BuildError(f"unsupported Jieli chip '{chip_name}'")
+    os.environ["JIELI_CHIP"] = chip_name
+    chip = resolve_chip()
     sdk_root = resolve_sdk_root()
-    tool_dir = resolve_tool_dir(sdk_root)
-    env = os.environ.copy()
-    env["PATH"] = os.pathsep.join((str(tool_dir), env.get("PATH", "")))
-    _run(
-        ["make", "-C", str(sdk_root / "apps/demo/demo_hello/board/wl82"),
-         f"TOOL_DIR={tool_dir}", "clean"],
-        sdk_root,
-        env,
-    )
+    for relative_path in (
+        chip.sdk_source_relative / chip.elf_relative,
+        chip.sdk_source_relative / chip.tools_relative / "app.bin",
+    ):
+        artifact = sdk_root / relative_path
+        if artifact.is_file():
+            artifact.unlink()
+            print(f"[JIELI] removed generated artifact: {artifact}")
+
+    staging_root = param_dir.parent / "jieli-staging"
+    if staging_root.is_dir():
+        shutil.rmtree(staging_root)
+        print(f"[JIELI] removed staging tree: {staging_root}")
 
 
 def main(argv: list[str]) -> int:
@@ -156,10 +175,11 @@ def main(argv: list[str]) -> int:
     try:
         param_dir = Path(argv[1])
         param_file = param_dir / "build_param.config"
+        params = parse_build_params(param_file)
         if argv[2] == "clean":
-            clean()
+            clean(param_dir, params)
         else:
-            build(parse_build_params(param_file))
+            build(params)
     except (BuildError, OSError, ValueError) as exc:
         print(f"[JIELI] build failed: {exc}", file=sys.stderr)
         return 1

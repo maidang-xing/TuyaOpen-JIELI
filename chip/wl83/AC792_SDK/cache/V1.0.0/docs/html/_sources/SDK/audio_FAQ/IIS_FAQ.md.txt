@@ -1,0 +1,38 @@
+# IIS FAQ
+
+## 小机作IIS主机，更改全局采样率后出现播放卡顿等异常
+### 排查方法
+- 示波器测量LRCLK：
+    - 与采样率相同：排查流程问题，是否CPU占用过多
+    - 与采样率不同：PLL时钟设置有误
+
+### PLL时钟与IIS采样率之间的对应关系
+- 192MHz PLL
+    - 仅支持**44.1k组**采样率
+- 240MHz PLL
+    - 支持**44.1k组**、**48k组**采样率
+
+<font color=#FF0000 size=2 >*注：<br><b>44.1k组</b> [11.025k，22.05，44.1k，88.2k，176.4k]<br><b>48k组</b> [8k，12k，16k，24k，32k，48k，64k，96k，192k]*</font><br>
+
+### PLL时钟设置
+```c
+//setup.c 中由该函数设置，需要确认是否跑到正确的分支
+clk_early_init(PLL_REF_XOSC_DIFF, TCFG_CLOCK_OSC_HZ, 240 * MHz);
+```
+
+## IIS与DAC同时输出，出现协商不过或卡顿问题
+可参考：媒体框图->IIS+DAC(单声道/立体声)<br>
+注意事项：
+- const变量`config_dev_sync_enable`置1。<br>
+- IIS与DAC挂载在同一个音频分流器上时：<br>
+    * DAC需要挂载在音频分流器下面的接口，作为主设备。<br>
+    * IIS需要挂载在音频分流器上面的接口，同时进行如下配置：<br>
+        **IIS0_TX->多设备输出配置->设备属性->从设备**
+
+## 如何保持时钟
+IIS作主机时，默认SDK在音频输出关闭后会关闭IIS时钟，可能会导致部分外接功放出现po声，此处提供了保持时钟配置。<br>
+```c
+//audio_config_def.h
+//配置为0时，时钟保持
+#define TCFG_AUDIO_IIS_CLOCK_CLOSE          0
+```

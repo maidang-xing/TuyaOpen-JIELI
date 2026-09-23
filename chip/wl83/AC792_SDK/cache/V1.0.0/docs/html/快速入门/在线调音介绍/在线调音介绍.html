@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2.3. 在线调音介绍 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../_static/js/custom.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="1. 音频播放" href="../../SDK/audio/index.html" />
+    <link rel="prev" title="2.2. 音频流程图介绍" href="../%E9%9F%B3%E9%A2%91%E6%B5%81%E7%A8%8B%E5%9B%BE%E4%BB%8B%E7%BB%8D/%E9%9F%B3%E9%A2%91%E6%B5%81%E7%A8%8B%E5%9B%BE%E4%BB%8B%E7%BB%8D.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../SDK/framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">2. 快速入门</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../jltool/%E9%85%8D%E7%BD%AE%E5%B7%A5%E5%85%B7.html">2.1. 可视化工具使用介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../%E9%9F%B3%E9%A2%91%E6%B5%81%E7%A8%8B%E5%9B%BE%E4%BB%8B%E7%BB%8D/%E9%9F%B3%E9%A2%91%E6%B5%81%E7%A8%8B%E5%9B%BE%E4%BB%8B%E7%BB%8D.html">2.2. 音频流程图介绍</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">2.3. 在线调音介绍</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">2.3.1. 功能配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">2.3.2. 连接样机</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">2.3.3. 调音</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../SDK/audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../SDK/audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../SDK/audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../SDK/audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../SDK/audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../SDK/audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html"><span class="section-number">2. </span>快速入门</a> &raquo;</li>
+      <li><span class="section-number">2.3. </span>在线调音介绍</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="id1">
+<h1><span class="section-number">2.3. </span>在线调音介绍<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h1>
+<blockquote>
+<div><p>在开发的过程中，通常需要在线调试，实时感受音效效果，可视化配置工具能够让开发者更好地完成音效的调试与确认，并且以数据流形式呈现，更加直观，调试方法如下：</p>
+</div></blockquote>
+<section id="id2">
+<h2><span class="section-number">2.3.1. </span>功能配置<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><p>在开始音效调试之前，需要配置工具对应的配置才能生效，如下：</p>
+<figure class="align-default">
+<img alt="../../_images/在线调音使能.png" src="../../_images/在线调音使能.png" />
+</figure>
+<p>（1）如果通讯是通过USB连接，通讯方式选择USB</p>
+<figure class="align-default">
+<img alt="../../_images/USB通讯方式.png" src="../../_images/USB通讯方式.png" />
+</figure>
+<p>（2）如果通讯是通过串口线连接，通讯方式选择串口</p>
+<figure class="align-default">
+<img alt="../../_images/串口通讯方式.png" src="../../_images/串口通讯方式.png" />
+</figure>
+</div></blockquote>
+</section>
+<section id="id3">
+<h2><span class="section-number">2.3.2. </span>连接样机<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<p>1.如果是通过USB线通讯</p>
+<blockquote>
+<div><p>（1） 将USB线连接到小机，打开配置工具，点击未连接区域，选择USB串行设备</p>
+<figure class="align-default">
+<img alt="../../_images/选择USB串行设备.png" src="../../_images/选择USB串行设备.png" />
+</figure>
+<p>（2）选择通讯波特率，点击连接</p>
+<figure class="align-default">
+<img alt="../../_images/点击连接.png" src="../../_images/点击连接.png" />
+</figure>
+<p>（3）连接成功后，状态显示会变成绿色</p>
+<figure class="align-default">
+<img alt="../../_images/状态显示.png" src="../../_images/状态显示.png" />
+</figure>
+</div></blockquote>
+<p>2.如果是通过串口线通讯</p>
+<blockquote>
+<div><p>（1）将串口线连接到小机，打开配置工具，点击未连接区域，选择对应的串口设备端口</p>
+<figure class="align-default">
+<img alt="../../_images/选择串口设备.png" src="../../_images/选择串口设备.png" />
+</figure>
+<p>（2）选择通讯波特率，点击连接</p>
+<figure class="align-default">
+<img alt="../../_images/点击连接串口.png" src="../../_images/点击连接串口.png" />
+</figure>
+<p>（3）连接成功后，状态显示会变成绿色</p>
+<figure class="align-default">
+<img alt="../../_images/状态显示.png" src="../../_images/状态显示.png" />
+</figure>
+</div></blockquote>
+</section>
+<section id="id4">
+<h2><span class="section-number">2.3.3. </span>调音<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h2>
+<p>通过上面1或者2步骤连接上样机后，就可以进行在线调试</p>
+<p>1.可通过选择需要调音的模块，例如某通路的EQ模块进行调试</p>
+<blockquote>
+<div><blockquote>
+<div><figure class="align-default">
+<img alt="../../_images/选择需要调音的模块.png" src="../../_images/选择需要调音的模块.png" />
+</figure>
+</div></blockquote>
+<p>（1）按需调节参数</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../_images/按需调试.png" src="../../_images/按需调试.png" />
+</figure>
+</div></blockquote>
+<p>（2）如果对调音有更高的需求，可以选择节点配置进行配置</p>
+<blockquote>
+<div><blockquote>
+<div><figure class="align-default">
+<img alt="../../_images/高级需求.png" src="../../_images/高级需求.png" />
+</figure>
+<figure class="align-default">
+<img alt="../../_images/高级需求调整.png" src="../../_images/高级需求调整.png" />
+</figure>
+</div></blockquote>
+<p>（3）设置多个参数组进行确认，提供对应节点的帮助文档，协助调试</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../_images/设置多组参数.png" src="../../_images/设置多组参数.png" />
+</figure>
+</div></blockquote>
+<p>（4）设置多组参数后，也可以在调试界面切换，方便确认</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../_images/参数切换.png" src="../../_images/参数切换.png" />
+</figure>
+</div></blockquote>
+<p>（5）调试过程的参数可实时更新到样机中</p>
+</div></blockquote>
+</div></blockquote>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../%E9%9F%B3%E9%A2%91%E6%B5%81%E7%A8%8B%E5%9B%BE%E4%BB%8B%E7%BB%8D/%E9%9F%B3%E9%A2%91%E6%B5%81%E7%A8%8B%E5%9B%BE%E4%BB%8B%E7%BB%8D.html" class="btn btn-neutral float-left" title="2.2. 音频流程图介绍" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../SDK/audio/index.html" class="btn btn-neutral float-right" title="1. 音频播放" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

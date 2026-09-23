@@ -1,0 +1,28 @@
+# 省电容麦 FAQ
+适用系列：JL706N、JL707N、AW32N、JL710N
+
+<mark>省电容麦使用指引：</mark>[点击跳转🔗](./../audio_config/mic_capless_manual.md)
+
+## 注意事项
+省电容MIC需要使用最低ADC增益档位（推荐0dB，ADC节点中配置），在数据流中使用Limiter/DRC进行数字放大并限幅<br>
+
+## 音频指标差
+- **问题现象**：若AP机与芯片端均提供直流偏置，会出现THD+N等指标测试异常的情况
+- **原因分析**：使用AP机测试省电容mic性能时，仅需要由AP机提供直流偏置（大小参考VCM偏置），芯片端不需要提供偏置
+- **使用示例**：
+    - AP机配置输出偏置电压<br>
+    ![](./assets/mic_capless_0.png)
+    - 芯片端配置不输出偏置<br>
+    ![](./assets/mic_capless_1.png)
+
+## 采集声音异常
+- **问题现象**：喊话无声或仅吹气有声
+- **原因分析**：测量mic脚直流电压，若与配置的vcm电压值有较大偏差，可判定为trim异常，需要使用debug开关查看打印确认延时。
+- **使用示例**：
+    - debug步骤：<br>
+    1、打开 const_mic_capless_open_delay_debug，可打印打开adc后，mic_bias需要多长时间才能达到/接近稳定的电压值<br>
+    2、将该延时配置到 open_delay_ms 中<br>
+    3、关闭 const_mic_capless_open_delay_debug<br>
+    4、打开 const_mic_capless_trim_delay_debug，可打印第一次trim后，mic_bias需要多长时间才能达到/接近稳定的电压值<br>
+    5、将该延时配置到 trim_delay_ms 中<br>
+    6、关闭 const_mic_capless_trim_delay_debug<br><br>

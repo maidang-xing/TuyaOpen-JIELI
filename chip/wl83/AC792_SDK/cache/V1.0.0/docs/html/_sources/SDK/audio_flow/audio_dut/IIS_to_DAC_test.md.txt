@@ -1,0 +1,9 @@
+# IIS_to_DAC
+
+## 预设数据流说明
+- **IIS_to_DAC(mono)**<br>
+![](./assets/IIS_to_DAC_mono.png)
+    - IIS输入为双声道，DAC输出单声道的时候，需要增加**ChannelMerge**进行声道适配
+- **IIS_to_DAC(stereo)**<br>
+![](./assets/IIS_to_DAC_stereo.png)
+    - IIS输入为双声道，DAC输出双声道，无需增加声道适配

@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FindMy &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../_static/js/custom.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>FindMy</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="findmy">
+<h1>FindMy<a class="headerlink" href="#findmy" title="Permalink to this headline"></a></h1>
+<blockquote>
+<div><p>本文档基于<code class="docutils literal notranslate"><span class="pre">release/AC701N_watch_release_V3.0.0</span></code> ，使用<code class="docutils literal notranslate"><span class="pre">AC701N</span> <span class="pre">Watch</span> <span class="pre">Develp</span> <span class="pre">v1.1</span></code>开发板环境进行验证 ,其余SDK的findmy功能使用可以参考此文档</p>
+</div></blockquote>
+<section id="id1">
+<h2>findmy原理简介和概述<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<p><img alt="image1" src="../../../_images/findmy_principle.png" /></p>
+<ol class="arabic simple">
+<li><p>Find My 是苹果公司提供的一种寻找丢失设备的服务和协议。它可以帮助用户定位并追踪丢失的苹果设备，如 AirTag 和 AirPods 等。findmy协议依托庞大的findmy network网络，即使本身没有 GPS 模块，也能利用它周围的苹果设备（iPhone，iPad，Mac）来帮助其定位。</p></li>
+<li><p>如图1，在findmy协议中主要可以分为以下角色：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">拥有者设备（Owner</span> <span class="pre">device）</span></code>：拥有者设备是用户的苹果设备，如iPhone或iPad，通过使用Find My应用程序与外设进行连接和配对。拥有者设备与用户的Apple ID关联，并成为Find My网络的拥有者设备角色。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Find</span> <span class="pre">My服务器（findmy</span> <span class="pre">apple</span> <span class="pre">server）</span></code>：Find My功能涉及到苹果的服务器，用于处理设备的定位和数据传输。这些服务器经过IOS设备通过网络协议接收来自支持Find My功能的设备发送的定位数据，并将其提供给用户的Find My应用程序进行显示和处理。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">外设（Accessory）</span></code>：外设是实现了Find My网络协议的设备，如AirTag或其他支持Find My功能的设备（使用烧录JL FindMy SDK的芯片的产品）。外设可以通过与拥有者设备进行BLE协议连接和配对数据交互，加入Find My网络。</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="id2">
+<h2>快速上手<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<p>本章节主要介绍拿到sdk后如何快速运行findmy应用功能（基于release/AC701N_watch_release_V3.0.0）</p>
+<section id="id3">
+<h3>开发环境搭建<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>首先请确保正确的搭建了 Windows 下的第三方集成开发环境 CodeBlocks和杰理的编译工具链 jl_toolchain。</p></li>
+</ul>
+<p>https://doc.zh-jieli.com/AC63/zh-cn/master/getting_started/environmental_install/index.html</p>
+<ul class="simple">
+<li><p>打开findmy功能</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">board_701n_demo_cfg.h</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#ifdef CONFIG_APP_BT_ENABLE</span>
+<span class="cp">#define    TRANS_DATA_EN             0</span>
+<span class="cp">#define    SMART_BOX_EN 			 1</span>
+<span class="cp">#define    OTA_RX_EN 			     0</span>
+<span class="cp">#define    FINDMY_EN                 1</span>
+<span class="cp">#else</span>
+<span class="cp">#define    TRANS_DATA_EN             0</span>
+<span class="cp">#define    SMART_BOX_EN 			 0</span>
+<span class="cp">#define    OTA_RX_EN 			     0</span>
+<span class="cp">#define    FINDMY_EN                 0</span>
+<span class="cp">#endif</span>
+</pre></div>
+</div>
+</section>
+<section id="id4">
+<h3>添加苹果授权信息<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>由于findmy配件还需要依赖苹果服务器去做功能的运转，因此需要向苹果申请对应的授权信息才能成功绑定入网,注意第一次烧写一定要修改以下信息，这个只是JL的示例数据无法正常使用，否则无法配对入网。</p>
+</div>
+<p>授权信息的修改文件位于：<code class="docutils literal notranslate"><span class="pre">ble_fmy_cfg.h</span></code></p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="c1">// fmy authentication information</span>
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">fmy_serial_number</span><span class="p">[</span><span class="mi">16</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">fmy_product_data</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">xxx</span><span class="p">};</span><span class="c1">//JL</span>
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">fmy_Server_Encryption_Key</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">fmy_Signature_Verification_Key</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="p">;</span><span class="w"></span>
+
+<span class="cp">#if UUID_TOKEN_IS_BASE64_MODE</span>
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">fmy_token_uuid_char</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">fmy_token_auth_char</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="p">;</span><span class="w"></span>
+
+<span class="cp">#else</span>
+
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">fmy_token_uuid_hex</span><span class="p">[</span><span class="mi">16</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">   </span><span class="n">xxx</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">fmy_token_auth_hex</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">   </span><span class="n">xxx</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+<span class="cp">#endif</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fmy_serial_number</span></code>：从apple申请的序列序列号</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fmy_product_data</span></code>：从apple申请的产品信息</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fmy_Server_Encryption_Key</span></code>：从apple申请的Encryption_Key</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fmy_Signature_Verification_Key</span></code>：从apple申请的Verification_Key</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fmy_token_uuid_char</span></code>：从mfi申请的每个产品授权的uuid</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fmy_token_auth_char</span></code>：从mfi申请的每个产品授权的token</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fmy_token_uuid_hex</span></code>:从mfi申请的每个产品授权的uuid的十六进制格式</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fmy_token_auth_hex</span></code>:从mfi申请的每个产品授权的token的十六进制格式</p></li>
+</ul>
+<blockquote>
+<div><p>正确烧写苹果授权数据后，此时之后的固件烧写不会影响苹果的授权数据，并且每次新的绑定后都会进行新的密钥轮转（除非你擦除了所有的flash数据，非必要不要擦除所有flash数据）。</p>
+</div></blockquote>
+</section>
+<section id="id5">
+<h3>添加杰理授权使用<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h3>
+<p>目前JL FindMy SDK对fmna.a库进行授权的方式进行生产样机个数进行收费，有关授权算法的使用介绍如下:</p>
+<p>https://doc.zh-jieli.com/Tools/zh-cn/mass_prod_tools/multi_auth/index.html</p>
+<p>并且参考以下步骤完成对授权数据的烧录：</p>
+<p>https://doc.zh-jieli.com/Tools/zh-cn/mass_prod_tools/multi_auth/prod-user.html#authroization-id</p>
+<p>操作步骤提示如下：</p>
+<ul class="simple">
+<li><p>获取授权Lic： 请在下单采购701N具体芯片型号时，备注“findmy多算法授权”，并联系珠海杰理客服。</p></li>
+<li><p>修改授权文件名称，并放在cpu的下载目录(和download.bat一个路径)才能编译生成带算法授权功能的fw文件。其中tkn文件的名字应与<code class="docutils literal notranslate"><span class="pre">isd_config.ini</span></code>的配置信息一致 <code class="docutils literal notranslate"><span class="pre">file_authrunFindmy.tkn</span></code>，生成完fw文件后使用烧写器进行算法授权信息的烧录</p></li>
+<li><p>运行的芯片第一次需要经过1拖2或者1拖8烧写器（lastest version）烧写授权码；如果你未完成这一步直接烧写固件，如果fw程序运行出现异常复位或者添加调试信息后出现<code class="docutils literal notranslate"><span class="pre">ASSERT-FAILD:</span> <span class="pre">0</span> <span class="pre">fmna</span> <span class="pre">forbidden</span> <span class="pre">cfg!!!</span></code>，说明芯片还没被授权，需要通过烧写器写入授权数据。</p></li>
+</ul>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">// ini文件的最后一段配置</span><span class="w"></span>
+<span class="k">[FW_ADDITIONAL]</span><span class="w"></span>
+<span class="na">FILE_LIST</span><span class="o">=</span><span class="s">(file=file_authrunFindmy.tkn:type=0xec)</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>正确烧写杰理授权数据后，此时之后的固件烧写不会影响杰理的授权数据（除非你擦除了所有的flash数据，非必要不要擦除所有flash数据）。</p>
+</div>
+</section>
+<section id="id6">
+<h3>烧录固件<a class="headerlink" href="#id6" title="Permalink to this headline"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>如果杰理授权数据已经烧录到芯片里面，并且你也正确的修改了sdk的苹果授权信息,那么现在把findmy固件写入，打开codeblocks工程，,点击编译烧录，编译烧录教程参考：</p>
+</div>
+<p>https://doc.zh-jieli.com/Tools/zh-cn/dev_tools/build_download/build_with_codeblocks.html</p>
+</section>
+<section id="id7">
+<h3>测试使用<a class="headerlink" href="#id7" title="Permalink to this headline"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>初始化findmy功能后，默认不打开广播，在手表中进入设置界面，点击findmy打开findmy功能，点击开始配对，此时用户可打开IOS终端查找应用->物品->添加其他应用->搜索到设备->命名绑定连接->播放声音</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>如果成功连接绑定连接，在app上可以成功点击播放声音，那么恭喜你！已经完成了JL Findmy SDK的上手使用，可以依靠后续章节去开发属于你的findmy应用</p>
+</div>
+</section>
+</section>
+<section id="id8">
+<h2>代码架构介绍<a class="headerlink" href="#id8" title="Permalink to this headline"></a></h2>
+<section id="findmy-sdk">
+<h3>FindMy SDK框图介绍<a class="headerlink" href="#findmy-sdk" title="Permalink to this headline"></a></h3>
+<p><img alt="image2" src="../../../_images/findmy_sdk_block_diagram.png" /></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>上图为JL FINDMY SDK的框图架构，依托杰理的平台和fmna协议库，用户工程师不需要关注fmna中findmy状态机的转换运作原理，也不需要关注findmy协议是如何和IOS进行加密交握手完成配对，只需要简单的在我们上层留出的接口和杰理SDK原有的功能去适配自己产品上层的交互逻辑和外设即可。</p>
+</div>
+</section>
+<section id="id9">
+<h3>应用层代码文件介绍<a class="headerlink" href="#id9" title="Permalink to this headline"></a></h3>
+<blockquote>
+<div><p>手表的sdk都位于bt_fmy这个文件夹,用户的应用开发基本都围绕着这几个文件进行</p>
+</div></blockquote>
+<p><img alt="" src="../../../_images/findmy1.png" /></p>
+<p>fmy功能接口应用层文件架构介绍见上图</p>
+</section>
+</section>
+<section id="id10">
+<h2>findmy状态介绍<a class="headerlink" href="#id10" title="Permalink to this headline"></a></h2>
+<section id="id11">
+<h3>状态介绍<a class="headerlink" href="#id11" title="Permalink to this headline"></a></h3>
+<p>findmy通过状态机的控制会在不同行为场景中转化为不同的状态,常见的状态如下：</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">等待配对状态（pair</span> <span class="pre">mode）</span></code>：产品还未与苹果设备（例如iPhone或者iPad）配对时，或者产品从Find My应用中移除配对时，此状态会发送等待配对的蓝牙广播。为了尽可能快的被苹果设备发现，此状态会高速广播，功耗比较大。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">配对连接状态(pairing)</span></code>：产品与苹果设备连接完成配对过程，此状态产品与苹果设备交换大量的数据，功耗也比较大，因为此状态出现非常低频， 所以此状态对产品续航影响小。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">高速连接并寻找状态（产品响铃）(high</span> <span class="pre">connected)</span></code>：完成配对的产品，可以在Find My应用中点击 “播放声音”按钮，可以使产品响铃，来找到产品，因为此状态出现低频， 所以此状态对产品续航影响小。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">低速连接状态(low</span> <span class="pre">connected)</span></code>：如果已配对产品与苹果设备重连时，会处于高速连接过程（高速可以理解为产品与苹果设备的数据交互高速很高），如果没有“播放声音”操作，30秒后就会进入低速连接状态。此状态下功耗比较低。如果产品与苹果设备不断开，此状态会一直保持着。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">慢速广播状态（待机状态）(separated)</span></code>：如果已配对产品与苹果设备远离，产品与苹果设备蓝牙断开了，此时产品就会发送慢速蓝牙广播，等待下一次重连被寻找，如果用户不尝试“播放声音”功能，产品会一直处于此状态。</p></li>
+</ol>
+</section>
+<section id="id12">
+<h3>findmy状态回调函数<a class="headerlink" href="#id12" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>JL FindMy SDK中在外部设置定义了回调函数供用户捕捉对应的状态以便用户自定义外设行为（例如配对完成后或者解绑有特殊的铃声）。</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">ble_fmy_fmna.c</span></code></p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> * @brief findmy state callback，状态类别参考FMNA_SM_State_t枚举体</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="nf">fmy_state_callback</span><span class="p">(</span><span class="n">FMNA_SM_State_t</span><span class="w"> </span><span class="n">fmy_state</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">state_string</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">log_info</span><span class="p">(</span><span class="s">&quot;fmy state change-&gt;fmy_state:%s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">state_string</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">fmna_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmy_state</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">fmy_state</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="nl">FMNA_SM_CONNECTING</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="n">UI_MSG_POST</span><span class="p">(</span><span class="s">&quot;SET_CONNECTING_FLAG:a=%4&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="nl">FMNA_SM_FMNA_PAIR_COMPLETE</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="n">log_info</span><span class="p">(</span><span class="s">&quot;findmy pair success!!&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">UI_MSG_POST</span><span class="p">(</span><span class="s">&quot;PAIR_SUCCESS&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="nl">FMNA_SM_UNPAIR</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// 锁住pairing mode 广播,待重新开启</span>
+<span class="w">        </span><span class="n">UI_MSG_POST</span><span class="p">(</span><span class="s">&quot;UNPAIR_SUCCESS&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">pairing_mode_enable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">log_info</span><span class="p">(</span><span class="s">&quot;findmy unpair success!!&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="nl">FMNA_SM_FMNA_PAIR</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="n">log_info</span><span class="p">(</span><span class="s">&quot;SM_FMNA_PAIR!!&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">default</span><span class="o">:</span><span class="w"></span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">fmna_api.h</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">FMNA_SM_BOOT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">FMNA_SM_PAIR</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">FMNA_SM_SEPARATED</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">FMNA_SM_NEARBY</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">FMNA_SM_CONNECTING</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">FMNA_SM_FMNA_PAIR</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">FMNA_SM_FMNA_PAIR_COMPLETE</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">FMNA_SM_CONNECTED</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">FMNA_SM_DISCONNECTING</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">FMNA_SM_NOCHANGE</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">FMNA_SM_UNPAIR</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">FMNA_SM_State_t</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="apple-license">
+<h2>apple license和产品信息配置<a class="headerlink" href="#apple-license" title="Permalink to this headline"></a></h2>
+<section id="id13">
+<h3>产品信息配置<a class="headerlink" href="#id13" title="Permalink to this headline"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">ble_fmy.c</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">FMY_ManufacturerName</span><span class="p">[</span><span class="mi">64</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Zhuhai Jieli Technology Co.,Ltd.&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">FMY_ModelName</span><span class="p">[</span><span class="mi">64</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;JLtag&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">FMY_AccessoryCategory</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">FMY_CATEGORY_Finder</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">FMY_ManufacturerName</span></code>：公司名称</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FMY_ModelName</span></code>：配件名字</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FMY_AccessoryCategory</span></code>：产品类型</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">ble_fmy_cfg.h</span></code></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">TOKEN_ID_PRODUCTION_MODE</span></code>:选择debug模式还是production</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FMY_FW_VERSION_MAJOR_NUMBER</span></code>:固件主要版本</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FMY_FW_VERSION_MINOR_NUMBER</span></code>:固件次要版本</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FMY_FW_VERSION_REVISION_NUMBER</span></code>:固件修订版本号</p></li>
+</ul>
+<p>固件版本需遵循以下规则</p>
+<div class="highlight-tex notranslate"><div class="highlight"><pre><span></span>The firmware revision string shall use the x[.y[.z]] format where :
+• &lt;x&gt; is the major version number, required.
+• &lt;y&gt; is the minor version number, required if it is non zero or if &lt;z&gt; is present.
+• &lt;z&gt; is the revision version number, required if non zero.
+</pre></div>
+</div>
+</section>
+<section id="id14">
+<h3>apple license信息配置和说明<a class="headerlink" href="#id14" title="Permalink to this headline"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">ble_fmy_cfg.h</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span>
+<span class="cp">#define  UUID_TOKEN_IS_BASE64_MODE                    1 </span><span class="c1">//0--hex,   1--base64</span>
+
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">fmy_serial_number</span><span class="p">[</span><span class="mi">16</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">fmy_product_data</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{};</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">fmy_Server_Encryption_Key</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">fmy_Signature_Verification_Key</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">;</span><span class="w"></span>
+
+
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">fmy_token_uuid_char</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">fmy_token_auth_char</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">TOKEN_ID_PRODUCTION_MODE</span></code>:产品模式选择（debug和production）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">UUID_TOKEN_IS_BASE64_MODE</span></code>:UUID和TOKEN数据格式（hex：以十六进制填入，base64：以base64数据格式填入）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fmy_serial_number</span></code>：从apple申请的序列序列号</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fmy_product_data</span></code>：从apple申请的产品信息</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fmy_Server_Encryption_Key</span></code>：从apple申请的Encryption_Key</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fmy_Signature_Verification_Key</span></code>：从apple申请的Verification_Key</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fmy_token_uuid_char</span></code>：从mfi申请的每个产品授权的uuid</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fmy_token_auth_char</span></code>：从mfi申请的每个产品授权的token</p></li>
+</ul>
+<p>有关apple findmy开发资格申请可参考以下链接：</p>
+<p>https://www.apple.com/newsroom/2021/04/apples-find-my-network-now-offers-new-third-party-finding-experiences/</p>
+<p>授权信息写入函数如下：</p>
+<p><code class="docutils literal notranslate"><span class="pre">ble_fmy_fmna.c</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">fmy_set_user_infomation</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">ret_code_t</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FMY_SUCCESS</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">fmna_input_cfg_t</span><span class="w"> </span><span class="n">input_cfg</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">fmna_user_cfg_set_patch</span><span class="p">(</span><span class="n">fmy_user_config_path</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">fmna_set_product_data</span><span class="p">(</span><span class="n">fmy_product_data</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">fmna_set_crypto_enc_key_config</span><span class="p">(</span><span class="n">fmy_Server_Encryption_Key</span><span class="p">,</span><span class="w"> </span><span class="n">fmy_Signature_Verification_Key</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">data_ram</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zalloc</span><span class="p">(</span><span class="mi">16</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1024</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">data_ram</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">fmna_user_cfg_set_patch</span><span class="p">(</span><span class="n">fmy_user_config_path</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmna_user_cfg_open</span><span class="p">();</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">FMY_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fmna_user_cfg_is_exist</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="n">log_info</span><span class="p">(</span><span class="s">&quot;exist user_cfg info&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">                </span><span class="k">goto</span><span class="w"> </span><span class="n">w_end</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+<span class="w">            </span><span class="c1">//配置区有效，并且为空才写入</span>
+<span class="w">            </span><span class="n">input_cfg</span><span class="p">.</span><span class="n">serial_number</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">fmy_serial_number</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="n">input_cfg</span><span class="p">.</span><span class="n">uuid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data_ram</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="n">input_cfg</span><span class="p">.</span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">data_ram</span><span class="p">[</span><span class="mi">16</span><span class="p">];</span><span class="w"></span>
+
+<span class="cp">#if UUID_TOKEN_IS_BASE64_MODE</span>
+<span class="w">            </span><span class="n">len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">uuid_str_to_hex</span><span class="p">(</span><span class="n">fmy_token_uuid_char</span><span class="p">,</span><span class="w"> </span><span class="n">input_cfg</span><span class="p">.</span><span class="n">uuid</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">len</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="n">log_info</span><span class="p">(</span><span class="s">&quot;err uuid char&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">                </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FMY_ERROR_INVALID_DATA</span><span class="p">;</span><span class="w"></span>
+<span class="w">                </span><span class="k">goto</span><span class="w"> </span><span class="n">w_end</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+<span class="w">            </span><span class="n">len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmna_Base64Decode</span><span class="p">(</span><span class="n">fmy_token_auth_char</span><span class="p">,</span><span class="w"> </span><span class="n">input_cfg</span><span class="p">.</span><span class="n">token</span><span class="p">,</span><span class="w"> </span><span class="mi">1024</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">len</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="n">log_info</span><span class="p">(</span><span class="s">&quot;err token char&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">                </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FMY_ERROR_INVALID_DATA</span><span class="p">;</span><span class="w"></span>
+<span class="w">                </span><span class="k">goto</span><span class="w"> </span><span class="n">w_end</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+<span class="cp">#else</span>
+<span class="w">            </span><span class="n">memcpy</span><span class="p">(</span><span class="n">input_cfg</span><span class="p">.</span><span class="n">uuid</span><span class="p">,</span><span class="w"> </span><span class="n">fmy_token_uuid_hex</span><span class="p">,</span><span class="w"> </span><span class="mi">16</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">cpy_len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">fmy_token_auth_hex</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cpy_len</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1024</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="n">cpy_len</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="mi">1024</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+<span class="w">            </span><span class="n">memcpy</span><span class="p">(</span><span class="n">input_cfg</span><span class="p">.</span><span class="n">token</span><span class="p">,</span><span class="w"> </span><span class="n">fmy_token_auth_hex</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">fmy_token_auth_hex</span><span class="p">));</span><span class="w"></span>
+
+<span class="cp">#endif</span>
+<span class="w">            </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmna_user_cfg_write</span><span class="p">(</span><span class="o">&amp;</span><span class="n">input_cfg</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="nl">w_end</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="n">fmna_user_cfg_close</span><span class="p">();</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">FMY_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">log_info</span><span class="p">(</span><span class="s">&quot;set user_cfg succ&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">log_info</span><span class="p">(</span><span class="s">&quot;set user_cfg fail,%d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">free</span><span class="p">(</span><span class="n">data_ram</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fmna_user_cfg_is_exist</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="n">log_info</span><span class="p">(</span><span class="s">&quot;exist user_cfg info&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">                </span><span class="k">goto</span><span class="w"> </span><span class="n">w_end</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>上参考上述流程，如果当前苹果授权数据不正确，可以注释掉这部分逻辑重新烧录新的apple授权数据，但上电更新后，需要重新打开这段代码再烧一次回来避免每次上电后又覆盖之前的apple授权数据信息。 其中fmy_token_uuid_char和fmy_token_auth_char都将写入在flash自定义区域，并且在每次配对绑定时会进行轮转，不可随意擦除此区域数据，否则之后将无法成功绑定，起始地址和大小如下（以512k AC63x平台为例）,可在isd_config.ini见。</p>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">isd_config.ini</span></code></p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[RESERVED_EXPAND_CONFIG]</span><span class="w"></span>
+<span class="na">FINDMY_ADR</span><span class="o">=</span><span class="s">0x1FC000;</span><span class="w"></span>
+<span class="na">FINDMY_LEN</span><span class="o">=</span><span class="s">0x2000;</span><span class="w"></span>
+<span class="na">FINDMY_OPT</span><span class="o">=</span><span class="s">1;</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="fmy">
+<h3>fmy功能特性设置<a class="headerlink" href="#fmy" title="Permalink to this headline"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">fmna_api.h</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">//Accessory capability</span>
+<span class="cp">#define FMY_CAPABILITY_SUPPORTS_PLAY_SOUND            BIT(0) </span><span class="c1">//Supports play sound</span>
+<span class="cp">#define FMY_CAPABILITY_SUPPORTS_MOTION_DETECTOR_UT    BIT(1) </span><span class="c1">//Supports motion detector UT</span>
+<span class="cp">#define FMY_CAPABILITY_SUPPORTS_SN_LOOKUP_BY_NFC      BIT(2) </span><span class="c1">//Supports serial number lookup by NFC</span>
+<span class="cp">#define FMY_CAPABILITY_SUPPORTS_SN_LOOKUP_BY_BLE      BIT(3) </span><span class="c1">//Supports serial number lookup by BLE</span>
+<span class="cp">#define FMY_CAPABILITY_SUPPORTS_FW_UPDATE_SERVICE     BIT(4) </span><span class="c1">//Supports ﬁrmware update service</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">ble_fmy.c</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">//set capability</span>
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">FMY_AccessoryCapabilities</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="p">(</span><span class="n">FMY_CAPABILITY_SUPPORTS_PLAY_SOUND</span><span class="w"></span>
+
+<span class="cp">#if FMY_OTA_SUPPORT_CONFIG</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">FMY_CAPABILITY_SUPPORTS_FW_UPDATE_SERVICE</span><span class="w"></span>
+<span class="cp">#endif</span>
+
+<span class="cp">#if TCFG_GSENSOR_ENABLE</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">FMY_CAPABILITY_SUPPORTS_MOTION_DETECTOR_UT</span><span class="w"></span>
+<span class="cp">#endif</span>
+
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">FMY_CAPABILITY_SUPPORTS_SN_LOOKUP_BY_BLE</span><span class="p">),</span><span class="w"></span>
+<span class="w">    </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x00</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>AccessoryCapabilities描述了findmy配件支持的各种功能，默认打开play sound和serial_number_look_up功能，motion_detection和uarp用户可根据产品特性选择打开对应的宏控制，如何控制可见下表:</p>
+</div>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Characteristic name</p></th>
+<th class="head"><p>Data type</p></th>
+<th class="head"><p>Size(octets)</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Accessory capability</p></td>
+<td><p>Uint32</p></td>
+<td><p>4</p></td>
+<td><p>Bit 0 : Supports play sound Bit 1 :Supports motion detector UT Bit 2 : Supports serial number lookup by NFC Bit 3 : Supports serial number lookup by BLE Bit 4: Supports firmware update service</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p>例如我要打开playSound, Supports serial number lookup by BLE, motion detector，firmware update service 功能，则可以将这个数组的第一个字节的前五个bit设置对应的二进制值即可：10101，由于findmy产品定位是防丢器，其中motion detection和play sound是否需要取决于产品的体积，当符合以下所有标准则需要这两项功能：</p></li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>The accessory is ≤ 30 cm in at least one dimension.</p></li>
+<li><p>The accessory is ≤ 18 cm X 13 cm in two of its dimensions.</p></li>
+<li><p>The accessory is ≤ 250 cm3 in three dimensional space.</p></li>
+</ul>
+</div></blockquote>
+</section>
+</section>
+<section id="id15">
+<h2>绑定和解绑功能<a class="headerlink" href="#id15" title="Permalink to this headline"></a></h2>
+<section id="id16">
+<h3>绑定功能<a class="headerlink" href="#id16" title="Permalink to this headline"></a></h3>
+<blockquote>
+<div><p>findmy绑定功能依赖ble的gatt交互握手实现，对于小机来说只需要打开开启findmy和配对广播即可，sdk默认在UI界面已经交互调用以下接口实现，开启配对广播后，打开IOS终端查找应用-&gt;物品-&gt;添加其他应用-&gt;搜索到设备-&gt;命名绑定连接-&gt;播放声音</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>findmy总开关</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="n">fmy_enable</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">en</span><span class="p">)</span><span class="w"></span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>开启配对广播</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="n">fmy_open_close_pairing_mode</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">en</span><span class="p">)</span><span class="w"></span>
+</pre></div>
+</div>
+<blockquote>
+<div><p>其中findmy绑定的握手数据会话流程在sdk已经实现，用户无需去关注</p>
+</div></blockquote>
+</section>
+<section id="id17">
+<h3>解绑功能<a class="headerlink" href="#id17" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p><strong>方法1（推荐）</strong>：手机打开蓝牙靠近配件，打开查找app-点击物品名字-下拉”移除物品”（这个操作需要手机在旁边开启蓝牙连接才能操作）</p></li>
+<li><p><strong>方法2</strong>（这种方法适合配对手机在远程时无法解绑时操作，或者误在手机删除绑定而手表设备未收到通知的情况，两者缺一不可）：</p>
+<ul>
+<li><p>进行物品单方面解绑复位操作，调用<code class="docutils literal notranslate"><span class="pre">fmy_factory_reset</span></code>，从机强制解除配对（可以在connect separated nearby三种状态下解绑））</p></li>
+<li><p>并在手机上移除物品（会显示连接不上直接强制删掉就可以）这个操作不需要手机在旁边蓝牙连接操作</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="play-sound">
+<h2>play sound功能<a class="headerlink" href="#play-sound" title="Permalink to this headline"></a></h2>
+<section id="id18">
+<h3>play sound功能介绍<a class="headerlink" href="#id18" title="Permalink to this headline"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>play sound功能是fmna官方定义的近距离查找功能，`SDK中默认打开`，当IOS终端靠近findmy设备并且点击findmy app 的播放声音的按键则可以通过ble连接gatt控制触发这种行为，SDK中默认的方案使用GPIO驱动蜂鸣器(有源或无源)来实现响声。</p>
+</div>
+</section>
+<section id="id19">
+<h3>play sound配置<a class="headerlink" href="#id19" title="Permalink to this headline"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">ble_fmy_fmna.c</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#define  SOUND_GPIO_PORT                 IO_PORTA_00</span>
+</pre></div>
+</div>
+</section>
+<section id="id20">
+<h3>play sound 驱动函数<a class="headerlink" href="#id20" title="Permalink to this headline"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">ble_fmy_fmna.c</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">fmy_sound_timer_control</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">priv</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">DEV_SOUND_STATE</span><span class="p">(</span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">sound_onoff</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">sound_onoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">sound_onoff</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">fmy_sound_control</span><span class="p">(</span><span class="n">FMNA_SOUND_OP_t</span><span class="w"> </span><span class="n">op</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">log_info</span><span class="p">(</span><span class="s">&quot;func:%s,op= %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">__FUNCTION__</span><span class="p">,</span><span class="w"> </span><span class="n">op</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">op</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="nl">FMNA_SOUND_INIT</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="n">DEV_SOUND_INIT</span><span class="p">();</span><span class="w"></span>
+<span class="w">        </span><span class="n">DEV_SOUND_STATE</span><span class="p">(</span><span class="n">PORT_VALUE_LOW</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="nl">FMNA_SOUND_START</span><span class="p">:</span><span class="w"></span>
+<span class="cp">#if TCFG_PWMLED_ENABLE</span>
+<span class="w">        </span><span class="n">fmy_state_idle_set_active</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span><span class="w"></span>
+<span class="cp">#endif</span>
+<span class="w">        </span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">sound_onoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">sound_ctrl_timer_id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">sound_ctrl_timer_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sys_timer_add</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">fmy_sound_timer_control</span><span class="p">,</span><span class="w"> </span><span class="n">SOUND_TICKS_MS</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="nl">FMNA_SOUND_STOP</span><span class="p">:</span><span class="w"></span>
+<span class="cp">#if TCFG_PWMLED_ENABLE</span>
+<span class="w">        </span><span class="n">fmy_state_idle_set_active</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span><span class="w"></span>
+<span class="cp">#endif</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">sound_ctrl_timer_id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">sys_timer_del</span><span class="p">(</span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">sound_ctrl_timer_id</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">sound_ctrl_timer_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="n">DEV_SOUND_STATE</span><span class="p">(</span><span class="n">PORT_VALUE_LOW</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">default</span><span class="o">:</span><span class="w"></span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>SDK中只是简单的用定时器做IO翻转达到驱动蜂鸣器发声的功能，用户可以自行修改这部分声音外设逻辑来达到自己的发声效果</p>
+</div>
+</section>
+</section>
+<section id="motion-detection">
+<h2>Motion Detection功能<a class="headerlink" href="#motion-detection" title="Permalink to this headline"></a></h2>
+<section id="id21">
+<h3>Motion Detection功能介绍<a class="headerlink" href="#id21" title="Permalink to this headline"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>由于findmy产品定位为防丢器协议，因此为了如何防止findmy设备被用于恶意跟踪，findmy协议设计了Motion Detection功能，当别人的设备混入您的随身物品时，并跟踪超过一段时间（设备远离拥有者设备时将会处于待机分离状态），此时设备将会开启加速度传感器gsensor检测设备是否移动，当移动时，将会发出响声提醒此时你正在被findmy设备跟踪。JL FINDMY SDK中默认集成了三种加速度传感器来采集加速度数据来完成这个功能。具体代码功能参考`ble_fmy_modet.c`</p>
+</div>
+</section>
+<section id="gsensor">
+<h3>gsensor外设配置<a class="headerlink" href="#gsensor" title="Permalink to this headline"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>默认使用watch sdk的p11 sensor hub数据做数据处理检测，p11 的 sensor hub iic配置参考p11具体工程</p>
+</div> 
+<p><code class="docutils literal notranslate"><span class="pre">board_701n_demo_cfg.h</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">//*********************************************************************************//</span>
+<span class="c1">//                                  g-sensor配置                                   //</span>
+<span class="c1">//*********************************************************************************//</span>
+<span class="cp">#define TCFG_GSENSOR_ENABLE                       1    </span><span class="c1">//gSensor使能</span>
+<span class="cp">#define TCFG_DA230_EN                             0</span>
+<span class="cp">#define TCFG_SC7A20_EN                            0 </span><span class="c1">//&quot;sc7a20&quot;</span>
+<span class="cp">#define TCFG_MSA310_EN                            0 </span><span class="c1">//&quot;msa310&quot;</span>
+<span class="cp">#define TCFG_P11GSENSOR_EN                        1 </span><span class="c1">//&quot;p11gsensor&quot;, 使用p11 sensor hub</span>
+<span class="cp">#define TCFG_STK8321_EN                           0</span>
+<span class="cp">#define TCFG_IRSENSOR_ENABLE                      0</span>
+<span class="cp">#define TCFG_JSA1221_ENABLE                       0</span>
+<span class="cp">#define TCFG_MC3433_EN							  0</span>
+<span class="cp">#define TCFG_MPU6050_EN							  0</span>
+<span class="cp">#define TCFG_GSENOR_USER_IIC_TYPE                 0     </span><span class="c1">//0:软件IIC  1:硬件IIC</span>
+<span class="cp">#define TCFG_GSENOR_USER_IIC_INDEX                0     </span><span class="c1">//IIC 序号</span>
+<span class="cp">#define TCFG_GSENSOR_NAME                         &quot;p11gsensor&quot;     </span><span class="c1">//传感器名称 需要和宏开关匹配</span>
+<span class="cp">#define TCFG_GSENSOR_DETECT_IO                    (-1) </span><span class="c1">//传感器中断io</span>
+<span class="cp">#define TCFG_GSENSOR_ALGO_SILAN                   (0) </span><span class="c1">//士兰微的G-Sensor算法</span>
+</pre></div>
+</div>
+</section>
+<section id="id22">
+<h3>gsensor调试功能<a class="headerlink" href="#id22" title="Permalink to this headline"></a></h3>
+<blockquote>
+<div><p>可以简单使用以下代码进行测试sensor采集检测是否正常</p>
+</div></blockquote>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">fmy_motion_detection_test</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">fmy_motion_detection_init</span><span class="p">();</span><span class="w"></span>
+<span class="w">    </span><span class="n">sys_timer_add</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="n">fmy_motion_detection</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>如果传感器初始化和采集数据正常，可以尝试移动旋转传感器观察打印信息看是否检测到移动，如未观测到，则需要检测传感器是否工作正常。</p>
+</div>
+</section>
+</section>
+<section id="uarp">
+<h2>UARP功能<a class="headerlink" href="#uarp" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><p>JL watch sdk并未接入Findmy 的 UARP功能,具体UARP使用介绍参考AC632N的findmy SDK</p>
+<p>https://doc.zh-jieli.com/AC63/zh-cn/master/module_demo/spple/FindMy.html</p>
+</div></blockquote>
+</section>
+<section id="id23">
+<h2>按键调试<a class="headerlink" href="#id23" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>用户可以添加button行为来调试产品的一些按键特性</p></li>
+</ul>
+<p>按键行为控制：<code class="docutils literal notranslate"><span class="pre">ble_fmy_fmna.c</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">fmy_key_process</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="n">key_event</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="cp">#if 0</span><span class="c">//过认证的测试按键,用到的时候在打开需要再iokey.c去配置</span>
+<span class="c">    switch (key_event) {</span>
+<span class="c">    case BATTERY_LOW:</span>
+<span class="c">        fmy_test_switch_battery_level(BAT_STATE_CRITICALLY_LOW);</span>
+<span class="c">        break;</span>
+<span class="c">    case SERIALNUMBER_LOOKUP_OPEN:</span>
+<span class="c">        fmna_paired_serialnumber_lookup_enable(1);</span>
+<span class="c">        break;</span>
+<span class="c">    case BATTERY_FULL:</span>
+<span class="c">        fmy_test_switch_battery_level(BAT_STATE_FULL);</span>
+<span class="c">        break;</span>
+<span class="c">    case SERIALNUMBER_LOOKUP_CLOSE:</span>
+<span class="c">        fmna_paired_serialnumber_lookup_enable(0);</span>
+<span class="c">        break;</span>
+<span class="c">    case PAIRING_OPEN:</span>
+<span class="c">        fmy_enable(1);</span>
+<span class="c">        fmy_open_close_pairing_mode(1);</span>
+<span class="c">        break;</span>
+<span class="c">    }</span>
+<span class="cp">#endif</span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id24">
+<h2>findmy电池相关功能<a class="headerlink" href="#id24" title="Permalink to this headline"></a></h2>
+<p><strong>在配对时，IOS主机将会读取配件的产品信息，其中包括此时产品的电量，用户根据产品电池特性来设置电池类型。</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">fmna_api</span><span class="p">.</span><span class="n">h</span><span class="w"></span>
+<span class="cm">/*</span>
+<span class="cm">0 = Powered</span>
+<span class="cm">1 = Non-rechargeable battery</span>
+<span class="cm">2 = Rechargeable battery</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">FMNA_BAT_POWERED</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">FMNA_BAT_NON_RECHARGEABLE</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">FMNA_BAT_RECHARGEABLE</span><span class="p">,</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">FMNA_battery_level_t</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<p><strong>使用杰理平台的电量检测来获取产品的电量数据</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">fmna_api.h</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">typedef</span> <span class="n">enum</span> <span class="p">{</span>
+    <span class="n">BAT_STATE_FULL</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">BAT_STATE_MEDIUM</span><span class="p">,</span>
+    <span class="n">BAT_STATE_LOW</span><span class="p">,</span>
+    <span class="n">BAT_STATE_CRITICALLY_LOW</span><span class="p">,</span><span class="o">//</span><span class="mf">5.1.4</span><span class="p">,</span><span class="n">stop</span> <span class="n">advertising</span>
+<span class="p">}</span> <span class="n">fmna_bat_state_level_t</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">ble_fmy.c</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">fmy_update_battery_level</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+
+<span class="cp">#if TCFG_SYS_LVD_EN</span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w">  </span><span class="n">bat_level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_cur_battery_level</span><span class="p">();</span><span class="c1">//0~9</span>
+<span class="w">    </span><span class="n">log_info</span><span class="p">(</span><span class="s">&quot;read vbat:%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">bat_level</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bat_level</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">battery_level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BAT_STATE_FULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bat_level</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">battery_level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BAT_STATE_CRITICALLY_LOW</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bat_level</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">battery_level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BAT_STATE_LOW</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">battery_level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BAT_STATE_MEDIUM</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="cp">#else</span>
+<span class="w">    </span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">battery_level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BAT_STATE_FULL</span><span class="p">;</span><span class="w"></span>
+<span class="cp">#endif</span>
+
+<span class="w">    </span><span class="n">log_info</span><span class="p">(</span><span class="s">&quot;%s,bat_lev= %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">__FUNCTION__</span><span class="p">,</span><span class="w"> </span><span class="n">__fydata</span><span class="o">-&gt;</span><span class="n">battery_level</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id25">
+<h2>findmy第三方认证<a class="headerlink" href="#id25" title="Permalink to this headline"></a></h2>
+<section id="id26">
+<h3>申请流程<a class="headerlink" href="#id26" title="Permalink to this headline"></a></h3>
+<blockquote>
+<div><p>杰理作为芯片原厂为findmy的 MFI的生产型会员，目前sdk已经通过的findmy的所有的软件测试，对于后续用户的产品认证来说，只需要做以下步骤</p>
+<ul class="simple">
+<li><p>申请成为mfi 的findmy会员，拿到属于自家产品的产品license，按前面章节文档将apple license 和产品信息配置烧录进芯片中</p></li>
+<li><p>申请mfi会员后，可以拿到findmy的内部文档<code class="docutils literal notranslate"><span class="pre">Find</span> <span class="pre">My</span> <span class="pre">Network</span> <span class="pre">Self-Certification</span> <span class="pre">Test</span> <span class="pre">Cases</span> <span class="pre">R1.6</span></code>,根据此文档对自家产品进行自测试（可见<code class="docutils literal notranslate"><span class="pre">Find</span> <span class="pre">My</span> <span class="pre">Certification</span> <span class="pre">Assistant</span> <span class="pre">User</span> <span class="pre">Manual</span> <span class="pre">R1.2</span></code>文档，apple针对findmy测试设计了一个专门的app），测试完所有项pass后寄送样机到apple认可的findmy实验室</p></li>
+<li><p>findmy实验室完成确认测试后会有邮件通知</p></li>
+</ul>
+</div></blockquote>
+<p><img alt="" src="../../../_images/findmy5.png" /></p>
+</section>
+<section id="mfi">
+<h3>MFi工具使用<a class="headerlink" href="#mfi" title="Permalink to this headline"></a></h3>
+<blockquote>
+<div><p>客户申请到MFi资格后，需要自己生成证书和密钥并上传到Mfi系统上，参考苹果官方文档<code class="docutils literal notranslate"><span class="pre">Software</span> <span class="pre">Token</span> <span class="pre">Authentication</span> <span class="pre">Server</span> <span class="pre">Specification</span> <span class="pre">R2.1.pdf</span></code>，上传完后可以使用杰理提供的MFiTools.exe工具(需向杰理申请)获取token</p>
+</div></blockquote>
+<p>步骤如下：</p>
+<ol class="arabic simple">
+<li><p><strong>双击MFiTools.exe 工具启动</strong></p></li>
+</ol>
+<p><img alt="" src="../../../_images/findmy2.png" /></p>
+<ol class="arabic simple">
+<li><p><strong>配置好MFi.pem MFi.key 证书</strong></p></li>
+</ol>
+<p><img alt="" src="../../../_images/findmy3.png" /></p>
+<ol class="arabic simple">
+<li><p><strong>配置好PPID、数量，点击获取Token</strong></p></li>
+</ol>
+<p><img alt="" src="../../../_images/findmy4.png" /></p>
+</section>
+</section>
+<section id="api">
+<h2>常用api介绍<a class="headerlink" href="#api" title="Permalink to this headline"></a></h2>
+<p><strong>已封装以下控制行为函数,可根据产品特性功能使用</strong></p>
+<ul class="simple">
+<li><p>模拟设置配件电量</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span>void fmy_test_switch_battery_level(u8 bat_val)；
+</pre></div>
+</div>
+<p><strong>bat_val</strong> – 电池状态值可参考以下结构体</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">BAT_STATE_FULL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">BAT_STATE_MEDIUM</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">BAT_STATE_LOW</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">BAT_STATE_CRITICALLY_LOW</span><span class="p">,</span><span class="c1">//5.1.4,stop advertising</span>
+<span class="p">}</span><span class="w"> </span><span class="n">fmna_bat_state_level_t</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>获得电池电量状态</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span>static int fmy_get_battery_level(void)；
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>打开/关闭serial number_lookup read</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="n">fmna_paired_serialnumber_lookup_enable</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">enable</span><span class="p">)</span><span class="w"></span>
+</pre></div>
+</div>
+<p><strong>enable</strong>:true/false打开或关闭</p>
+<ul class="simple">
+<li><p>手动强制解除配对（可以在connect separated nearby三种状态下解绑）</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="n">fmy_factory_reset</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>检测是否已经配对</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span><span class="w"> </span><span class="n">fmy_get_pair_state</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>findmy总开关</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="n">fmy_enable</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">en</span><span class="p">)</span><span class="w"></span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>开启配对广播</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="n">fmy_open_close_pairing_mode</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">en</span><span class="p">)</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id27">
+<h2>常见问题汇总<a class="headerlink" href="#id27" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>codeblocks提示tkn文件不存在</p></li>
+</ul>
+<p><img alt="image4" src="../../../_images/findmy_tkn_not_exist.png" /></p>
+<div class="admonition danger">
+<p class="admonition-title">Note</p>
+<p>没有把tkn文件放到指定路径，需要向杰理申请tkn授权文件</p>
+</div>
+<ul class="simple">
+<li><p>绑定时显示无法继续</p></li>
+</ul>
+<p><img alt="image5" src="../../../_images/findmy_not_right_applelic.jpg" /></p>
+<div class="admonition danger">
+<p class="admonition-title">Note</p>
+<p>没有使用正确的apple授权信息，或者存储信息错误，需要重新擦写授权信息</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

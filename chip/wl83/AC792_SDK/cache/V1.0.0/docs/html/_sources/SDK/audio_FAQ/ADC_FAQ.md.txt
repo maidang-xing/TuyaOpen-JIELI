@@ -1,0 +1,4 @@
+# ADC FAQ
+
+## MICLDO供电，麦克风底噪大
+检查IOVDD配置，为确保稳定性，IOVDD需要比MICLDO高200~300mV。

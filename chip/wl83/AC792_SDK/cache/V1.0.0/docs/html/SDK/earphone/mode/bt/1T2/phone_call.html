@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>蓝牙通话 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../../../_static/js/custom.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>蓝牙通话</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="id1">
+<h1>蓝牙通话<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h1>
+<section id="esco">
+<h2>eSCO链路概念<a class="headerlink" href="#esco" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>eSCO（Extended Synchronous Connection-Oriented link，扩展的同步面向连接链路）是蓝牙协议中专门为优化语音通话等实时音频传输而设计的一种数据链路类型。它在传统 SCO 链路的基础上，增加了重传机制和更灵活的时序参数，从而在保证低延迟的同时，显著提高了通话的语音质量和可靠性。</p></li>
+<li><p>作用：传输通话上下行音频数据，传输带内铃声。</p></li>
+<li><p>创建时机：打电话、来电播手机铃声、iPhone唤起Siri时等。</p></li>
+<li><p>编解码器：mSBC等。</p></li>
+<li><p>一次只能与一台手机存在一条esco链路。即一次只能存在一个手机的通话，或者来电铃声只能播一台手机的手机铃声另外一台手机的来电铃声只能使用本地铃声。</p></li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>代码中，来电/去电消息与esco链路创建是两回事，有来电去电消息的时候，esco链路不一定创建了；但是通话中，esco链路必然已经创建。</p>
+</div>
+</section>
+<section id="hfp">
+<h2>HFP协议简介<a class="headerlink" href="#hfp" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>目的：专门用于蓝牙语音通话和控制。如接通来电、挂断电话、回拨、增加音量、减少音量等见下面：《通话按键相关命令》章节。</p></li>
+<li><p>工作方式：在手机和免提设备之间建立双向、低带宽的音频链路和控制信道。</p></li>
+<li><p>与蓝牙播歌区别：听音乐用A2DP，打电话则主要用HFP，两者是不同的协议。</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>铃声概念<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>带内铃声：即手机铃声，呼叫电话时（未接通）手机会与蓝牙设备创建esco链路，通过esco来传输手机的呼叫铃声。</p></li>
+<li><p>带外铃声：即本地铃声，呼叫电话时（未接通）如果手机不支持带内铃声或者esco链路已经被占用了，则蓝牙设备会设计为播放本地铃声文件。</p></li>
+</ul>
+</section>
+<section id="id3">
+<h2>通话常见流程<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>来电铃声叠加，主要是在tws_phone_call.c/phone_call.c中的static int bt_phone_status_event_handler(int <a href="#id4"><span class="problematic" id="id5">*</span></a>msg)，处理设备A和设备B之间的铃声叠加。</p></li>
+<li><p>通话抢占通话，主要是在dual_phone_call.c中的void bt_dual_phone_call_msg_handler(int <a href="#id6"><span class="problematic" id="id7">*</span></a>msg);中，收到设备A的电话相关的蓝牙事件，判断设备B的电话状态实现抢占策略。</p></li>
+<li><p>优先级：通话中 &gt; 去电 &gt; 来电 &gt; 播歌。</p></li>
+<li><p>本质就是只允许一条通话esco链路，两台手机都打电话就要根据业务需求踢掉指定的另一台。</p></li>
+</ol>
+</div></blockquote>
+<section id="id8">
+<h3>通话相关文件<a class="headerlink" href="#id8" title="Permalink to this headline"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span>apps\earphone\mode\bt\tws_phone_call.c // （TWS耳机）
+apps\earphone\mode\bt\phone_call.c // （头戴式耳机）
+apps\earphone\mode\bt\dual_phone_call.c // （通话抢占）
+</pre></div>
+</div>
+</section>
+<section id="id9">
+<h3>通话相关消息<a class="headerlink" href="#id9" title="Permalink to this headline"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">   </span><span class="c1">// ...</span>
+<span class="w">   </span><span class="n">BT_STATUS_PHONE_INCOME</span><span class="p">,</span><span class="w">     </span><span class="cm">/*来电*/</span><span class="w">            </span><span class="c1">// 在这里处理本地来电铃声</span>
+<span class="w">   </span><span class="n">BT_STATUS_PHONE_NUMBER</span><span class="p">,</span><span class="w">     </span><span class="cm">/*来电话号码*/</span><span class="w"></span>
+<span class="w">   </span><span class="c1">// ...</span>
+<span class="w">   </span><span class="n">BT_STATUS_PHONE_OUT</span><span class="p">,</span><span class="w">        </span><span class="cm">/*打出电话*/</span><span class="w"></span>
+<span class="w">   </span><span class="n">BT_STATUS_PHONE_ACTIVE</span><span class="p">,</span><span class="w">     </span><span class="cm">/*接通电话*/</span><span class="w">        </span><span class="c1">// 接通电话时收到，关闭本地来电铃声，同步通话音量。电脑录音或部分手机接通电话不会有这个消息。</span>
+<span class="w">   </span><span class="n">BT_STATUS_PHONE_HANGUP</span><span class="p">,</span><span class="w">     </span><span class="cm">/*挂断电话*/</span><span class="w">        </span><span class="c1">// 如果有另一个来电，则需要处理来电铃声</span>
+<span class="w">   </span><span class="c1">// ...</span>
+<span class="w">   </span><span class="n">BT_STATUS_LAST_CALL_TYPE_CHANGE</span><span class="p">,</span><span class="w">    </span><span class="cm">/*最后拨打电话的类型，只区分打入和打出两种状态*/</span><span class="c1">//23</span>
+<span class="w">   </span><span class="c1">// ...</span>
+<span class="w">   </span><span class="n">BT_STATUS_CALL_VOL_CHANGE</span><span class="p">,</span><span class="w">     </span><span class="cm">/*通话过程中设置音量会产生这个状态变化*/</span><span class="w"></span>
+<span class="w">   </span><span class="n">BT_STATUS_SCO_STATUS_CHANGE</span><span class="p">,</span><span class="w">    </span><span class="cm">/*当esco/sco连接或者断开时会产生这个状态变化*/</span><span class="w"> </span><span class="c1">// 在这里开关音频流的编解码</span>
+<span class="w">   </span><span class="c1">// ...</span>
+<span class="w">   </span><span class="n">BT_STATUS_INBAND_RINGTONE</span><span class="p">,</span><span class="w"></span>
+<span class="w">   </span><span class="c1">// ...</span>
+<span class="w">   </span><span class="n">BT_STATUS_SIRI_OPEN</span><span class="p">,</span><span class="w">             </span><span class="c1">// Siri开启</span>
+<span class="w">   </span><span class="n">BT_STATUS_SIRI_CLOSE</span><span class="p">,</span><span class="w">            </span><span class="c1">// Siri关闭</span>
+<span class="w">   </span><span class="c1">// ...</span>
+<span class="w">   </span><span class="n">BT_STATUS_SCO_CONNECTION_REQ</span><span class="p">,</span><span class="w">    </span><span class="c1">// sco链路创建</span>
+<span class="w">   </span><span class="n">BT_STATUS_SCO_DISCON</span><span class="p">,</span><span class="w">            </span><span class="c1">// sco链路断开</span>
+<span class="w">   </span><span class="c1">// ...</span>
+<span class="w">   </span><span class="n">BT_STATUS_PHONE_NAME</span><span class="p">,</span><span class="w">   </span><span class="cm">/*获取来电号码name*/</span><span class="w"></span>
+<span class="w">   </span><span class="c1">// ...</span>
+<span class="p">}</span><span class="w"> </span><span class="n">STATUS_FOR_USER</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id10">
+<h3>通话相关状态<a class="headerlink" href="#id10" title="Permalink to this headline"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">   </span><span class="n">BT_ESCO_STATUS_CLOSE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">   </span><span class="n">BT_ESCO_STATUS_OPEN</span><span class="p">,</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">BT_ESCO_STATE</span><span class="p">;</span><span class="w">  </span><span class="c1">//esco状态</span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">   </span><span class="n">BT_CALL_BATTERY_CHG</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="c1">//电池电量改变</span>
+<span class="w">   </span><span class="n">BT_CALL_SIGNAL_CHG</span><span class="p">,</span><span class="w">      </span><span class="c1">//网络信号改变</span>
+<span class="w">   </span><span class="n">BT_CALL_INCOMING</span><span class="p">,</span><span class="w">   </span><span class="c1">//电话打入</span>
+<span class="w">   </span><span class="n">BT_CALL_OUTGOING</span><span class="p">,</span><span class="w">   </span><span class="c1">//电话打出</span>
+<span class="w">   </span><span class="n">BT_CALL_ACTIVE</span><span class="p">,</span><span class="w">     </span><span class="c1">//接通电话</span>
+<span class="w">   </span><span class="n">BT_CALL_HANGUP</span><span class="p">,</span><span class="w">      </span><span class="c1">//电话挂断</span>
+<span class="w">   </span><span class="n">BT_CALL_ALERT</span><span class="p">,</span><span class="w">       </span><span class="c1">//远端reach</span>
+<span class="w">   </span><span class="n">BT_SIRI_STATE</span><span class="p">,</span><span class="w">       </span><span class="c1">//SIRI状态</span>
+<span class="w">   </span><span class="n">BT_CALL_VOL_CHANGED</span><span class="p">,</span><span class="w"></span>
+<span class="p">}</span><span class="w"> </span><span class="n">BT_CALL_IND_STA</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id11">
+<h3>来电铃声叠加流程分解<a class="headerlink" href="#id11" title="Permalink to this headline"></a></h3>
+<ol class="arabic simple">
+<li><p>先后来电:</p></li>
+</ol>
+<figure class="align-default">
+<img alt="../../../../../_images/先后来电.png" src="../../../../../_images/先后来电.png" />
+</figure>
+<ol class="arabic simple" start="2">
+<li><p>通话中来电</p></li>
+</ol>
+<figure class="align-default">
+<img alt="../../../../../_images/通话中来电.png" src="../../../../../_images/通话中来电.png" />
+</figure>
+<ol class="arabic simple" start="3">
+<li><p>先来电再去电</p></li>
+</ol>
+<figure class="align-default">
+<img alt="../../../../../_images/先来电再去电.png" src="../../../../../_images/先来电再去电.png" />
+</figure>
+<ol class="arabic simple" start="4">
+<li><p>来电接听</p></li>
+</ol>
+<figure class="align-default">
+<img alt="../../../../../_images/来电接听.png" src="../../../../../_images/来电接听.png" />
+</figure>
+<ol class="arabic simple" start="5">
+<li><p>通话挂断</p></li>
+</ol>
+<figure class="align-default">
+<img alt="../../../../../_images/通话挂断.png" src="../../../../../_images/通话挂断.png" />
+</figure>
+</section>
+<section id="id12">
+<h3>通话相关流程<a class="headerlink" href="#id12" title="Permalink to this headline"></a></h3>
+<ol class="arabic simple">
+<li><p>先来电 &gt; 后来电</p>
+<ul class="simple">
+<li><p>设备A(支持带内铃声)来电播带内铃声，设备B(支持带内铃声)来电，设备B断开esco，叠加本地铃声；</p></li>
+<li><p>设备A(支持带内铃声)来电播带内铃声，设备B(不支持带内铃声)来电，叠加本地铃声；</p></li>
+<li><p>设备A(不支持带内铃声)来电播本地铃声，设备B(支持带内铃声)来电，叠加带内铃声；</p></li>
+<li><p>设备A(不支持带内铃声)来电播本地铃声，设备B(不支持带内铃声)来电，播本地铃声；</p></li>
+</ul>
+</li>
+<li><p>先来电 &lt; 后通话</p>
+<ul class="simple">
+<li><p>两个设备都在来电状态，接听其中一个，另一个断开esco，转为本地铃声与通话声音叠加；</p></li>
+</ul>
+</li>
+<li><p>先去电 &gt; 后来电</p>
+<ul class="simple">
+<li><p>设备A去电，设备B(支持 or 不支持带内铃声)来电，设备B断开esco，叠加本地铃声；</p></li>
+</ul>
+</li>
+<li><p>先来电 &lt; 后去电</p>
+<ul class="simple">
+<li><p>设备A(支持带内铃声)来电，设备B去电，设备A断开esco，无论设备A来电铃声是带内或是本地，都转为本地铃声，与设备B去电声音叠加；</p></li>
+</ul>
+</li>
+<li><p>先通话 &gt; 后来电</p>
+<ul class="simple">
+<li><p>设备A通话中，设备B(支持带内铃声)来电，设备B断开esco，叠加本地铃声，接听设备B，通话声音用设备输出，不由耳机输出。</p></li>
+</ul>
+</li>
+<li><p>挂断恢复来电铃声</p>
+<ul class="simple">
+<li><p>设备A通话中，设备B来电中(本地铃声)，挂断设备A，先停设备B本地铃声，设备A断开esco，再恢复设备B铃声</p></li>
+</ul>
+</li>
+</ol>
+<p>以上1-5点详细见：dual_phone_call.c中的void bt_dual_phone_call_msg_handler(int <a href="#id13"><span class="problematic" id="id14">*</span></a>msg);函数的处理，第6点详细见int bt_phone_hangup(u8 <a href="#id15"><span class="problematic" id="id16">*</span></a>bt_addr);函数。</p>
+</section>
+<section id="id17">
+<h3>通话抢占功能流程图<a class="headerlink" href="#id17" title="Permalink to this headline"></a></h3>
+<p>优先级：通话中&gt;去电&gt;来电&gt;播歌</p>
+<figure class="align-default">
+<img alt="../../../../../_images/通话和通话抢占.png" src="../../../../../_images/通话和通话抢占.png" />
+</figure>
+</section>
+<section id="id18">
+<h3>通话消息处理相关函数<a class="headerlink" href="#id18" title="Permalink to this headline"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm">* @brief 来电、去电、esco连接断开等事件响应处理，然后发送CMD_PHONE_INCOME等命令</span>
+<span class="cm">* 注：该函数的实现请参考耳机SDK的</span>
+<span class="cm">*</span>
+<span class="cm">* @param msg 蓝牙事件消息</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">bt_phone_status_event_handler</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 一拖二时，电话相关蓝牙事件消息处理函数 包含通话和通话的抢占</span>
+<span class="cm">* 注：如果通话抢占在应用层3秒内没有被处理，蓝牙底层会使用最新的通话链路</span>
+<span class="cm">* 注：该函数的实现请参考耳机SDK的</span>
+<span class="cm">*</span>
+<span class="cm">* @param msg 蓝牙事件消息</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">bt_dual_phone_call_msg_handler</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 来电铃声处理流程,由于加了来电铃声叠加，</span>
+<span class="cm">* 这里只处理第一台手机来电(记录第一台手机的地址，带内还是本地铃声，播放铃声等)，</span>
+<span class="cm">* 第二台手机来电交给bt_phone_outband_ring()做</span>
+<span class="cm">*</span>
+<span class="cm">* @param bt_addr 来电设备蓝牙地址</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">bt_phone_income</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="n">after_conn</span><span class="p">,</span><span class="w"> </span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">bt_addr</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 挂断处理,如果另一台手机是来电状态，就需要恢复播放来电手机的铃声</span>
+<span class="cm">*</span>
+<span class="cm">* @param bt_addr 挂断的设备蓝牙地址</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">bt_phone_hangup</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">bt_addr</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 获取已经连接的蓝牙设备</span>
+<span class="cm">*</span>
+<span class="cm">* @param addr_a 设备A地址</span>
+<span class="cm">* @param device_a 设备A</span>
+<span class="cm">* @param device_b 设备B</span>
+<span class="cm">* @param device_c 设备C</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">bt_get_btstack_device</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">addr_a</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">**</span><span class="n">device_a</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">**</span><span class="n">device_b</span><span class="p">);</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">bt_get_btstack_device3</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">addr_a</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">**</span><span class="n">device_a</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">**</span><span class="n">device_b</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">**</span><span class="n">device_c</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 获取蓝牙设备的蓝牙地址</span>
+<span class="cm">*</span>
+<span class="cm">* @param device 设备</span>
+<span class="cm">* @return 设备地址</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="nf">btstack_get_device_mac_addr</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">device</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 获取蓝牙设备的通话状态</span>
+<span class="cm">*</span>
+<span class="cm">* @param device 设备</span>
+<span class="cm">* @return 设备的通话状态，如：BT_CALL_HANGUP（默认）、BT_CALL_INCOMING、BT_CALL_OUTGOING、BT_CALL_ACTIVE</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">btstack_bt_get_call_status</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">device</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 获取蓝牙设备的通话状态</span>
+<span class="cm">*</span>
+<span class="cm">* @param addr 设备的蓝牙地址</span>
+<span class="cm">* @return 设备的通话状态，如：BT_CALL_HANGUP（默认）、BT_CALL_INCOMING、BT_CALL_OUTGOING、BT_CALL_ACTIVE</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="n">u8</span><span class="w"> </span><span class="nf">bt_get_call_status_for_addr</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">addr</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 获取指定设备的esco状态</span>
+<span class="cm">*</span>
+<span class="cm">* @param device 设备</span>
+<span class="cm">* @return BT_ESCO_STATUS_CLOSE:esco链路关闭; BT_ESCO_STATUS_OPEN:esco链路已建立</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">btstack_get_call_esco_status</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">device</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 下发指令到指定设备</span>
+<span class="cm">*</span>
+<span class="cm">* @param device 设备</span>
+<span class="cm">* 比如btstack_device_control(device_a, USER_CTRL_DISCONN_SCO);让设备A断开esco链路</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">btstack_device_control</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">device</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">cmd</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id19">
+<h3>通话音频流相关函数<a class="headerlink" href="#id19" title="Permalink to this headline"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm">* @brief 播放本地铃声</span>
+<span class="cm">*</span>
+<span class="cm">* @param file_name 本地铃声文件名</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">play_ring_file_alone</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">file_name</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 关闭提示音与铃声</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">tone_ring_player_stop</span><span class="p">();</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 设置通话音量</span>
+<span class="cm">*</span>
+<span class="cm">* @param APP_AUDIO_STATE_CALL 通话场景</span>
+<span class="cm">* @param call_vol 通话音量</span>
+<span class="cm">* @param fade 1:淡入淡出</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="n">app_audio_set_volume</span><span class="p">(</span><span class="n">APP_AUDIO_STATE_CALL</span><span class="p">,</span><span class="w"> </span><span class="n">call_vol</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief esco链路创建后，开启通话的解码器</span>
+<span class="cm">*</span>
+<span class="cm">* @param bt_addr 通话设备蓝牙地址</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">esco_player_open</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">bt_addr</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief esco链路创建后，开启通话的编码器</span>
+<span class="cm">*</span>
+<span class="cm">* @param link_type 填：COMMON_SCO</span>
+<span class="cm">* @param bt_addr 通话设备蓝牙地址</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">esco_recoder_open</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="n">link_type</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">bt_addr</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 关闭通话的解码器</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">esco_player_close</span><span class="p">();</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 关闭通话的编码器</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">esco_recoder_close</span><span class="p">();</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief ESCO解码器状态</span>
+<span class="cm">*</span>
+<span class="cm">* @param btaddr 目标设备蓝牙地址</span>
+<span class="cm">*</span>
+<span class="cm">* @result 是否正在解码</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">esco_player_is_playing</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">btaddr</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id20">
+<h3>通话音频流程图<a class="headerlink" href="#id20" title="Permalink to this headline"></a></h3>
+<figure class="align-default">
+<img alt="../../../../../_images/phonecall_jlstream.png" src="../../../../../_images/phonecall_jlstream.png" />
+</figure>
+</section>
+<section id="id21">
+<h3>通话按键相关命令<a class="headerlink" href="#id21" title="Permalink to this headline"></a></h3>
+<p>详细见：APP_MSG_CALL_ANSWER、APP_MSG_CALL_HANGUP、APP_MSG_CALL_LAST_NO、APP_MSG_VOL_UP、APP_MSG_VOL_DOWN等按键消息。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// APP_MSG_CALL_ANSWER，接通电话</span>
+<span class="n">bt_cmd_prepare</span><span class="p">(</span><span class="n">USER_CTRL_HFP_CALL_ANSWER</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">// APP_MSG_CALL_HANGUP，挂断电话</span>
+<span class="n">bt_cmd_prepare</span><span class="p">(</span><span class="n">USER_CTRL_HFP_CALL_HANGUP</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">// APP_MSG_CALL_LAST_NO，回拨</span>
+<span class="n">bt_cmd_prepare</span><span class="p">(</span><span class="n">USER_CTRL_HFP_CALL_LAST_NO</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">// APP_MSG_VOL_UP，通话音量增</span>
+<span class="n">bt_cmd_prepare</span><span class="p">(</span><span class="n">USER_CTRL_HFP_CALL_VOLUME_UP</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">// APP_MSG_VOL_DOWN，通话音量减</span>
+<span class="n">bt_cmd_prepare</span><span class="p">(</span><span class="n">USER_CTRL_HFP_CALL_VOLUME_DOWN</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

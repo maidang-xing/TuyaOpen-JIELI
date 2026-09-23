@@ -1,0 +1,39 @@
+.. JL_Adapter_SDK documentation master file, created by
+   sphinx-quickstart on Wed Jun 16 08:53:25 2021.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+
+.. figure:: _static/完整LOGO.png
+    :align: right
+    :figclass: align-right
+    :width: 70%
+
+
+============================
+杰理蓝牙音频SDK使用手册
+============================
+
+本文档由杰理官方推出，适用于AC792N 可视化SDK
+
+.. toctree::
+   :maxdepth: 3
+   :caption: SDK入门
+   :numbered:
+
+   SDK/framework/index.rst
+   快速入门/index.rst
+
+.. toctree::
+   :maxdepth: 3
+   :caption: 音频功能进阶
+   :numbered:
+
+   SDK/audio/index.rst
+   SDK/audio_config/index.rst
+   SDK/audio_flow/index.rst
+   SDK/audio_effects/index.rst
+   SDK/audio_cvp/index.rst
+   SDK/audio_FAQ/index.rst
+
+   

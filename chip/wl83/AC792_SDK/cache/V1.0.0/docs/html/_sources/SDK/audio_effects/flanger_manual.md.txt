@@ -1,0 +1,23 @@
+# Flanger
+
+
+## 功能介绍
+* flanger是一种模拟延迟效果，通过调节延迟时间、调制频率和调制长度，可以产生丰富的音色效果。
+
+## 参数简述
+* **反馈系数[Feedback]**:单位percent：效果声的反馈强度
+* **调制频率[Modulation Rate]**:单位hz    ：影响合成声的音高变化速度    
+* **延迟时间[Delay]**:影响申请的buf大小,单位ms
+* **调制长度[Modulation  Depth]**  :实际值是delay*mod_depth/100,单位percent
+* **湿声增益[Wet Gain]**:单位percent，效果声的音量
+* **干声增益[Dry Gain]**:单位percent，原声的音量
+* **左右相位差异[LRphase Diff]**:范围0到360度
+
+
+### 如果需要单声道进双声道出，【LRphasediff设成非0生效】，可以先单变双：
+
+![flanger](./assets/flanger_mono2stereo.png)
+
+
+
+

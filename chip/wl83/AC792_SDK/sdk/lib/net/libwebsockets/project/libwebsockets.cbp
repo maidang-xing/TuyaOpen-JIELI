@@ -1,0 +1,544 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="libwebsockets" />
+		<Option pch_mode="2" />
+		<Option compiler="pi32" />
+		<Build>
+			<Target title="Release">
+				<Option output="../../../../cpu/wl83/liba/libwebsockets.a" prefix_auto="0" extension_auto="0" />
+				<Option working_dir="" />
+				<Option object_output="obj/Release/" />
+				<Option type="2" />
+				<Option compiler="pi32v2_r3_empty_compiler" />
+				<Compiler>
+					<Add option="-flto" />
+					<Add option="-Oz" />
+					<Add option="-ffunction-sections" />
+					<Add option="-Wno-unused-value" />
+					<Add option="-D_POSIX_SOURCE" />
+					<Add option="-D_SYS_SELECT_H" />
+					<Add option="-DCONFIG_FREE_RTOS_ENABLE" />
+					<Add option="-DUSE_RTOS" />
+					<Add option="-DLWIP_PROVIDE_ERRNO" />
+					<Add option="-D_ASM_GENERIC_ERRNO_BASE_H" />
+					<Add option="-D__WIFI_DEF_H__" />
+					<Add option="-DLWS_AMAZON_RTOS" />
+					<Add option="-D_STDIO_H_" />
+					<Add directory="../../../../include_lib/system" />
+					<Add directory="../../../../include_lib/system/generic" />
+					<Add directory="../../../../include_lib/system/device" />
+					<Add directory="../../../../include_lib/driver/cpu/wl83" />
+					<Add directory="../../../../include_lib" />
+					<Add directory="../../../../include_lib/utils" />
+					<Add directory="../../../../include_lib/driver" />
+					<Add directory="../../../../include_lib/net" />
+					<Add directory="../../../../include_lib/net/lwip_2_2_0/lwip/port" />
+					<Add directory="../../../../include_lib/net/lwip_2_2_0/lwip/app" />
+					<Add directory="../../../../include_lib/net/lwip_2_2_0/lwip/port/arch" />
+					<Add directory="../../../../include_lib/net/lwip_2_2_0/lwip/src/include" />
+					<Add directory="../../../../include_lib/net/lwip_2_2_0/lwip/src/include/lwip" />
+					<Add directory="../../../../include_lib/net/device/eth" />
+					<Add directory="../../../../include_lib/net/device" />
+					<Add directory="../../../../include_lib/system/os/FreeRTOS/pi32_lto" />
+					<Add directory="../../../../include_lib/newlib/include" />
+					<Add directory="../../../../include_lib/net/libwebsockets/include" />
+					<Add directory="../../../../include_lib/net/libwebsockets/include/libwebsockets" />
+					<Add directory="../lib/core" />
+					<Add directory="../lib/tls" />
+					<Add directory="../lib/tls/mbedtls/wrapper/include/openssl" />
+					<Add directory="../lib/tls/mbedtls/wrapper/include/internal" />
+					<Add directory="../lib/tls/mbedtls/wrapper/include/platform" />
+					<Add directory="../lib/secure-streams" />
+					<Add directory="../lib/event-libs" />
+					<Add directory="../lib/system/metrics" />
+					<Add directory="../lib/core-net" />
+					<Add directory="../lib/roles" />
+					<Add directory="../lib/roles/http" />
+					<Add directory="../lib/roles/h1" />
+					<Add directory="../lib/roles/h2" />
+					<Add directory="../lib/roles/mqtt" />
+					<Add directory="../lib/roles/ws" />
+					<Add directory="../lib/system/async-dns" />
+					<Add directory="../lib/plat/freertos" />
+					<Add directory="../../../../include_lib/system/os" />
+					<Add directory="../../../../include_lib/net/mbedtls_3_4_0" />
+					<Add directory="../lib/misc" />
+				</Compiler>
+				<Linker>
+					<Add option="-flto" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add directory="./" />
+		</Compiler>
+		<Unit filename="../lib/core-net/adopt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/client/client.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/client/conmon.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/client/connect.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/client/connect2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/client/connect3.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/client/connect4.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/client/sort-dns.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/close.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/dummy-callback.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/lws-dsh.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/network.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/output.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/pollfd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/private-lib-core-net.h" />
+		<Unit filename="../lib/core-net/service.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/sorted-usec-list.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/state.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/transport-mux-client.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/transport-mux-common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/vhost.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/wol.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/wsi-timeout.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core-net/wsi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core/alloc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core/buflist.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core/context.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core/libwebsockets.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core/logs.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core/lws_dll2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core/lws_map.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/core/private-lib-core.h" />
+		<Unit filename="../lib/cose/cose_key.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/cose/cose_sign.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/cose/cose_sign_alg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/cose/cose_validate.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/cose/cose_validate_alg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/cose/private-lib-cose.h" />
+		<Unit filename="../lib/drivers/led/private-lib-drivers-led.h" />
+		<Unit filename="../lib/event-libs/glib/private-lib-event-libs-glib.h" />
+		<Unit filename="../lib/event-libs/libev/private-lib-event-libs-libev.h" />
+		<Unit filename="../lib/event-libs/libevent/private-lib-event-libs-libevent.h" />
+		<Unit filename="../lib/event-libs/libuv/private-lib-event-libs-libuv.h" />
+		<Unit filename="../lib/event-libs/poll/poll.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/event-libs/poll/private-lib-event-libs-poll.h" />
+		<Unit filename="../lib/event-libs/private-lib-event-libs.h" />
+		<Unit filename="../lib/event-libs/sdevent/private-lib-event-libs-sdevent.h" />
+		<Unit filename="../lib/event-libs/uloop/private-lib-event-libs-uloop.h" />
+		<Unit filename="../lib/jose/jwe/private-lib-jose-jwe.h" />
+		<Unit filename="../lib/jose/jws/private-lib-jose-jws.h" />
+		<Unit filename="../lib/jose/private-lib-jose.h" />
+		<Unit filename="../lib/misc/base64-decode.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/cache-ttl/heap.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/cache-ttl/lws-cache-ttl.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/cache-ttl/private-lib-misc-cache-ttl.h" />
+		<Unit filename="../lib/misc/css-lextable.h" />
+		<Unit filename="../lib/misc/css-propconst-lextable.h" />
+		<Unit filename="../lib/misc/dlo/dlo-font-mcufont.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/dlo/dlo-jpeg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/dlo/dlo-lhp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/dlo/dlo-png.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/dlo/dlo-rect.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/dlo/dlo-ss.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/dlo/dlo-text.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/dlo/dlo.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/dlo/private-lib-drivers-display-dlo.h" />
+		<Unit filename="../lib/misc/fts/private-lib-misc-fts.h" />
+		<Unit filename="../lib/misc/getifaddrs.h" />
+		<Unit filename="../lib/misc/jpeg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/jrpc/jrpc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/jrpc/private-lib-misc-jrpc.h" />
+		<Unit filename="../lib/misc/lejp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/lhp-ss.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/lhp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/lws-ring.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/lwsac/lwsac.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/lwsac/private-lib-misc-lwsac.h" />
+		<Unit filename="../lib/misc/prng.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/romfs.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/romfs.h" />
+		<Unit filename="../lib/misc/sha-1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/upng-gzip.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/misc/upng.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/plat/freertos/esp32/drivers/lws-plat-gpio.h" />
+		<Unit filename="../lib/plat/freertos/freertos-fds.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/plat/freertos/freertos-init.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/plat/freertos/freertos-misc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/plat/freertos/freertos-pipe.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/plat/freertos/freertos-service.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/plat/freertos/freertos-sockets.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/plat/freertos/platform_timer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/plat/freertos/platform_timer.h" />
+		<Unit filename="../lib/plat/freertos/private-lib-plat-freertos.h" />
+		<Unit filename="../lib/plat/optee/private-lib-plat-optee.h" />
+		<Unit filename="../lib/plat/unix/private-lib-plat-unix.h" />
+		<Unit filename="../lib/plat/windows/private-lib-plat-windows.h" />
+		<Unit filename="../lib/roles/cgi/private-lib-roles-cgi.h" />
+		<Unit filename="../lib/roles/dbus/private-lib-roles-dbus.h" />
+		<Unit filename="../lib/roles/h1/ops-h1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/h1/private-lib-roles-h1.h" />
+		<Unit filename="../lib/roles/h2/hpack.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/h2/http2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/h2/huftable.h" />
+		<Unit filename="../lib/roles/h2/ops-h2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/h2/private-lib-roles-h2.h" />
+		<Unit filename="../lib/roles/http/client/client-http.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/http/compression/private-lib-roles-http-compression.h" />
+		<Unit filename="../lib/roles/http/date.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/http/header.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/http/lextable-strings.h" />
+		<Unit filename="../lib/roles/http/lextable.h" />
+		<Unit filename="../lib/roles/http/parsers.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/http/private-lib-roles-http.h" />
+		<Unit filename="../lib/roles/http/server/lws-spa.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/http/server/ranges.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/http/server/server.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/listen/ops-listen.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/mqtt/client/client-mqtt-handshake.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/mqtt/client/client-mqtt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/mqtt/mqtt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/mqtt/ops-mqtt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/mqtt/primitives.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/mqtt/private-lib-roles-mqtt.h" />
+		<Unit filename="../lib/roles/pipe/ops-pipe.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/private-lib-roles.h" />
+		<Unit filename="../lib/roles/raw-file/ops-raw-file.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/raw-proxy/private-lib-roles-raw-proxy.h" />
+		<Unit filename="../lib/roles/raw-skt/ops-raw-skt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/ws/client-parser-ws.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/ws/client-ws.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/ws/ext/extension-permessage-deflate.h" />
+		<Unit filename="../lib/roles/ws/ops-ws.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/roles/ws/private-lib-roles-ws.h" />
+		<Unit filename="../lib/roles/ws/server-ws.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/secure-streams/policy-common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/secure-streams/policy-json.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/secure-streams/private-lib-secure-streams.h" />
+		<Unit filename="../lib/secure-streams/protocols/ss-h1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/secure-streams/protocols/ss-h2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/secure-streams/protocols/ss-mqtt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/secure-streams/protocols/ss-raw.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/secure-streams/protocols/ss-ws.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/secure-streams/secure-streams.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/secure-streams/system/auth-api.amazon.com/auth.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/secure-streams/system/captive-portal-detect/captive-portal-detect.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/secure-streams/system/fetch-policy/fetch-policy.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/system/async-dns/private-lib-async-dns.h" />
+		<Unit filename="../lib/system/dhcpclient/private-lib-system-dhcpclient.h" />
+		<Unit filename="../lib/system/fault-injection/private-lib-system-fault-injection.h" />
+		<Unit filename="../lib/system/metrics/private-lib-system-metrics.h" />
+		<Unit filename="../lib/system/smd/private-lib-system-smd.h" />
+		<Unit filename="../lib/system/system.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/lws-gencrypto-common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/lws-genec-common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/lws-genaes.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/lws-gencrypto.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/lws-genec.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/lws-genhash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/lws-genrsa.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/mbedtls-client.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/mbedtls-extensions.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/mbedtls-server.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/mbedtls-session.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/mbedtls-ssl.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/mbedtls-tls.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/mbedtls-x509.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/private-lib-tls-mbedtls.h" />
+		<Unit filename="../lib/tls/mbedtls/wrapper/include/internal/ssl3.h" />
+		<Unit filename="../lib/tls/mbedtls/wrapper/include/internal/ssl_cert.h" />
+		<Unit filename="../lib/tls/mbedtls/wrapper/include/internal/ssl_code.h" />
+		<Unit filename="../lib/tls/mbedtls/wrapper/include/internal/ssl_dbg.h" />
+		<Unit filename="../lib/tls/mbedtls/wrapper/include/internal/ssl_lib.h" />
+		<Unit filename="../lib/tls/mbedtls/wrapper/include/internal/ssl_methods.h" />
+		<Unit filename="../lib/tls/mbedtls/wrapper/include/internal/ssl_pkey.h" />
+		<Unit filename="../lib/tls/mbedtls/wrapper/include/internal/ssl_stack.h" />
+		<Unit filename="../lib/tls/mbedtls/wrapper/include/internal/ssl_types.h" />
+		<Unit filename="../lib/tls/mbedtls/wrapper/include/internal/ssl_x509.h" />
+		<Unit filename="../lib/tls/mbedtls/wrapper/include/internal/tls1.h" />
+		<Unit filename="../lib/tls/mbedtls/wrapper/include/internal/x509_vfy.h" />
+		<Unit filename="../lib/tls/mbedtls/wrapper/include/openssl/ssl.h" />
+		<Unit filename="../lib/tls/mbedtls/wrapper/include/platform/ssl_pm.h" />
+		<Unit filename="../lib/tls/mbedtls/wrapper/include/platform/ssl_port.h" />
+		<Unit filename="../lib/tls/mbedtls/wrapper/library/ssl_cert.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/wrapper/library/ssl_lib.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/wrapper/library/ssl_methods.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/wrapper/library/ssl_pkey.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/wrapper/library/ssl_stack.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/wrapper/library/ssl_x509.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/wrapper/platform/ssl_pm.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/mbedtls/wrapper/platform/ssl_port.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/openssl/private-lib-tls-openssl.h" />
+		<Unit filename="../lib/tls/private-jit-trust.h" />
+		<Unit filename="../lib/tls/private-lib-tls.h" />
+		<Unit filename="../lib/tls/private-network.h" />
+		<Unit filename="../lib/tls/tls-client.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/tls-network.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/tls-server.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/tls-sessions.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/tls/tls.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Extensions>
+			<debugger>
+				<remote_debugging>
+					<options conn_type="0" serial_baud="115200" ip_address="127.0.0.1" ip_port="9999" />
+				</remote_debugging>
+			</debugger>
+			<code_completion />
+			<envvars />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

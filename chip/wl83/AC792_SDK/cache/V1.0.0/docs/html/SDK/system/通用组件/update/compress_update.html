@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>压缩双备份升级 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../../_static/js/custom.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>压缩双备份升级</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="id1">
+<h1>压缩双备份升级<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h1>
+<p>压缩双备份升级是指在设备升级过程中，使用压缩包的方式来存储和传输升级文件，以节省存储空间和提高传输效率。该方法通常涉及将升级文件打包成一个压缩文件，并在设备上进行解压和安装。可以利用该功能扩大在普通双备份模式下的代码区空间，解决双备份模式下代码区空间不足的问题。</p>
+<section id="flash">
+<h2>压缩双备份flash结构<a class="headerlink" href="#flash" title="Permalink to this headline"></a></h2>
+<a class="reference internal image-reference" href="../../../../_images/压缩双备份flash结构.png"><img alt="压缩双备份flash结构" class="align-center" src="../../../../_images/压缩双备份flash结构.png" style="width: 30%;" /></a>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>结构基本与普通双备份flash结构相同，但appcore1区域小于appcore0区域</p></li>
+<li><p>对比普通双备份flash结构，appcore0区域可以比原来增大约16%~18%空间</p></li>
+<li><p>升级包传输完成后，不能立刻重启完成，需要一定解压刷flash耗时（2MB的flash约耗时10~20秒）</p></li>
+</ul>
+</div>
+</section>
+<section id="id2">
+<h2>压缩双备份使用方法<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<section id="sdk">
+<h3>SDK配置<a class="headerlink" href="#sdk" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>在sdk_config.h中，开启宏配置</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="cp">#define TCFG_DUAL_BANK_ENABLE 1    </span><span class="c1">//双备份</span>
+<span class="linenos">2</span><span class="cp">#define TCFG_UPDATE_COMPRESS 1     </span><span class="c1">//压缩升级</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../../../_images/压缩双备份-可视化配置.png"><img alt="压缩双备份-可视化配置" class="align-center" src="../../../../_images/压缩双备份-可视化配置.png" style="width: 60%;" /></a>
+<ul class="simple">
+<li><p>在isd_config_rule.c（或isd_donwload.ini）文件中，默认的升级区AREA_SIZE参数为0</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="o">[</span>COMPRESS_BACKUP<span class="o">]</span>
+<span class="linenos">2</span><span class="nv">AREA_SIZE</span><span class="o">=</span><span class="m">0</span><span class="p">;</span>           <span class="c1">#默认升级区为0，双击执行download.bat脚本查看推荐配置</span>
+<span class="linenos">3</span><span class="nv">BLOCK_SIZE</span><span class="o">=</span><span class="m">65536</span><span class="p">;</span>      <span class="c1">#压缩块大小，配置为64KB，不用修改</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../../../_images/isd_config_ini配置初始为0.png"><img alt="isd_config_ini配置初始为0" class="align-center" src="../../../../_images/isd_config_ini配置初始为0.png" style="width: 30%;" /></a>
+<ul class="simple">
+<li><p>可视化工程中，直接点击“编译”，可视化终端会根据固件的实际压缩率给出升级区的空间大小推荐值，（非可视化工程则在下载目录下双击执行download.bat脚本），输出如下</p></li>
+</ul>
+<a class="reference internal image-reference" href="../../../../_images/推荐压缩升级区配置.png"><img alt="推荐压缩升级区配置" class="align-center" src="../../../../_images/推荐压缩升级区配置.png" style="width: 60%;" /></a>
+<p>推荐的压缩升级区空间大小为812K，此时还不能成功编译出固件</p>
+<ul class="simple">
+<li><p>在isd_config_rule.c（或isd_donwload.ini）文件中，配置升级区AREA_SIZE参数为812K</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="o">[</span>COMPRESS_BACKUP<span class="o">]</span>
+<span class="linenos">2</span><span class="nv">AREA_SIZE</span><span class="o">=</span>812K<span class="p">;</span>      <span class="c1">#注意单位是K，不能写KB</span>
+<span class="linenos">3</span><span class="nv">BLOCK_SIZE</span><span class="o">=</span><span class="m">65536</span><span class="p">;</span>    <span class="c1">#压缩块大小，配置为64KB，不用修改</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>再次点击“编译”（非可视化则双击执行download.bat脚本），有如下打印输出，则证明固件编译成功</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span>compressing firmware data, please waiting ...
+<span class="linenos">2</span>Firmware data length: 840K<span class="o">(</span>0xd2000<span class="o">)</span>                        <span class="c1">#实际的flash.bin大小</span>
+<span class="linenos">3</span>Compressed firmware data length: <span class="m">553</span>.231K<span class="o">(</span>0x8a4ed<span class="o">)</span>         <span class="c1">#压缩后的flash.bin压缩包大小</span>
+<span class="linenos">4</span>The compression ratio is: <span class="m">0</span>.341391                         <span class="c1">#压缩率</span>
+<span class="linenos">5</span>The total app code area size: 1188K<span class="o">(</span>0x129000<span class="o">)</span>              <span class="c1">#flash.bin的总可用flash空间大小</span>
+<span class="linenos">6</span>The free app code area size : 348K<span class="o">(</span>0x57000<span class="o">)</span>                <span class="c1">#flash.bin的剩余可用flash空间大小</span>
+<span class="linenos">7</span>The total compress backup area size: 812K<span class="o">(</span>0xcb000<span class="o">)</span>         <span class="c1">#压缩OTA包的总可用flash空间大小</span>
+<span class="linenos">8</span>The free compress backup area size : <span class="m">258</span>.769K<span class="o">(</span>0x40b13<span class="o">)</span>     <span class="c1">#压缩OTA包的剩余可用flash空间大小</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>升级区AREA_SIZE参数配置完成一次后，即分区确定！后续版本不能再修改！！否则出现OTA失败问题</p></li>
+<li><p>需要修改分区空间，只能通过测试盒串口，或USB强制升级等刷机升级方式</p></li>
+<li><p>若方案有无log版本与有log版本两种固件。确定分界线时应当以量产版本为准，一般以无log情况确定分界线。</p></li>
+</ul>
+</section>
+<section id="id3">
+<h3>打包工具<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>可视化工程已经配置好打包指令，无需以下的打包工具修改操作</p></li>
+<li><p>使用isd_download.exe工具（版本&gt;=V4.2.68），在PC上生成压缩OTA包</p></li>
+<li><p>在download.bat脚本中，加入如下指令，即可从.ufw文件中导出压缩OTA包</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span>.<span class="se">\i</span>sd_download.exe -make-upgrade-bin -ufw update.ufw -output db_update.bin
+<span class="linenos">2</span>.<span class="se">\u</span>fw_maker.exe -chip AC710N -enc -res db_update.bin -output update-com.ufw
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>参数解释</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span>isd_download.exe从ufw文件中导出压缩OTA包
+<span class="linenos">2</span>-ufw：指定目标版本.ufw文件
+<span class="linenos">3</span>-output：输出文件名，主动升级这里必须命名为db_update.bin
+<span class="linenos">4</span>
+<span class="linenos">5</span>ufw_maker.exe将压缩OTA包制作成.ufw格式文件，可用于主动升级（RCSP/测试盒无线/sd卡等升级方式）
+</pre></div>
+</div>
+</section>
+<section id="ota">
+<h3>OTA<a class="headerlink" href="#ota" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>最终设备连接上手机（或其他支持主动升级的上位机，例如测试盒蓝牙，sd卡等），将update-com.ufw放到手机中，点击启动升级即可开始设备升级</p></li>
+<li><p>注意！测试盒串口升级不能用update-com.ufw文件，必须使用update.ufw文件</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,142 @@
+# 通话算法集成
+
+## 功能介绍
+***
+
+本文档用来介绍如何集成开发第三方通话算法，不同平台，可用资源汇总如下：<br>
+<mark>
+- **备注1**：RAM数据仅供参考，非精确数据，具体项目由于功能不同，存在差异
+- **备注2**：CPU指的是平台支持的最大主频，以及CPU核的个数，x2表示双核
+</mark>
+
+|Platform|RAM|CPU|Note|
+|---|---|---|---|
+|**701N**|450k|192M x2||
+|**708N**|220k|192M x2||
+|**709N**|180k|192M x2||
+|**710N**|80k|192M||
+
+## 开发流程
+***
+
+### 流程图配置
+
++ 在侧边栏的`清晰语音`选择`通话第三方算法`节点，根据方案在`通话第三方算法`节点配置中选择对应的`算法类型`
+![第三方算法流程图](./assets/other_call_flow.png)
+<br>
++ 如下图所示，配置单麦算法<br>
+![第三方算法节点配置](./assets/other_call_flow_type.png)
++ `ADC`节点配置中`MIC使能`，勾选与算法对应的MIC个数, 如上图选择的`单麦算法`，则`MIC使能`勾选一个原理图对应的MIC，双麦算法则需要在`ADC`节点勾选两个`MIC使能`，以此类推；
+![第三方算法节点配置](./assets/other_call_ADC.png)
+
+### 算法集成流程
+
+- **算法处理帧长配置**<br>
+（1）在audio/CVP/audio_cvp_develop.c里面配置算法处理帧长的宏AEC_FRAME_POINTS<br>
+```C
+
+...
+
+#define AEC_FRAME_POINTS	256					/*AEC处理帧长，跟mic采样长度关联*/
+
+...
+
+```
+（2）蓝牙模式时，在audio/interface/recoder/esco_recoder.c文件里面，esco_recoder_open()函数里面，把adc节点的中断点数修改成和算法的处理帧长AEC_FRAME_POINTS一样<br>
+
+```C
+
+int esco_recoder_open(u8 link_type, void *bt_addr)
+{
+
+    ...
+
+        //设置ADC的中断点数
+    err = jlstream_node_ioctl(recoder->stream, NODE_UUID_SOURCE, NODE_IOC_SET_PRIV_FMT, 256);
+    if (err) {
+        goto __exit1;
+    }
+
+    ...
+
+}
+
+```
+
+
+
+
+- **算法开发位置**<br>
+```
+audio/CVP/audio_cvp_develop.c
+```
+
+- **算法初始化和退出**<br>
+```C
+//算法初始化位置
+audio_aec_init();
+
+//算法退出释放资源位置
+audio_aec_close();
+```
+
+- **算法运行**<br>
+
+```C
+/*
+*********************************************************************
+*                  Audio AEC RUN
+* Description: AEC数据处理核心
+* Arguments  : in 		Talk Mic采样数据
+*			   inref	FF Mic采样数据
+*			   inref1	FB Mic采样数据
+*			   ref		speaker回采参考数据
+*			   out		数据输出
+*			   points   数据点数，单位short
+* Return	 : 数据运算输出长度
+* Note(s)    : 在这里实现AEC_core
+*********************************************************************
+*/
+static int audio_aec_run(s16 *in, s16 *inref, s16 *inref1, s16 *ref, s16 *out, u16 points)
+{
+    ...
+
+    /*TODO:这里调用第三方算法处理*/
+    //3rd_party_algo_run();
+    memcpy(out, in, (points << 1));
+    out_size = points << 1;
+
+    ...
+}
+
+```
+
+- **原始数据抓取**<br>
+
+流程预置了串口抓数据的接口，支持抓取麦克风原始数据、扬声器参考数据和算法输出数据。`CVP通话`导出数据的类型可在`app_config.h`配置
+```c
+/*
+ * CVP串口数据导出
+ * 0 : 关闭数据导致
+ * 1 : 导出 mic0 mic1 far
+ * 2 : 导出 mic0 mic1 out
+ * 3 : 导出 mic0 far out
+ */
+#if ((defined TCFG_AUDIO_DATA_EXPORT_DEFINE) && (TCFG_AUDIO_DATA_EXPORT_DEFINE == AUDIO_DATA_EXPORT_VIA_UART))
+const u8 CONST_AEC_EXPORT = 3;/*1:far 2:out*/
+#else
+const u8 CONST_AEC_EXPORT = 0;
+#endif/*TCFG_AUDIO_DATA_EXPORT_DEFINE*/
+
+```
+对于不同mic数量，导出哪一类数据可以配置如下<br>
+![](./assets/cvp_develop_1.png)<br>
+然后通过在app_config.h文件里面把TCFG_AUDIO_DATA_EXPORT_DEFINE宏配置为AUDIO_DATA_EXPORT_VIA_UART打开串口数据导出功能，如下图所示<br>
+![](./assets/cvp_develop_2.png)<br>
+
+有关串口数据导出的更多信息，请参考以下文档：
+[串口数据导出文档](../../audio_cvp/cvp_uart_data_export.md)
+
+
+
+

@@ -1,0 +1,471 @@
+# MIDI
+
+## MIDI介绍
+MIDI全称是乐器数字接口(Musical Instrument Digital Interface)，是 20 世纪 80 年代初为解决电声乐器之间的通信问题而提出的，编曲界最广泛的音乐标准格式.MIDI用音符的数字控制信号来记录音乐。一首完整的MIDI音乐只有几十KB大，而能包含数十条音乐轨道。其传输的不是声音信号，而是音符、控制参数等指令,它指示MIDI设备要做什么，怎么做，如演奏哪个音符、多大音量等。MIDI功能支持 MIDI文件解码 和 MIDI琴 两种应用。
+
+1. “ _MIDI_ 文件解码”；
+2. “ _MIDI_ 琴”；
+
+### MIDI文件解码需要
+
+```
+1.音色库（工具生成的.mdb文件）
+2.MIDI文件（工具转换后的.mid文件或者.mfa文件）
+3.midi_api.c
+4.midi_dec_api.h
+5.MIDI_DEC_API.H
+MIDI琴需要：
+1.音色库（工具生成的.mdb文件）
+2.midi_ctrl_api.c
+```
+
+
+
+```
+3.midi_ctl_api.h
+4.MIDI_CTRL_API.H
+其中：（音色库和MIDI文件文件详细操作步骤可见midi工具章节）
+1.音色库为我司MIDI工具生成的
+2.MIDI文件文件是midi歌曲经过MIDI工具转换生成的文件
+```
+**备注:**
+
+```
+工具 音色库 转换后的音源文件
+旧版工具 .mda .mid
+新版工具 .mdb .mfa
+```
+
+
+## MIDI文件解码
+### MIDI文件解码相关const变量控制
+
+```
+midi相关功能与相关const变量关联，目前const变量会在lib_media_config.c文件控制，
+```
+1. const int MAINTRACK_USE_CHN = 0; //0:用track号来区分1:用channel号来区分。
+2. const int MAX_DEC_PLAYER_CNT = 8; //MIDI文件解码最大同时发声的key数,范围[1,31]
+3. const int MAX_CTR_PLAYER_CNT = 8; //midi琴最大同时发声的key数,范围[1,31]
+4. const int NOTE_OFF_TRIGGER = 0; //midi琴note_off回调 1 ：time传 0 时，不会回调 0 ：time
+    传 0 时，回调
+5. const int MIDI_MAX_MARK_CNT = 0; //该变量控制MIDI解码最大mark数量
+
+## MIDI文件解码模式
+
+
+
+数据流如下图， midi文件解码走普通文件解码的流程，把mfa 后缀名的文件放在sd 卡或者U盘里面，当成普通音乐文件解码
+![alt text](image.png)
+要使用midi琴解码或者 midi文件解码需要开如下宏
+![alt text](image-1.png)
+
+midi琴解码和 midi 文件解码都需要配置midi音色文件，音色文件可以放在 sd卡 或者内置flash， 注意当音色文件放在内置flash的时候，音色文件需要放在文件夹里面，且文件夹没有子文件夹，以保证文件地址四字节对齐，如下图
+![alt text](image-2.png)
+![alt text](image-3.png)
+
+
+## MIDI文件解码功能
+
+### midi解码功能
+
+```
+midi解码功能流程可以认为和普通音频文件播放一样，midi文件解码初始化相关的代码都在
+audio_dec_midi_file.c 里面，接下来介绍的midi 功能配置都可以在这个文件里面的init
+_midi_info_val 里面配置，如下图
+```
+
+![alt text](image-6.png)
+```
+midi解码
+MIDI解码方式一共有 4 种，分别是：
+1.正常解码模式（CMD_MIDI_CTRL_MODE_0）
+2.OKON模式（CMD_MIDI_CTRL_MODE_1）
+3.只推消息不出声模式（暂不支持）（CMD_MIDI_CTRL_MODE_2）
+4.外部引用替换模式（CMD_MIDI_CTRL_MODE_W2S）
+用户可以通过CMD_MIDI_CTRL_MODE命令来切换这 4 种解码模式。
+```
+
+
+### midi解码OKON功能
+
+
+OKON全称“One Key One On”，意思是单次播放一个音符。
+OKON简单使用流程：
+1.用户先使用CMD_MIDI_CTRL_MODE切换到OKON模式。
+2.初始化中置上MELODY_PLAY_ENABLE使能位
+3.调用CMD_MIDI_GOON进行单个音符的播放。
+
+
+midi解码okon播放
+OKON工作模式有 3 种：
+
+1.主旋律OKON，副旋律正常播放；（CMD_MIDI_OKON_MODE_0）
+
+2.主副旋律一起OKON；（CMD_MIDI_OKON_MODE_1）
+
+3.只有主旋律OKON，副旋律不发声（CMD_MIDI_OKON_MODE_2）
+
+OKON回调音符有 2 种：
+1.melody_trigger回调当前音符（CMD_MIDI_MELODY_KEY_0）
+2.melody_trigger回调下一个音符（CMD_MIDI_MELODY_KEY_1）
+用户可以通过调用CMD_MIDI_OKON_MODE命令，配置MIDI_OKON_MODE结构体参数传入
+解码器进行更换配置。:
+```
+MIDI_OKON_MODE midi_okon_mode_test;
+midi_okon_mode_test.Melody_Key_Mode=CMD_MIDI_MELODY_KEY_0; //goon时回调当前音符
+midi_okon_mode_test.OKON_Mode= CMD_MIDI_OKON_MODE_1; //主副旋一起okon
+midi_ioctrl(stream, CMD_MIDI_OKON_MODE, (void *)midi_okon_mode_test);
+```
+备注:
+只有主旋律OKON副旋律不发声的工作模式，在解码过程中有可能长时间占用CPU，所以需要
+在wdt_clear_trigger()函数中调用清狗函数，否则有可能会导致系统复位！
+只需在初始化中注册即可，sdk 默认已经在audio_dec_midi_file.c文件里面加了
+
+
+##### 下面介绍如何设置对应的主旋律。
+
+##### OKON模式需要确定主旋律来播放音符。
+
+
+初始化时，系统会判断const变量MAINTRACK_USE_CHN的值，值为 0 通过轨道
+(track)号选择主旋律，值为 1 通过通道(channal)号选择主旋律。
+
+修改init_info->mainTrack_info.chn的值可以在初始化中确定主旋律，有效范围是0~15。
+若让系统自动选择第一个音符所在轨道或通道为主旋律，则选择 17 。
+
+Sdk中的默认配置如下：
+
+注意，通过轨道(track)号选择主旋律时，mainTrack_info.chn的值与乐谱制作软件的轨
+道号一致；
+通过通道(channal)号选择主旋律时，mainTrack_info.chn的值需要比乐谱制作软件的通
+道号小 1 ，即mainTrack_info.chn的值为 0 时，对应乐谱中的 1 号通道作为主旋律；
+MIDI文件制作时，一个轨道只能对应一个通道，但是一个通道可以对应多个轨道；
+例如音轨 1 、音轨 2 对应通道 1 ，音轨 3 对应通道 2 ，那么以轨道(track)号选择主旋律
+时，mainTrack_info.chn设置为 1 ，则音轨 1 为主旋律；
+以通道(channal)号选择主旋律时，mainTrack_info.chn设置为 0 ，则通道 1 对应的音轨
+1 和音轨 2 一起成为主旋律。
+下面介绍快速打断功能：
+在只有主旋律OKON副旋律不发声的模式下，可以置上MAIN_INTERRUPT_ENABLE使能
+位开启快速打断功能。
+上一个音符未结束而下一个音符到来时，未开启快速打断，两个音符会叠加在一起直至上一
+个音符结束；
+开启快速打断后，会加快上一个音符的衰减，使其迅速消失减少叠加时间。
+```
+init_info->moledy_stop_info.priv = NULL;
+init_info->moledy_stop_info.main_chn_enable = 1;//
+, 为midi解码音符结束仅回调主旋律的音符； 0 为midi解码音符结束会回调所有音符
+init_info->moledy_stop_info.melody_stop_trigger = midi_melody_stop_trigger;
+//u32 midi_melody_stop_trigger(void *priv, u8 key, u8␣
+,chn)函数，其参数priv是私有参数，key是音符，chn是音符通道。
+```
+
+### 5.3 midi解码修改任意通道乐器功能
+
+
+midi解码时，可以修改任意通道的乐器。
+```
+MIDI_PROG_CHNL_CTRL prog_chnl_test;
+prog_chnl_test.prog = 3; //目标乐器序号
+prog_chnl_test.chnl = 0; //目标通道
+prog_chnl_test.enable = 1; //使能
+midi_dsc_config(p_dec_obj, CMD_MIDI_SET_PROG, &prog_chnl_test); //
+,设置 0 通道的乐器为 3 乐器；
+```
+
+### 5.4 midi解码修改主通道或者所以通道的乐器功能
+
+该功能可以在MIDI运行中动态设置，将CMD_MIDI_SET_CHN_PROG命令和配置好的结构体参数传入解码器；
+置上SET_PROG_ENABLE使能位即可。
+midi解码时，可以修改任意通道的乐器。
+```
+MIDI_PROG_CTRL_STRUCT prog_ctrl_test;
+prog_ctrl_test.prog = 0; //乐器号
+prog_ctrl_test.replace_mode = 0; //
+,→选 0 是只更变主旋律的乐器，选 1 是更变所有旋律的乐器。暂不支持单独更变副旋律的乐器；
+prog_ctrl_test.ex_vol = 0; //音量配置，该值会将音量改变为原来的(ex_vol /1024)倍；值为 1024 则不改变音量
+midi_ioctrl(stream, CMD_MIDI_SET_CHN_PROG, (void *)prog_ctrl_test);
+```
+### 5.5 midi解码mark播放.
+v1.9.0版本支持midi歌曲里可自由选择从哪个mark点到哪个mark点循环，用户需要在初始化中
+置上MARK_ENABLE使能。
+const int MIDI_MAX_MARK_CNT = 4; //midi解码最大支持的mark数,该值会影响midi运算buf，
+该变量已在app_config.c配置
+mark播放配置:
+```
+MIDI_MARK_PARAM mark_info;
+mark_info.mark_start = 1; //
+,→控制mark播放的开始位置，设置为 1 ，即为第一个mark点
+mark_info.mark_end = 3; //控制mark播放的结束位置(需要大于mark_
+,→start)，设置为 3 ，即为第三个mark点
+mark_info.loop_enable = 1; //控制mark点之间是否循环播放
+mark_info.mark_enable = 1; //控制mark播放使能
+midi_dec_confing_api(dec_obj, CMD_MIDI_SET_MARK, (void *)&mark_info);
+```
+### 5.6 midi解码小节回调
+
+ MIDI运行中可以实现回退到之前的小节，需要在初始化中置上SAVE_DIV_ENBALE使能位。
+ 该功能不支持连续回退小节，例如回退了 8 个小节后，需要再次经过 8 个小节才能进行下一次回 退，否则可能会导致小节混乱。 该功能只能在MIDI运行时才能实现。初始化中置上SAVE_DIV_ENBALE使能位，并将
+ CMD_MIDI_SEEK_BACK_N命令和配置好的结构体参数传入解码器即可。
+
+```
+MIDI_SEEK_BACK_STRUCT seek_back_test;
+seek_back_test.seek_back_n = 8; //回退 8 个小节（回退小节数范围为0~8 ，值为 1 时回退到当前小节起始位置）
+midi_ioctrl(stream, CMD_MIDI_SEEK_BACK_N, (void *)seek_back_test);
+```
+
+
+### 5.7 midi解码调整外部音量功能
+
+ MIDI解码能够实现每个通道/轨道单独调节音量的功能，该功能需要置上EX_VOL_ENABLE使
+ 能位。该功能可以在MIDI运行中动态设置，运行中想要单独关闭某一通道/轨道的声音，可以将该通道/轨道音量设为 0 。初始化中置上EX_CH_VOL_PARM使能位，将CMD_MIDI_SET_EX_VOL命令和配置好的结构体参数传入即可。:
+
+```
+EX_CH_VOL_PARM vol_info_test;
+vol_info_test.cc_vol[1] = 4096; //通道 1 的轨道音量设置为4096(原音量)
+vol_info_test.ex_vol_use_chn = 0; //0轨道音量， 1 通道音量
+midi_ioctrl(stream, CMD_MIDI_SET_EX_VOL, (void *)vol_info_test);
+```
+### 5.8 midi解码移半音功能
+
+
+MIDI解码能够实现每个通道单独偏移n个半音，该功能需要置上SEMITONE_ENABLE使能位。
+SDK中默认没有对该功能进行初始化，用户可自行添加。
+该功能可以在MIDI运行中动态设置。在初始化中置上SEMITONE_ENABLE使能位并将
+CMD_MIDI_SET_SEMITONE命令和配置好的结构体参数传入即可。
+```
+MIDI_SEMITONE_CTRL_STRUCT semitone_ctrl_test;
+semitone_ctrl_test.key_diff[ 1 ] = 2 ; //通道 1 移 2 个半音
+midi_ioctrl(stream, CMD_MIDI_SET_SEMITONE, (void*)semitone_ctrl_test);
+```
+### 5.9 midi解码更改节奏和衰减功能.
+
+
+MIDI解码能够强制改变节奏、每个通道的衰减程度以及mute阈值水平。
+该功能可以在MIDI运行中动态设置。在初始化中置上MELODY_ENABLE使能位，并将
+CMD_MIDI_CTRL_TEMPO命令和配置好的结构体参数传入即可。
+```
+MIDI_PLAY_CTRL_TEMPO midi_tempo_test;
+midi_tempo_test.tempo_val = 1042 ;
+for (inti = 0 ; i < CTRL_CHANNEL_NUM; i++) {
+midi_tempo_test.decay_val[i]= ((u16) 31 << 11 )| 1024 ;
+}
+midi_tempo_test.mute_threshold =(u16) 1 L<< 29 ;
+midi_ioctrl(stream, CMD_MIDI_CTRL_TEMPO, (void*)midi_tempo_test);
+```
+
+### 5.10 midi解码每拍回调的使能
+
+在初始化中置上BEAT_TRIG_ENABLE使能位，节拍来时会回调:
+
+```
+init_info->beat_info.priv = NULL;
+init_info->beat_info.beat_trigger = midi_beat_trigger;
+//u32 midi_beat_trigger(void *priv, u8 val1, u8␣
+,val2)函数，其中参数priv是私有参数，val1是一节多少拍，vel是每拍多少分音符。
+```
+### 5.11 midi解码小节回调功能.
+在初始化中置上TIM_DIV_ENABLE使能位，小节开始会回调函数:
+```
+init_info->tmDiv_info.priv = NULL;
+init_info->tmDiv_info.timeDiv_trigger = midi_timeDiv_trigger;
+//u32 midi_timeDiv_trigger(void *priv)函数，priv是私有参数。
+```
+### 5.12 midi解码主旋律音符结束回调使能
+
+在初始化中置上MELODY_STOP_ENABLE使能位，节拍来时会回调:
+
+```
+init_info->moledy_stop_info.priv = NULL;
+init_info->moledy_stop_info.main_chn_enable = 1;//
+,→ 1 为midi解码音符结束仅回调主旋律的音符； 0 为midi解码音符结束会回调所有音符
+init_info->moledy_stop_info.melody_stop_trigger = midi_melody_stop_trigger;
+//u32 midi_melody_stop_trigger(void *priv, u8 key, u8␣
+,→chn)函数，其参数priv是私有参数，key是音符，chn是音符通道。
+```
+### 5.13 midi解码限幅器功能
+midi声音削顶采用限幅器的方法进行处理，可用CMD_MIDI_LIMITER_TRIGGER命令设置在midi库中回调限幅器的运行函数，可视化的也可直接在数据流里面加一个drc节点。
+
+
+### 5.14 相关函数.
+
+#### 5.14.1 void midi_init(MIDI_INIT_STRUCT *init_info).
+此函数为midi解码初始化时需要初始化相关功能，功能都在这个函数里面配置
+
+1. init_info：MIDI初始化结构体。
+
+```
+备注: 该初始化最基本的播放功能必须初始化节奏功能
+OKON功能则初始化的时候需要置上MELODY_PLAY_ENABLE，并且要初始化指定主轨道
+```
+#### 5.14.2 void midi_ioctrl(struct jlstream *stream, u32 cmd, void *priv)
+此函数为midi解码配置相关参数使用。
+
+1，stream:打开的音乐播放数据流句柄
+2，cmd ：命令
+3，priv：参数
+
+调用示例：
+```
+struct file_player *file_player = get_music_file_player();
+
+if（file_player）{
+    midi_ioctrl(file_player->stream,CMD_MIDI_GOON,NULL);
+}
+```
+
+
+
+## MIDI琴
+
+##### 本“MIDI琴”模块将介绍以下部分：
+
+##### 1. “ MIDI 琴模式”；
+
+##### 2. “ MIDI 琴功能”；
+
+### 6.1 MIDI琴相关const变量控制
+
+```
+midi相关功能与相关const变量关联，目前const变量会在lib_media_config.c文件控制，
+```
+1. const int MAINTRACK_USE_CHN = 0; //0:用track号来区分1:用channel号来区分。
+2. const int MAX_DEC_PLAYER_CNT = 8; //MIDI文件解码最大同时发声的key数,范围[1,31]
+3. const int MAX_CTR_PLAYER_CNT = 8; //midi琴最大同时发声的key数,范围[1,31]
+4. const int NOTE_OFF_TRIGGER = 0; //midi琴note_off回调 1 ：time传 0 时，不会回调 0 ：time
+    传 0 时，回调
+5. const int MIDI_MAX_MARK_CNT = 0; //该变量控制MIDI解码最大mark数量
+
+
+
+
+
+## MIDI琴模式
+
+```
+SDK里提供了一个midi琴的模式，该模式为示例如何使用midi琴。
+下面大致介绍midi琴模式流程。
+```
+### 7.1 MIDI琴模式流程
+
+midi 琴 按键解码需要新建数据流，或者直接使用 MIDI 数据流图，如下图：
+![alt text](image-7.png)
+![alt text](image-8.png)
+midi 琴解码主要代码在audio_dec_midi_ctrl.c 里面，文件里面有初始化和出声的demo
+，如下图：
+![alt text](image-10.png)
+midi琴的 音色文件配置见上面的midi 文件解码介绍，音色文件可以放在内置flash或者外置sd卡，如放在外置sd卡需要提高sd卡时钟，默认12M可能出现卡顿，放在内置flash速度较快
+
+
+## MIDI琴功能
+
+```
+本章介绍有关midi琴功能。
+```
+### 8.1 MIDI琴
+
+```
+下面介绍相关midi琴功能：
+1.“ midi 琴修改任意通道乐器功能”；
+2.“ midi 琴更改节奏和衰减功能”；
+3.“ midi 琴调整外部音量功能”；
+4.“ midi 琴移半音功能”；
+5.“ midi 琴颤音功能”；
+6.“ midi 琴弯音轮功能”；
+7.“ midi 琴播放单个音符”；
+8.“ midi 琴关闭单个音符”；
+```
+
+
+
+### 8.2 midi琴修改任意通道乐器功能.
+
+
+midi琴，可以修改任意通道的乐器。
+```
+MIDI_PROG_CHNL_CTRL prog_chnl_test;
+prog_chnl_test.prog = 3; //目标乐器序号
+prog_chnl_test.chnl = 0; //目标通道
+prog_chnl_test.enable = 1; //使能
+midi_ctrl_ioctrl(stream,CMD_MIDI_SET_PROG,&prog_chnl_test)
+,→设置 0 通道的乐器为 3 乐器；
+```
+### 8.3 midi琴更改节奏和衰减功能
+
+MIDI琴能够强制改变节奏、每个通道的衰减程度以及mute阈值水平。
+该功能可以在MIDI运行中动态设置。在初始化中置上MELODY_ENABLE使能位，并将
+CMD_MIDI_CTRL_TEMPO命令和配置好的结构体参数传入即可。
+```
+MIDI_PLAY_CTRL_TEMPO midi_tempo_test;
+midi_tempo_test.tempo_val = 1042 ;
+for (inti = 0 ; i < CTRL_CHANNEL_NUM; i++) {
+midi_tempo_test.decay_val[i]= ((u16) 31 << 11 )| 1024 ;
+}
+midi_tempo_test.mute_threshold =(u16) 1 L<< 29 ;
+midi_crrl_ioctrl(stream, CMD_MIDI_CTRL_TEMPO, (void*)midi_tempo_test);
+```
+### 8.4 midi琴调整外部音量功能
+
+MIDI琴能够实现每个通道/轨道单独调节音量的功能，该功能需要置上EX_VOL_ENABLE使能
+位。该功能可以在MIDI运行中动态设置，运行中想要单独关闭某一通道/轨道的声音，可以将该通道/轨道音量设为 0 。初始化中置上EX_CH_VOL_PARM使能位，将CMD_MIDI_SET_EX_VOL命令和配置好的结构体参数传入即可。
+```
+EX_CH_VOL_PARM vol_info_test;
+vol_info_test.cc_vol[1] = 4096; //通道 1 的轨道音量设置为4096(原音量)
+vol_info_test.ex_vol_use_chn = 0; //0轨道音量， 1 通道音量
+midi_ctrl_ioctrl(stream, CMD_MIDI_SET_EX_VOL, (void *)vol_info_test);
+```
+
+### 8.5 midi琴移半音功能
+
+MIDI琴能够实现每个通道单独偏移n个半音，该功能需要置上SEMITONE_ENABLE使能位。
+SDK中默认没有对该功能进行初始化，用户可自行添加。
+该功能可以在MIDI运行中动态设置。在初始化中置上SEMITONE_ENABLE使能位并将
+CMD_MIDI_SET_SEMITONE命令和配置好的结构体参数传入即可。
+```
+MIDI_SEMITONE_CTRL_STRUCT semitone_ctrl_test;
+semitone_ctrl_test.key_diff[ 1 ] = 2 ; //通道 1 移 2 个半音
+midi_ctrl_ioctrl(stream, CMD_MIDI_SET_SEMITONE, (void*)semitone_ctrl_test);
+```
+### 8.6 midi琴颤音功能.
+MIDI琴能够实现每个通道单独偏移n个半音，该功能需要置上SEMITONE_ENABLE使能位。
+通过命令MIDI_CTRL_VEL_VIBRATE实现
+
+### 8.7 midi琴弯音轮功能
+
+midi琴可以动态调整音高。
+```
+void midi_ctrl_pitch_bend(struct jlstream *stream, u16 pitch_val, u8 chn)
+```
+实现弯音轮功能
+该函数实现配置音符的弯音轮效果，其中参数：
+1.stream:数据流句柄；
+2.pitch_val：音高设置；(范围1 ~ 32768)
+3.chn：对应通道；
+
+
+
+### 8.8 midi琴播放单个音符
+
+```
+void midi_ctrl_note_on(struct jlstream *stream, u8 nkey, u8 nvel, u8 chn)
+```
+实现播放单个音符功能
+该函数实现播放单个音符，其中参数：
+1.stream：数据流句柄
+2.nkey：音符，对应音色库序号（0~127）
+3.nvel：模拟按下力度（范围0~127，部分乐器（如钢琴）有效，不同力度会使按下后的余
+音长短不同；）
+4.chn：发声通道（范围0~15）
+
+### 8.9 midi琴关闭单个音符
+
+```
+void midi_ctrl_note_off(struct jlstream *stream, u8 nkey, u8 nvel, u16 decay_time)
+```
+实现关闭单个音符功能
+该函数实现播放单个音符，其中参数：
+1.stream：数据流句柄；
+2.nkey：音符，对应音色库序号（0~127）
+3.nvel：模拟按下力度（范围0~127，部分乐器（如钢琴）有效，不同力度会使按下后的余
+音长短不同；）
+4.chn：发声通道（范围0~15）
+

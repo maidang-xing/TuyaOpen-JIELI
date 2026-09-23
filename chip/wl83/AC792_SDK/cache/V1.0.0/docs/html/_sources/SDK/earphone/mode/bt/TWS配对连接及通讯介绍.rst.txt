@@ -1,0 +1,432 @@
+.. vim: syntax=rst
+
+TWS配对连接及通讯介绍
+==============
+
+TWS配对连接的流程文件路径：apps/earphone/mode/bt -> bt_tws.c, tws_dual_conn.c
+
+TWS配对连接流程图
+^^^^^^^^^^^^^
+
+.. image:: media/TWS开机流程.png
+    :width: 650px
+    :height: 720px
+
+* 上图TWS业务流程简述如下：
+    - TWS设备间分配对和连接两个逻辑；
+    - 首次开机，无tws info，会根据配对码pair_code先进行TWS配对（打印pc），TWS连接成功（即TWS配对成功，pc打印消失），配对超时则等待配对（打印p），直到TWS的连接成功；
+    - TWS配对过的设备（有tws info），开机后，会设置本地和对端设备的TWS地址，根据TWS对端地址进行TWS连接（打印pc），如果连接失败，会同时开启可发现可连接（打印IP）和TWS根据地址的可被连接（打印p），直到TWS的连接成功。
+    - 注意：
+    - 以上只是简单的业务流程叙述，具体应用开发可根据下述章节介绍的TWS相关函数进行自定义的流程开发。
+    
+
+TWS没有连接上之前可以看到“p”、“c”的打印。
+---------
+
+.. code-block:: c
+
+    /********edr蓝牙相关状态debug打印说明***********************
+    *** tws快连page:             打印 'c'(小写)
+    *** tws快连page_scan:        打印 'p'(小写)
+    *** 等待被发现inquiry_scan   打印 'I'(大写)
+    *** 回连手机page:            打印 'C'(大写)
+    *** 等待手机连接page_scan:   打印 'P'(大写)
+    *********************************************************/
+    // 上述pc打印既根据“pair_code”的也根据“TWS地址”来进行TWS设备快连的状态来显示
+
+
+TWS初始化
+^^^^^^^^
+
+蓝牙初始化成功后会有个BT_STATUS_INIT_OK事件上来，然后执行bt_tws_poweron函数。
+
+.. code-block:: c
+
+    /**
+    * @brief 开机TWS初始化
+    */
+    int bt_tws_poweron();
+
+pair_code
+"""""""""
+
+获取可视化工具界面配置生成的pair_code，只有pair_code相同的设备，才能进行配对。
+
+.. image:: media/pair_code.png
+
+.. code-block:: c
+
+    u16 pair_code = 0xAABB;
+    syscfg_read(CFG_TWS_PAIR_CODE_ID, &pair_code, 2);
+    printf("tws pair_code:0x%x\n", pair_code);
+    tws_api_set_pair_code(pair_code);
+
+TWS设备相关的基本概念（了解即可）
+^^^^^^^^
+
+.. image:: media/tws_addr.png
+
+CFG_TWS_REMOTE_ADDR
+---------
+
+TWS的对端地址
+
+如果有对端设备地址说明当前设备曾经与别的设备TWS配对过，则对记录的对端设备地址进行快连，否则开始自动配对。
+
+CFG_TWS_LOCAL_ADDR
+---------
+
+TWS的本地地址
+
+.. code-block:: c
+    
+    void bt_get_tws_local_addr(u8 *addr);
+
+CFG_TWS_COMMON_ADDR
+---------
+
+蓝牙mac地址，提供给手机搜索连接时使用的地址，如果TWS未配对，则mac地址为VM或BTIF区域存储的地址，如果TWS已配对，则mac地址会被改为TWS的公共地址
+
+TWS配对之后的公共地址，TWS配对过程根据远端和本地地址进行策略计算得到（默认），也可以通过在代码重写 **tws_host_get_common_addr** 进行指定，例如配置了 **CONFIG_TWS_COMMON_ADDR_USED_LEFT** 则重写该接口为：
+
+.. code-block:: c
+
+    /*
+     * 获取TWS配对后的MAC地址
+     */
+    int tws_api_get_local_addr(u8 *addr);
+
+    
+    #if CONFIG_TWS_COMMON_ADDR_SELECT != CONFIG_TWS_COMMON_ADDR_AUTO
+    /**
+    * @brief TWS底层获取TWS共同地址
+    *
+    * @param remote_mac_addr 远端的蓝牙地址
+    * @param common_addr 最后确定的共同地址
+    * @param channel 声道信息
+    */
+    void tws_host_get_common_addr(u8 *remote_mac_addr, u8 *common_addr, char channel)
+    {
+    #if CONFIG_TWS_COMMON_ADDR_SELECT == CONFIG_TWS_COMMON_ADDR_USED_LEFT
+        if (channel == 'L') {
+            memcpy(common_addr, bt_get_mac_addr(), 6);
+        } else {
+            memcpy(common_addr, remote_mac_addr, 6);
+        }
+    #elif CONFIG_TWS_COMMON_ADDR_SELECT == CONFIG_TWS_COMMON_ADDR_USED_RIGHT
+        if (channel == 'R') {
+            memcpy(common_addr, bt_get_mac_addr(), 6);
+        } else {
+            memcpy(common_addr, remote_mac_addr, 6);
+        }
+    #elif CONFIG_TWS_COMMON_ADDR_SELECT == CONFIG_TWS_COMMON_ADDR_USED_MASTER
+        memcpy(common_addr, bt_get_mac_addr(), 6);
+    #endif
+    }
+    #endif
+
+TWS未配对快连相关代码
+---------
+    
+.. code-block:: c
+
+    /**
+    * @brief 获取TWS对端设备地址
+    *
+    * @param addr TWS对端设备地址
+    * @return 获取成功会返回地址长度
+    */
+    u8 tws_get_sibling_addr(u8 *addr, int *result);
+    // 以上TWS对端设备地址获取成功说明成交配对过
+
+    // 未配对消息：APP_MSG_TWS_UNPAIRED
+
+    /**
+    * @brief TWS根据pair_code进行自动配对
+    * 打印pc
+    *
+    * @param timeout:超时时间，0表示不超时
+    * 
+    * @return 0表示调用成功，-EFAULT表示已连接手机或者tws连接已存在
+    */
+    int tws_api_auto_pair(int timeout);
+
+    /**
+    * @brief 取消TWS等待的配对
+    * 取消打印pc
+    * 
+    * @return 获取成功会返回地址长度
+    */
+    int tws_api_cancle_wait_pair();
+
+    /**
+    * @brief 开启等待并连接相同pair_code的设备的配对
+    * 只打印p
+    *
+    * @param pair_code ：暂无作用
+    * @param name : 不为空会打开手机链路的可发现可连接
+    * @param timeout_ms:超时时间，0表示不超时
+    * 
+    * @return 获取成功会返回地址长度
+    */
+    int tws_api_wait_pair_by_code(u16 pair_code, const char *name, int timeout_ms);
+
+
+TWS快连+已配对快连相关代码
+---------
+
+.. code-block:: c
+
+    // 已配对消息：APP_MSG_TWS_PAIRED
+
+    /**
+    * @brief 设置TWS对端设备A的地址作为快连地址
+    *
+    * @param addr: 快连地址
+    */
+    int tws_api_set_sibling_addr(u8 *addr);
+
+    /*
+     * 获取tws对方地址
+     */
+    int tws_api_get_sibling_addr(u8 *addr);
+
+    /**
+    * @brief 当前TWS当前设备B的地址作为被快连的地址
+    * 
+    * @param addr: 被快连地址
+    */
+    void tws_api_set_quick_connect_addr(u8 *addr);
+
+    /**
+    * @brief 开始搜索并连接已经配对过的TWS设备，同时让自己可被TWS连接
+    * 根据蓝牙地址对已经配对的设备进行快连，
+    * 即当前设备B对A进行快连
+    * 打印pc
+    * 
+    * @param timeout: 单位ms， 0 表示不超时
+    * @return 0: 函数调用成功
+    */
+    int tws_api_create_connection(int timeout);
+
+    /**
+    * @brief 打开TWS等待连接，调用之后，tws处于等待连接状态，可以被已经配对过的tws连接
+    * 常用于断开连接的时候
+    * 即当前设备B可以被A快连。
+    * 打印p
+    * 
+    * @param timeout: 单位ms， 0 表示不超时
+    * @return 0: 函数调用成功
+    */
+    int tws_api_wait_connection(int timeout);
+
+    /**
+    * @brief 取消TWS设备根据蓝牙地址进行的快连
+    * 取消打印pc
+    * 
+    * @return 0: 函数调用成功
+    */
+    int tws_api_cancle_create_connection();
+
+    /**
+    * @brief 设置当前TWS设备的音频channel
+    * 
+    * @param channel: 'L'/'R'/'U'
+    */
+    void tws_api_set_local_channel(char channel);
+
+
+TWS消息相关代码
+---------
+
+.. code-block:: c
+
+    /**
+    * @brief tws状态消息处理函数
+    *
+    * @param msg tws状态消息
+    */
+    int bt_tws_connction_status_event_handler(int *msg);
+
+    // 开发常用TWS相关消息
+    enum {
+        ...
+        TWS_EVENT_CONNECTED,				// TWS已连接
+        TWS_EVENT_CONNECTION_TIMEOUT,		// TWS连接超时
+        TWS_EVENT_CONNECTION_DETACH,		// TWS连接断开
+        TWS_EVENT_REMOVE_PAIRS,				// TWS移除配对
+        TWS_EVENT_PHONE_LINK_DETACH,		// TWS断开手机连接
+        ...
+        TWS_EVENT_ROLE_SWITCH,				// TWS主从切换
+        ...
+    };
+
+按键配对相关代码
+---------
+
+.. code-block:: c
+    
+    // 按键发起配对消息：APP_MSG_TWS_START_PAIR
+
+    /**
+    * @brief 通过配对码搜索TWS设备
+    * 
+    * @return 0：函数调用成功；-EINVAL：TWS连接已存在；-ENOMEM：申请内存失败；-ENOENT：申请硬件资源失败
+    */
+    int tws_api_search_sibling_by_code();
+
+    /**
+    * @brief 发送解除配对命令给对方, 成功后会收到TWS_EVENT_REMOVE_PAIRS事件
+    * 
+    * @return 0：函数调用成功；-EINVAL：表示TWS未连接
+    */
+    int tws_api_remove_pairs();
+
+断开tws连接相关代码
+---------
+
+.. code-block:: c
+
+    /**
+    * @brief 断开TWS连接
+    * 常用于关机
+    * 
+    * @param reason: 断开原因
+    * @param timeout: 等待超时时间，为0则不等待直接返回
+    * 
+    * @return 0
+    */
+    int tws_api_detach(enum tws_detach_reason reason, int timeout);
+
+
+TWS自动主从切换相关函数
+^^^^^^^^^^^
+
+与手机连接的情况，TWS之间可以根据程序底层策略自动选择哪边做主机哪边做从机，该功能只在使用公共地址的情况使用
+
+.. code-block:: c
+
+    // 启动TWS自动主从切换
+    void tws_api_auto_role_switch_enable();
+    // 关闭TWS自动主从切换
+    void tws_api_auto_role_switch_enable();
+    // 调用后进行TWS主从切换
+    void tws_api_role_switch();
+
+TWS自动主从切换 - 主从电量平衡
+""""""""""""""
+
+使主从机的电量相对平衡，保证TWS设备的总体续航达到最大值
+
+.. code-block:: c
+
+    // 详细见apps/earphone/mode/bt/bt_tws.c的代码实现
+    /**
+    * @brief TWS底层获取电池电量信息
+    *
+    * @return 当前设备电量信息
+    */
+    u16 tws_host_get_battery_voltage();
+    /**
+    * @brief TWS底层通过设备电量大的做主机
+    * 
+    *  @return 1:进行主从切换
+    */
+    bool tws_host_role_switch_by_power_balance(u16 m_voltage, u16 s_voltage);
+    /**
+    * @brief TWS底层判断电量检测主从切换的间隔时间
+    * 
+    * @return int 间隔时间
+    */
+    int tws_host_role_switch_by_power_update_time();
+
+TWS自动主从切换 - 播歌通话rssi强度平衡
+""""""""""""""
+
+选用rssi强度大的做TWS主机，保证通讯的稳定性。
+
+.. code-block:: c
+
+    // 详细见apps/earphone/mode/bt/bt_tws.c的代码实现
+    /**
+    * @brief a2dp播歌根据信号强度主从切换重写函数，可改变范围
+    * 
+    * @param m_rssi 主机rssi
+    * @param s_rssi 从机rssi
+    */
+    int a2dp_role_switch_check_rssi(char master_rssi, char slave_rssi);
+    /**
+    * @brief esco通话根据信号强度主从切换重写函数，可改变范围
+    *  
+    * @param m_rssi 主机rssi
+    * @param s_rssi 从机rssi
+    */
+    bool tws_esco_rs_rssi_check(char m_rssi, char s_rssi);
+
+TWS间通讯
+^^^^^^^^^^^^^
+
+用于设备给TWS对端发送数据，常见于给TWS对端同步某些功能的开关状态等
+
+代码示例
+---------
+
+.. code-block:: c
+
+    // 定义TWS通讯ID，需要保证该ID不会被其他地方使用
+    #define TWS_FUNC_ID_TWS_TEST	0x01234567
+
+    // 发送数据, 要求 len <= 512
+    u8 *data = malloc(data_len);
+    tws_api_send_data_to_sibling(data, data_len, TWS_FUNC_ID_TWS_TEST);
+    free(data);
+
+    // 注册TWS数据接收
+    /**
+    * @brief 接收TWS数据，这个函数在app_core任务中被调用
+    * 
+    * @param data 接收的数据
+    * @param len data的长度
+    */
+    static void tws_rx_from_sibling_in_task(u8 *data, int len)
+    {
+        prnitf("%s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
+        put_buf(data, len);
+        free(data);
+    }
+    /**
+    * @brief 接收TWS数据，这个函数在中断中被调用。发送端和接收端都会触发这个中断
+    * 
+    * @param data 接收的数据
+    * @param len data的长度
+    * @param rx true：接收端；false：发送端
+    */
+    static void tws_rx_from_sibling_in_irq(void *data, u16 len, bool rx)
+    {
+        if (rx) {
+            u8 *rx_data = malloc(len);
+            prnitf("local_rx:%d %x\n", len, (u32)rx_data);
+            memcpy(rx_data, data, len);
+            put_buf(rx_data, len);
+
+            // 如果需要，可以发送到任务里面处理数据
+            int argv[4];
+            argv[0] = (int)tws_rx_from_sibling_in_task;
+            argv[1] = 2;
+            argv[2] = (int)rx_data;
+            argv[3] = (int)len;
+            int ret = os_taskq_post_type("app_core", Q_CALLBACK, 4, argv);
+            if (ret) {
+                prnitf("tws_rx_from_sibling_in_irq taskq post err\n");
+                free(rx_data);
+            }
+        }
+    }
+    REGISTER_TWS_FUNC_STUB(tws_sync_func) = {
+        .func_id = TWS_FUNC_ID_TWS_TEST,
+        .func    = tws_rx_from_sibling_in_irq,
+    };
+
+
+
+

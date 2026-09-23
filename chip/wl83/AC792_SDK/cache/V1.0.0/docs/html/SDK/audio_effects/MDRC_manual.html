@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>多带DRC（Multiband DRC） &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../_static/js/custom.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>多带DRC（Multiband DRC）</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="drc-multiband-drc">
+<h1>多带DRC（Multiband DRC）<a class="headerlink" href="#drc-multiband-drc" title="Permalink to this headline"></a></h1>
+<section id="id1">
+<h2>功能介绍<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>将信号根据设定的分频点分频后，不同频段的信号分别做动态范围压缩（DRC）处理。</p></li>
+<li><p>将分频器（CrossOver）与DRC_Advance集成为一个节点，简化使用方法、节省资源、优化效果。</p></li>
+<li><p>通过低高分频点支持两带DRC与全带DRC，每带的drc最多支持62段。每带的DRC分别对频带的输入信号进行动态范围控制。通过输入输出幅度曲线设置位限幅器、压缩器扩展器等多种类型，在输入输出幅度曲线上双击可添加阈值，将鼠标放在绿色的阈值上双击可删除阈值。横坐标是输入幅度，纵坐标是输出幅度，单位是dB
+<img alt="MDRC" src="../../_images/mdrc.png" /></p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>参数介绍<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p><strong>bypass</strong>：勾选后DRC不运行</p></li>
+<li><p><strong>Knee</strong>:使阈值拐点平滑，如图所示，打开后实际曲线为红色曲线</p></li>
+<li><p><strong>启动时间</strong>： 输入信号检测的启动时间</p></li>
+<li><p><strong>释放时间</strong>： 输入信号检测的释放时间</p></li>
+<li><p><strong>压缩启动时间</strong>：压缩起作用的启动时间</p></li>
+<li><p><strong>压缩释放时间</strong>：压缩起作用的释放时间</p></li>
+<li><p><strong>检测时间</strong>：检测信号的时间，低带与高带DRC中的检测时间建议为一样的值</p></li>
+<li><p><strong>rms时间</strong>：RMS值的时间，当选择RMS值才生效</p></li>
+<li><p><strong>输入增益</strong>：对输入信号进行预衰减或者放大</p></li>
+<li><p><strong>输出增益</strong>：对输出信号进行预衰减或者放大</p></li>
+<li><p><strong>PEAK或者RMS选项</strong>：DRC使用PEAK或者RMS模式，RMS失真度比PEAK低，但RMS所需要的buf更大以及所需的mips更多</p></li>
+<li><p><strong>Precision或者Precision+选项</strong>：Precosion+比Precision精度更高，但所需要的mips更多</p></li>
+<li><p><strong>多带数</strong>：两分频/三分频</p></li>
+<li><p><strong>阶数</strong>：分频器阶数，设置分频器阶数2阶与4阶，阶数越高衰减越快,对应的陡降分别为12db/Oct与24db/Oct</p></li>
+<li><p><strong>低高分频点</strong>：两分频的分频点，单位Hz</p></li>
+<li><p><strong>低带DRC</strong>：对分频点以下频率做处理的DRC</p></li>
+<li><p><strong>高带DRC</strong>：对分频点以上频率做处理的DRC</p></li>
+<li><p><strong>全带DRC</strong>：信号分频处理之后，再对全频率信号做处理的DRC</p></li>
+</ul>
+</section>
+<section id="faq">
+<h2>FAQ<a class="headerlink" href="#faq" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>若DRC_Advance幅度映射曲线没有调成扩展曲线，建议使用压缩启动时间与压缩释放时间，把启动时间与释放时间设置为0</p></li>
+<li><p>若DRC_Advacne幅度映射曲线调成了扩展曲线，建议使用启动时间与释放时间，把压缩启动时间与压缩释放时间设置0</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

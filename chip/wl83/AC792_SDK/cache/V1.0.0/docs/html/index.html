@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>杰理蓝牙音频SDK使用手册 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="_static/js/custom.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="1. 技术框架" href="SDK/framework/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="#" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="SDK/framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="SDK/audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SDK/audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SDK/audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SDK/audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SDK/audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SDK/audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+      <li>杰理蓝牙音频SDK使用手册</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <figure class="align-right">
+<a class="reference internal image-reference" href="_images/完整LOGO.png"><img alt="_images/完整LOGO.png" src="_images/完整LOGO.png" style="width: 70%;" /></a>
+</figure>
+<section id="sdk">
+<h1>杰理蓝牙音频SDK使用手册<a class="headerlink" href="#sdk" title="Permalink to this headline"></a></h1>
+<p>本文档由杰理官方推出，适用于AC792N 可视化SDK</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="SDK/framework/index.html">1. 技术框架</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="SDK/framework/index.html#id2">1.1. 系统层</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/framework/index.html#id3">1.2. 中间层</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/framework/index.html#id4">1.3. 应用层</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/jltool/%E9%85%8D%E7%BD%AE%E5%B7%A5%E5%85%B7.html">2.1. 可视化工具使用介绍</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/jltool/%E9%85%8D%E7%BD%AE%E5%B7%A5%E5%85%B7.html#id2">2.1.1. 工具功能简介</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/jltool/%E9%85%8D%E7%BD%AE%E5%B7%A5%E5%85%B7.html#sdk">2.1.2. SDK功能修改</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/jltool/%E9%85%8D%E7%BD%AE%E5%B7%A5%E5%85%B7.html#linein-spdifio">2.1.3. LINEIN/SPDIFIO管脚设置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/jltool/%E9%85%8D%E7%BD%AE%E5%B7%A5%E5%85%B7.html#id3">2.1.4. 按键修改</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/jltool/%E9%85%8D%E7%BD%AE%E5%B7%A5%E5%85%B7.html#id4">2.1.5. 提示音修改</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/jltool/%E9%85%8D%E7%BD%AE%E5%B7%A5%E5%85%B7.html#fw">2.1.6. FW编辑工具</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/jltool/%E9%85%8D%E7%BD%AE%E5%B7%A5%E5%85%B7.html#id5">2.1.7. 系统资源状态查看</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/%E9%9F%B3%E9%A2%91%E6%B5%81%E7%A8%8B%E5%9B%BE%E4%BB%8B%E7%BB%8D/%E9%9F%B3%E9%A2%91%E6%B5%81%E7%A8%8B%E5%9B%BE%E4%BB%8B%E7%BB%8D.html">2.2. 音频流程图介绍</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/%E9%9F%B3%E9%A2%91%E6%B5%81%E7%A8%8B%E5%9B%BE%E4%BB%8B%E7%BB%8D/%E9%9F%B3%E9%A2%91%E6%B5%81%E7%A8%8B%E5%9B%BE%E4%BB%8B%E7%BB%8D.html#id2">2.2.1. 概述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/%E9%9F%B3%E9%A2%91%E6%B5%81%E7%A8%8B%E5%9B%BE%E4%BB%8B%E7%BB%8D/%E9%9F%B3%E9%A2%91%E6%B5%81%E7%A8%8B%E5%9B%BE%E4%BB%8B%E7%BB%8D.html#id3">2.2.2. 音频流程图与代码的对应关系</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/%E9%9F%B3%E9%A2%91%E6%B5%81%E7%A8%8B%E5%9B%BE%E4%BB%8B%E7%BB%8D/%E9%9F%B3%E9%A2%91%E6%B5%81%E7%A8%8B%E5%9B%BE%E4%BB%8B%E7%BB%8D.html#id4">2.2.3. 调整默认的音频流程通路节点模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/%E9%9F%B3%E9%A2%91%E6%B5%81%E7%A8%8B%E5%9B%BE%E4%BB%8B%E7%BB%8D/%E9%9F%B3%E9%A2%91%E6%B5%81%E7%A8%8B%E5%9B%BE%E4%BB%8B%E7%BB%8D.html#id5">2.2.4. 新建场景模式</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/%E5%9C%A8%E7%BA%BF%E8%B0%83%E9%9F%B3%E4%BB%8B%E7%BB%8D/%E5%9C%A8%E7%BA%BF%E8%B0%83%E9%9F%B3%E4%BB%8B%E7%BB%8D.html">2.3. 在线调音介绍</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/%E5%9C%A8%E7%BA%BF%E8%B0%83%E9%9F%B3%E4%BB%8B%E7%BB%8D/%E5%9C%A8%E7%BA%BF%E8%B0%83%E9%9F%B3%E4%BB%8B%E7%BB%8D.html#id2">2.3.1. 功能配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/%E5%9C%A8%E7%BA%BF%E8%B0%83%E9%9F%B3%E4%BB%8B%E7%BB%8D/%E5%9C%A8%E7%BA%BF%E8%B0%83%E9%9F%B3%E4%BB%8B%E7%BB%8D.html#id3">2.3.2. 连接样机</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/%E5%9C%A8%E7%BA%BF%E8%B0%83%E9%9F%B3%E4%BB%8B%E7%BB%8D/%E5%9C%A8%E7%BA%BF%E8%B0%83%E9%9F%B3%E4%BB%8B%E7%BB%8D.html#id4">2.3.3. 调音</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="SDK/audio/index.html">1. 音频播放</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio/tone_api.html">1.1. 提示音</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tone_api.html#play-tone-file">1.1.1. play_tone_file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tone_api.html#play-tone-file-callback">1.1.2. play_tone_file_callback</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tone_api.html#play-tone-file-alone">1.1.3. play_tone_file_alone</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tone_api.html#play-tone-file-alone-callback">1.1.4. play_tone_file_alone_callback</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tone_api.html#play-tone-files">1.1.5. play_tone_files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tone_api.html#play-tone-files-callback">1.1.6. play_tone_files_callback</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tone_api.html#tone-player-stop">1.1.7. tone_player_stop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tone_api.html#tone-player-runing">1.1.8. tone_player_runing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio/ring_api.html">1.2. 铃声</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/ring_api.html#play-ring-file">1.2.1. play_ring_file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/ring_api.html#ring-player-runing">1.2.2. ring_player_runing()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/ring_api.html#ring-player-stop">1.2.3. ring_player_stop()</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio/key_tone_api.html">1.3. 按键音</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/key_tone_api.html#play-key-tone-file">1.3.1. play_key_tone_file</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio/tws_tone_api.html">1.4. 提示音(TWS)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tws_tone_api.html#tws-play-tone-file">1.4.1. tws_play_tone_file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tws_tone_api.html#tws-play-tone-file-callback">1.4.2. tws_play_tone_file_callback</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tws_tone_api.html#tws-play-tone-file-alone">1.4.3. tws_play_tone_file_alone</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tws_tone_api.html#tws-play-tone-file-alone-callback">1.4.4. tws_play_tone_file_alone_callback</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tws_tone_api.html#tws-play-tone-files">1.4.5. tws_play_tone_files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tws_tone_api.html#tws-play-tone-files-callback">1.4.6. tws_play_tone_files_callback</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tws_tone_api.html#tws-play-ring-file">1.4.7. tws_play_ring_file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tws_tone_api.html#tws-play-ring-file-callback">1.4.8. tws_play_ring_file_callback</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio/tone_language.html">1.5. 多语言支持</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tone_language.html#get-tone-files">1.5.1. get_tone_files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tone_language.html#tone-language-get">1.5.2. tone_language_get</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/tone_language.html#tone-language-set">1.5.3. tone_language_set</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio/a2dp_api.html">1.6. A2DP播放接口</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/a2dp_api.html#a2dp-player-open">1.6.1. a2dp_player_open</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/a2dp_api.html#a2dp-player-close">1.6.2. a2dp_player_close</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/a2dp_api.html#a2dp-player-get-btaddr">1.6.3. a2dp_player_get_btaddr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/a2dp_api.html#a2dp-player-runing">1.6.4. a2dp_player_runing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/a2dp_api.html#a2dp-player-is-playig">1.6.5. a2dp_player_is_playig</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio/music_player_api.html">1.7. 音乐播放</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player_api.html#music-file-play">1.7.1. music_file_play</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player_api.html#music-file-play-callback">1.7.2. music_file_play_callback</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player_api.html#get-music-file-player">1.7.3. get_music_file_player</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player_api.html#music-file-player-pp">1.7.4. music_file_player_pp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player_api.html#music-file-player-fr">1.7.5. music_file_player_fr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player_api.html#music-file-player-ff">1.7.6. music_file_player_ff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player_api.html#music-file-get-cur-time">1.7.7. music_file_get_cur_time</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player_api.html#music-file-get-total-time">1.7.8. music_file_get_total_time</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player_api.html#music-file-set-speed">1.7.9. music_file_set_speed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player_api.html#music-file-speed-up">1.7.10. music_file_speed_up</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player_api.html#music-file-speed-down">1.7.11. music_file_speed_down</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player_api.html#music-file-ab-repeat-set">1.7.12. music_file_ab_repeat_set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player_api.html#music-file-ab-repeat-switch">1.7.13. music_file_ab_repeat_switch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player_api.html#music-file-get-breakpoints">1.7.14. music_file_get_breakpoints</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player_api.html#music-file-get-player-status">1.7.15. music_file_get_player_status</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio/music_player.html">1.8. muisc player应用说明</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player.html#id1">1.8.1. 功能概述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player.html#id2">1.8.2. 关键结构体、枚举类型及参数</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player.html#id7">1.8.3. 播放类接口内部流程设计</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio/music_player.html#id11">1.8.4. 详细接口说明</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="SDK/audio_config/index.html">2. 音频配置</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_config/DAC_cfg.html">2.1. DAC配置</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/DAC_cfg.html#id1">2.1.1. 音频配置</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_config/ADC_cfg.html">2.2. ADC配置</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/ADC_cfg.html#id1">2.2.1. 音频配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/ADC_cfg.html#adc-mic-linein">2.2.2. ADC(MIC)和LINEIN节点配置</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_config/IIS_cfg.html">2.3. IIS配置</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/IIS_cfg.html#id1">2.3.1. 板级配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/IIS_cfg.html#iis0-tx-iis0-rx">2.3.2. IIS0_TX/IIS0_RX节点配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/IIS_cfg.html#bit">2.3.3. 16/24bit位宽设置</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_config/PDM_cfg.html">2.4. PDM配置</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/PDM_cfg.html#pdm-mic">2.4.1. PDM MIC节点配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/PDM_cfg.html#id1">2.4.2. PDM MIC代码配置</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_config/General_cfg.html">2.5. 通用音频配置</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_config/phone_call_cfg.html">2.6. 通话配置</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_config/audio_algo_cfg.html">2.7. 音频算法配置</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/audio_algo_cfg.html#id2">2.7.1. 清晰语音算法配置</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_config/codec/index.html">2.8. 编解码配置</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/codec/codec.html">2.8.1. 编解码格式</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/codec/midi.html">2.8.2. MIDI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/codec/encoder_node.html">2.8.3. 编码器节点</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_config/music_palyback.html">2.9. 音乐播放配置</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/music_palyback.html#id3">2.9.1. ID3信息</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/music_palyback.html#id2">2.9.2. 播放模式</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/music_palyback.html#id6">2.9.3. 加密播放</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_config/kws.html">2.10. 离线语音识别KWS</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/kws.html#yes-no">2.10.1. yes/no关键词识别</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/kws.html#id2">2.10.2. 通用词条识别</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_config/Hi_Res_Audio/index.html">2.11. Hi-Res Audio</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/Hi_Res_Audio/HiRes_cfg.html">2.11.1. Hi-Res Audio通用</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/Hi_Res_Audio/HiRes_FAQ.html">2.11.2. Hi-Res Audio FAQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/Hi_Res_Audio/LDAC_Certification.html">2.11.3. LDAC认证流程</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/Hi_Res_Audio/LHDC_Certification.html">2.11.4. LHDC认证流程</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_config/audio_delay.html">2.12. 延时配置（Delay）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/audio_delay.html#id1">2.12.1. 蓝牙音乐延时</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/audio_delay.html#id2">2.12.2. 蓝牙通话延时</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_config/audio_delay.html#id5">2.12.3. 麦克风音效延时</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="SDK/audio_flow/index.html">3. 音频流程</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_flow/audio_stream_flow_rules.html">3.1. 音频流程规范</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/audio_stream_flow_rules.html#id2">3.1.1. 综述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/audio_stream_flow_rules.html#id3">3.1.2. 音频流程使用规范</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_flow/CommonComponents/index.html">3.2. 音频流通用配置</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/CommonComponents/bit_width.html">3.2.1. 位宽配置说明</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/CommonComponents/play_sync.html">3.2.2. 播放同步</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/CommonComponents/bt_play_sync.html">3.2.3. 蓝牙音频同步</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/CommonComponents/dac.html">3.2.4. DAC节点配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/CommonComponents/tws.html">3.2.5. TWS音频流配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/CommonComponents/reverse_phase.html">3.2.6. 反相器(Inverter)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_flow/typical_application/index.html">3.3. 典型音频流程</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/typical_application/multi_file_play.html">3.3.1. 多文件播放</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_flow/third_party_algorithm/index.html">3.4. 第三方算法集成</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/third_party_algorithm/porting_guide.html">3.4.1. 算法集成指引</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/third_party_algorithm/music_effect_3rd_party.html">3.4.2. 音乐算法集成</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/third_party_algorithm/call_effect_3rd_party.html">3.4.3. 通话算法集成</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/third_party_algorithm/hearing_aid_3rd_party.html">3.4.4. 辅听算法集成</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_flow/system_flow.html">3.5. 系统模式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_flow/media_flow.html">3.6. 媒体</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/media_flow.html#id2">3.6.1. 单声道</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/media_flow.html#id3">3.6.2. 立体声</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/media_flow.html#id4">3.6.3. 1.1声道</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/media_flow.html#id5">3.6.4. 2.1声道</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/media_flow.html#id6">3.6.5. 空间音效预设</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/media_flow.html#tws">3.6.6. TWS输出双驱动单元使能</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_flow/bt_call/index.html">3.7. 蓝牙通话</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/bt_call/bt_call_flow.html">3.7.1. 蓝牙通话流程</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/bt_call/AEC_Ref.html">3.7.2. AEC回采方式</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_flow/mic_effects/index.html">3.8. 麦克风音效</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/mic_effects/kbox_effects.html">3.8.1. K歌音效</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/mic_effects/Digital_Hearing_Aid.html">3.8.2. 辅听音效</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_flow/usb_audio/index.html">3.9. USB Audio</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/usb_audio/usb_audio.html">3.9.1. USB Audio</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/usb_audio/usb_mic_cvp.html">3.9.2. USB MIC通话算法</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_flow/audio_dut/index.html">3.10. 产测模式</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/audio_dut/adda_loop_test.html">3.10.1. ADC_to_DAC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/audio_dut/ADC_to_IIS_test.html">3.10.2. ADC_to_IIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/audio_dut/IIS_to_DAC_test.html">3.10.3. IIS_to_DAC</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_flow/user_defined/index.html">3.11. 自定义</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_flow/user_defined/dsp_low_latency.html">3.11.1. 低延时DSP</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="SDK/audio_effects/index.html">4. 音效调试</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/effects_common/index.html">4.1. 音效通用说明</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/effects_common/multi_config_manual.html">4.1.1. 音效多配置使用说明</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/effects_common/preset_effects.html">4.1.2. 音效预设</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/effects_common/Effects_delay_manual.html">4.1.3. 音效处理延时说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/AudioEffects_List.html">4.2. 音效列表（Effects List）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/EQ_manual.html">4.3. 均衡器（EQ）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/EQ_manual.html#id1">4.3.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/EQ_manual.html#id2">4.3.2. 参数简述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/EQ_manual.html#id3">4.3.3. 使用方法</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/VirtualBass_manual.html">4.4. 虚拟低音（VBass）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/VirtualBass_manual.html#id1">4.4.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/VirtualBass_manual.html#id2">4.4.2. 使用说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/virtual_bass_pro_manual.html">4.5. VirtualBass Pro</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/virtual_bass_pro_manual.html#id1">4.5.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/virtual_bass_pro_manual.html#id2">4.5.2. 参数说明</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/virtual_bass_pro_manual.html#faq">4.5.3. FAQ</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/VoiceChanger_manual.html">4.6. 变声（VoiceChanger）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/VoiceChanger_manual.html#id1">4.6.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/VoiceChanger_manual.html#id2">4.6.2. 使用说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/CrossOver_manual.html">4.7. 分频器（CrossOver）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/CrossOver_manual.html#id1">4.7.1. 2分频</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/CrossOver_manual.html#id4">4.7.2. 3分频</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/DRC_manual.html">4.8. 动态范围压缩（DRC）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/DRC_manual.html#id1">4.8.1. 动态范围压缩</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/DRC_manual.html#drc-detector">4.8.2. 动态范围压缩检测器(DRC Detector)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/DRC_manual.html#drc-advance">4.9. 动态范围压缩（DRC ADVANCE）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/DRC_manual.html#id6">4.9.1. 参数介绍</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/Dynamic_EQ_manual.html">4.10. 动态均衡器（Dynamic EQ）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Dynamic_EQ_manual.html#id1">4.10.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Dynamic_EQ_manual.html#id2">4.10.2. 模块特征</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Dynamic_EQ_manual.html#id3">4.10.3. 参数简述</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/Dynamic_EQ_manual.html#dynamic-eq-pro">4.11. 动态均衡器（Dynamic EQ Pro）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Dynamic_EQ_manual.html#id7">4.11.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Dynamic_EQ_manual.html#id8">4.11.2. 模块特征</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Dynamic_EQ_manual.html#id9">4.11.3. 参数简述</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/Echo_manual.html">4.12. 回声（Echo）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Echo_manual.html#id1">4.12.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Echo_manual.html#id2">4.12.2. 参数简述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Echo_manual.html#faq">4.12.3. FAQ</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/PlateReverb_manual.html">4.13. Plate Reverb</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/PlateReverb_manual.html#id1">4.13.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/PlateReverb_manual.html#id2">4.13.2. 算法类型</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/PlateReverb_manual.html#id3">4.13.3. 参数简述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/PlateReverb_manual.html#faq">4.13.4. FAQ</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/Reverb_manual.html">4.14. Reverb</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Reverb_manual.html#id1">4.14.1. 模块组成</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Reverb_manual.html#id2">4.14.2. 模块参数</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/HowlingFrequencyShift_manual.html">4.15. 移频（Frequency Shift）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/HowlingFrequencyShift_manual.html#id1">4.15.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/HowlingFrequencyShift_manual.html#id2">4.15.2. 使用说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/HowlingSuppress_manual.html">4.16. 啸叫抑制（Howling Suppress）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/HowlingSuppress_manual.html#id1">4.16.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/HowlingSuppress_manual.html#id2">4.16.2. 使用说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/NoiseGate_manual.html">4.17. 噪声门限（Noise Gate）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/NoiseGate_manual.html#id1">4.17.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/NoiseGate_manual.html#id2">4.17.2. 使用说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/NoiseGate_Pro_manual.html">4.18. NoiseGate Pro</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/NoiseGate_Pro_manual.html#id1">4.18.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/NoiseGate_Pro_manual.html#id2">4.18.2. 参数说明</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/NoiseGate_Pro_manual.html#id3">4.18.3. 使用说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/StereoWidener_manual.html">4.19. 立体声扩展器（Stereo Widener）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/StereoWidener_manual.html#id1">4.19.1. 功能说明</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/StereoWidener_manual.html#id2">4.19.2. 参数简述：</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/SurroundEffect_manual.html">4.20. 3D环绕音（3D Surround）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/SurroundEffect_manual.html#id1">4.20.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/SurroundEffect_manual.html#id2">4.20.2. 参数简述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/SurroundEffect_manual.html#id3">4.20.3. 模式说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/HarmonicExciter_manual.html">4.21. 谐波增强（Harmonic Exciter）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/HarmonicExciter_manual.html#id1">4.21.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/HarmonicExciter_manual.html#id2">4.21.2. 使用说明</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/HarmonicExciter_manual.html#id3">4.21.3. 谐波算法区别说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/Autotune_manual.html">4.22. 电音（Autotune）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Autotune_manual.html#id1">4.22.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Autotune_manual.html#id2">4.22.2. 参数介绍</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/BandMerge_manual.html">4.23. 频带合并（Band Merge）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/BandMerge_manual.html#id1">4.23.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/BandMerge_manual.html#id2">4.23.2. 参数介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/BandMerge_manual.html#id3">4.23.3. 注意事项</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/BassTreble_manual.html">4.24. 高低音（Bass and Treble）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/BassTreble_manual.html#id1">4.24.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/BassTreble_manual.html#id2">4.24.2. 使用说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/EnergyDetect_manual.html">4.25. 能量检测（EnergyDetect）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/EnergyDetect_manual.html#id1">4.25.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/EnergyDetect_manual.html#id2">4.25.2. 参数介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/EnergyDetect_manual.html#id3">4.25.3. 使用场景</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/Gain_manual.html">4.26. 增益模块（Gain）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Gain_manual.html#id1">4.26.1. 功能介绍</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/SplitGain_manual.html">4.27. 立体声增益模块（Split Gain）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/SplitGain_manual.html#id1">4.27.1. 功能介绍</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/PitchSpeed_manual.html">4.28. 变速变调（PitchSpeed）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/PitchSpeed_manual.html#id1">4.28.1. 功能介绍</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/Spectrum_manual.html">4.29. 频谱显示（Spectrum）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Spectrum_manual.html#id1">4.29.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Spectrum_manual.html#id2">4.29.2. 使用说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/StereoMix_manual.html">4.30. 立体声混合（Stereo Mix）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/StereoMix_manual.html#id1">4.30.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/StereoMix_manual.html#id2">4.30.2. 参数介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/StereoMix_manual.html#id3">4.30.3. 使用范例</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/VocalRemover_manual.html">4.31. 人声消除（Vocal Remover）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/VocalRemover_manual.html#id1">4.31.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/VocalRemover_manual.html#id2">4.31.2. 使用说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/Chorus_manual.html">4.32. 合唱（Chorus）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Chorus_manual.html#id1">4.32.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Chorus_manual.html#id2">4.32.2. 模块特征</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Chorus_manual.html#id3">4.32.3. 参数简述</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/Indicator_manual.html">4.33. 分贝指示器（Indicator）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Indicator_manual.html#id1">4.33.1. 功能介绍</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/ChannelAdapter_manual.html">4.34. 声道适配</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/ChannelAdapter_manual.html#id2">4.34.1. 音频分流器</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/ChannelAdapter_manual.html#id3">4.34.2. 声道拆分</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/ChannelAdapter_manual.html#id4">4.34.3. 声道组合</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/ChannelAdapter_manual.html#channelmerge">4.34.4. ChannelMerge（声道合并器）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/ChannelAdapter_manual.html#channelexpander">4.34.5. ChannelExpander（声道扩展器）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/ChannelAdapter_manual.html#id5">4.34.6. 声道交换器</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/NoiseSuppressor_manual.html">4.35. 降噪（Noise Suppressor）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/NoiseSuppressor_manual.html#id1">4.35.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/NoiseSuppressor_manual.html#id2">4.35.2. 模块特征</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/NoiseSuppressor_manual.html#id3">4.35.3. 参数介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/NoiseSuppressor_manual.html#id4">4.35.4. 注意事项</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/NoiseSuppressor_LITE_manual.html">4.36. 轻型降噪（Noise Suppressor Lite）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/NoiseSuppressor_LITE_manual.html#id1">4.36.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/NoiseSuppressor_LITE_manual.html#id2">4.36.2. 模块特征</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/NoiseSuppressor_LITE_manual.html#id3">4.36.3. 参数介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/NoiseSuppressor_LITE_manual.html#id4">4.36.4. 注意事项</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/DNS%20NoiseSuppressor_manual.html">4.37. 降噪（DNS Noise Suppressor）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/DNS%20NoiseSuppressor_manual.html#id1">4.37.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/DNS%20NoiseSuppressor_manual.html#id2">4.37.2. 模块特征</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/DNS%20NoiseSuppressor_manual.html#id3">4.37.3. 参数介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/DNS%20NoiseSuppressor_manual.html#id4">4.37.4. 注意事项</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/LLNS_manual.html">4.38. LLNS（低延时降噪）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/LLNS_manual.html#id1">4.38.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/LLNS_manual.html#id2">4.38.2. 模块特征</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/LLNS_manual.html#id3">4.38.3. 资源消耗</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/LLNS_manual.html#id4">4.38.4. 参数介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/LLNS_manual.html#id5">4.38.5. 注意事项</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/LLNS_manual.html#id6">4.38.6. 使用示例</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/LLNS_DNS_manual.html">4.39. LLNS_DNS</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/LLNS_DNS_manual.html#id1">4.39.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/LLNS_DNS_manual.html#id2">4.39.2. 模块特征</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/LLNS_DNS_manual.html#id3">4.39.3. 资源消耗</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/LLNS_DNS_manual.html#id4">4.39.4. 参数介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/LLNS_DNS_manual.html#id5">4.39.5. 注意事项</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/LLNS_DNS_manual.html#id6">4.39.6. 使用示例</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/NF_suppressor_manual.html">4.40. 噪声抑制（NoiseFloor Suppressor）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/NF_suppressor_manual.html#id1">4.40.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/NF_suppressor_manual.html#id2">4.40.2. 参数介绍</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/AutoDuck_manual.html">4.41. 自动闪避（AutoDuck）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/AutoDuck_manual.html#id1">4.41.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/AutoDuck_manual.html#id2">4.41.2. 参数介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/AutoDuck_manual.html#id3">4.41.3. 使用示例</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/AutoDuck_manual.html#id4">4.41.4. 音量联动调节</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/AutoWah_manual.html">4.42. 自动哇（AutoWah）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/AutoWah_manual.html#id1">4.42.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/AutoWah_manual.html#id2">4.42.2. 参数简述：</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/PingPongPcmDelay_manual.html">4.43. PingPong</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/PingPongPcmDelay_manual.html#id1">4.43.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/PingPongPcmDelay_manual.html#id2">4.43.2. 参数说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/3D_Effect_manual.html">4.44. 3D音效(3D Effect)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/3D_Effect_manual.html#id1">4.44.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/3D_Effect_manual.html#id2">4.44.2. 参数说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/BitWidth_Convert_manual.html">4.45. 位宽转换</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/BitWidth_Convert_manual.html#id2">4.45.1. 位宽转换</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/Speaker_EQ_manual.html">4.46. SPK_EQ</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Speaker_EQ_manual.html#id1">4.46.1. 开发背景</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Speaker_EQ_manual.html#id2">4.46.2. 实现过程</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Speaker_EQ_manual.html#id3">4.46.3. 通信方式</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Speaker_EQ_manual.html#id4">4.46.4. 数据格式（SPP通信方式下的数据交互协议）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Speaker_EQ_manual.html#id5">4.46.5. 流程示例</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/SpectrumAdvance_manual.html">4.47. 高级频谱显示</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/SpectrumAdvance_manual.html#id2">4.47.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/SpectrumAdvance_manual.html#id3">4.47.2. 参数说明</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/SpectrumAdvance_manual.html#id4">4.47.3. 用法介绍</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/StereoMtapsEcho_manua.html">4.48. StereoMtapsEcho</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/StereoMtapsEcho_manua.html#id1">4.48.1. 参数说明</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/StereoMtapsEcho_manua.html#id6">4.48.2. 注意事项</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/limiter_manual.html">4.49. Limiter and MB Limiter</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/limiter_manual.html#id1">4.49.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/limiter_manual.html#limiter">4.49.2. Limiter参数介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/limiter_manual.html#mb-limiter">4.49.3. MB Limiter分频器参数介绍</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/Volume_manual.html">4.50. 音量控制器</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Volume_manual.html#id2">4.50.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Volume_manual.html#id3">4.50.2. 参数介绍</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/Fade_manual.html">4.51. 淡入（Fade）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Fade_manual.html#id1">4.51.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Fade_manual.html#id2">4.51.2. 参数介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Fade_manual.html#id3">4.51.3. 使用示例</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/pcm_delay_manual.html">4.52. 延时（PCM Delay）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/pcm_delay_manual.html#id1">4.52.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/pcm_delay_manual.html#id2">4.52.2. 参数介绍</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/Virtual_Surround_Pro_manual.html">4.53. 声场扩宽器</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Virtual_Surround_Pro_manual.html#id2">4.53.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Virtual_Surround_Pro_manual.html#id3">4.53.2. 参数简述</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/SignalGenerator_manual.html">4.54. 信号发生器（SignalGen 和 SignalGenSource）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/SignalGenerator_manual.html#id1">4.54.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/SignalGenerator_manual.html#signalgen">4.54.2. SignalGen参数介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/SignalGenerator_manual.html#signalgen-source">4.54.3. SignalGen Source参数介绍</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/3D_Plus_manual.html">4.55. 3D环绕音效</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/3D_Plus_manual.html#id1">4.55.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/3D_Plus_manual.html#id2">4.55.2. 参数简述</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/multi_frequence_generator_menual.html">4.56. Multi Frequency Generator</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/multi_frequence_generator_menual.html#id1">4.56.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/multi_frequence_generator_menual.html#id2">4.56.2. 参数说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/switch_manual.html">4.57. 数据流开关节点（Switch）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/switch_manual.html#id1">4.57.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/switch_manual.html#id2">4.57.2. 使用范例</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/chorus_adv_manual.html">4.58. 合唱（Chorus Advance）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/chorus_adv_manual.html#id1">4.58.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/chorus_adv_manual.html#id2">4.58.2. 参数简述</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/flanger_manual.html">4.59. Flanger</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/flanger_manual.html#id1">4.59.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/flanger_manual.html#id2">4.59.2. 参数简述</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/phaser_manual.html">4.60. Phaser</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/phaser_manual.html#id1">4.60.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/phaser_manual.html#id2">4.60.2. 参数简述</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/pingpong_echo_manual.html">4.61. 双耳回声效果（Pingpong Echo）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/pingpong_echo_manual.html#id1">4.61.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/pingpong_echo_manual.html#id2">4.61.2. 参数简述</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/distortion_clipping_manual.html">4.62. Distortion Clipping</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/distortion_clipping_manual.html#id1">4.62.1. 功能介绍</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/Stereo_Spatial_Wider_manual.html">4.63. 立体声空间扩宽器</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Stereo_Spatial_Wider_manual.html#id2">4.63.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Stereo_Spatial_Wider_manual.html#id3">4.63.2. 参数简述</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/frequency_compressor_manual.html">4.64. Frequency Compressor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/frequency_compressor_manual.html#id1">4.64.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/frequency_compressor_manual.html#id2">4.64.2. 参数介绍</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/SpatialEffect.html">4.65. 空间音效</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/SpatialEffect.html#id2">4.65.1. 头部跟踪参数</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/SpatialEffect.html#v1-0-0">4.65.2. V1.0.0音效算法参数</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/SpatialEffect.html#v2-0-0">4.65.3. V2.0.0音效算法参数</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/SpatialEffect.html#v3-0-0">4.65.4. V3.0.0音效算法参数</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/SpatialAdv_manual.html">4.66. Spatial Adv</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/SpatialAdv_manual.html#id1">4.66.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/SpatialAdv_manual.html#id2">4.66.2. 使用说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/vibrato_manual.html">4.67. Vibrato</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/vibrato_manual.html#id1">4.67.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/vibrato_manual.html#id2">4.67.2. 参数简述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/vibrato_manual.html#id3">4.67.3. 使用限制</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/harmony_manual.html">4.68. Harmony</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/harmony_manual.html#id1">4.68.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/harmony_manual.html#id2">4.68.2. 参数简述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/harmony_manual.html#id3">4.68.3. 使用限制</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/Tremolo_manual.html">4.69. Tremolo</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Tremolo_manual.html#id1">4.69.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/Tremolo_manual.html#id2">4.69.2. 参数简述</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/VirtualSurroundHeadphone_manual.html">4.70. 耳机虚拟环绕音</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/VirtualSurroundHeadphone_manual.html#id2">4.70.1. 参数说明</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/VirtualSurroundHeadphone_manual.html#id6">4.70.2. 流程示例</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/VirtualSurroundHeadphone_manual.html#id7">4.70.3. 声场渲染示意图</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/AGC.html">4.71. AGC</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/AGC.html#id1">4.71.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/AGC.html#id2">4.71.2. 参数介绍</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_effects/AVC_manual.html">4.72. 音量自适应(Automatic Volume Control, AVC)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/AVC_manual.html#id1">4.72.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/AVC_manual.html#id2">4.72.2. 资源统计</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/AVC_manual.html#id3">4.72.3. 参数介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_effects/AVC_manual.html#id4">4.72.4. 调试指南</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="SDK/audio_cvp/index.html">5. 通话清晰语音</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_cvp/cvp_algorithm_list.html">5.1. 清晰语音算法列表</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_algorithm_list.html#id2">5.1.1. 清晰语音介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_algorithm_list.html#id3">5.1.2. 语音处理算法列表</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_algorithm_list.html#id4">5.1.3. 语音处理节点列表</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_cvp/cfg_index.html">5.2. 常用配置说明</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_common_config.html">5.2.1. 清晰语音常用配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/SingleEded_and_differential_DMS.html">5.2.2. 单端麦和差分麦双麦ENC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_uart_data_export.html">5.2.3. 串口写卡使用指引</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_cvp/cvp_1mic_manual.html">5.3. <strong>1-mic</strong>通话调试指引</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_1mic_manual.html#id1">5.3.1. 功能介绍</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_1mic_manual.html#id4">5.3.2. 使用说明</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_1mic_manual.html#faq">5.3.3. 常见问题FAQ</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_manual.html">5.4. <strong>2-mic</strong>通话调试指引</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_manual.html#dms">5.4.1. DMS简述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_manual.html#enc">5.4.2. 双麦ENC开发设计要点</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_manual.html#id12">5.4.3. 双麦ENC参数与调试指引</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_manual.html#aec">5.4.4. AEC模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_manual.html#nlp">5.4.5. NLP模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_manual.html#agc">5.4.6. AGC模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_manual.html#ans">5.4.7. ANS模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_manual.html#dns">5.4.8. 神经网络降噪DNS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_manual.html#wnc">5.4.9. WNC双麦风噪检测模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_manual.html#jlsp-wnc">5.4.10. JLSP WNC双麦风噪检测模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_manual.html#mfdt">5.4.11. MFDT麦克风故障检测模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_manual.html#eq">5.4.12. EQ参数</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_manual.html#id23">5.4.13. 双麦头戴式话务耳机开发设计指引</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_manual.html#q-a">5.4.14. 通话调试常见问题Q&amp;A</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_hybrid_manual.html">5.5. <strong>2-mic hybrid</strong>通话调试指引</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_hybrid_manual.html#dms">5.5.1. DMS简述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_hybrid_manual.html#hybrid">5.5.2. 双麦HYBRID开发设计要点</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_hybrid_manual.html#enc">5.5.3. 双麦ENC参数与调试指引</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_hybrid_manual.html#id5">5.5.4. HYBRID模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_hybrid_manual.html#aec">5.5.5. AEC模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_hybrid_manual.html#nlp">5.5.6. NLP模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_hybrid_manual.html#dns">5.5.7. 神经网络降噪DNS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_hybrid_manual.html#agc">5.5.8. AGC模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_hybrid_manual.html#jlsp-agc">5.5.9. JLSP-AGC模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_hybrid_manual.html#wnc">5.5.10. WNC风噪检测模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_hybrid_manual.html#eq">5.5.11. EQ参数</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_2mic_hybrid_manual.html#q-a">5.5.12. 通话调试常见问题Q&amp;A</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_cvp/cvp_3mic_manual.html">5.6. <strong>3-mic</strong>通话调试指引</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_3mic_manual.html#dms">5.6.1. DMS简述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_3mic_manual.html#enc">5.6.2. 多麦ENC开发设计要点</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_3mic_manual.html#id12">5.6.3. 三麦ENC参数与调试指引（一）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_3mic_manual.html#id16">5.6.4. 三麦ENC参数与调试指引（二）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_3mic_manual.html#aec">5.6.5. AEC模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_3mic_manual.html#nlp">5.6.6. NLP模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_3mic_manual.html#agc">5.6.7. AGC模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_3mic_manual.html#mic-agc">5.6.8. 3MIC-AGC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_3mic_manual.html#dns">5.6.9. 神经网络降噪DNS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_3mic_manual.html#jlsp-wnc">5.6.10. JLSP WNC风噪检测模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_3mic_manual.html#mfdt">5.6.11. MFDT麦克风故障检测模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_3mic_manual.html#eq">5.6.12. EQ参数</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_3mic_manual.html#q-a">5.6.13. 通话调试常见问题Q&amp;A</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_cvp/cvp_v3_manual.html">5.7. <strong>三代通话算法</strong>调试指引</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_v3_manual.html#id2">5.7.1. 算法模式</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_v3_manual.html#mic">5.7.2. MIC通道配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_v3_manual.html#aec">5.7.3. AEC回采配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_v3_manual.html#id3">5.7.4. AEC回音消除配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_v3_manual.html#nlp">5.7.5. NLP非线性回音压制</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_v3_manual.html#dns">5.7.6. DNS神经网络降噪配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_v3_manual.html#beamformingenc">5.7.7. Beamforming配置ENC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_v3_manual.html#drc">5.7.8. 动态增益控制DRC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_v3_manual.html#wnc">5.7.9. WNC风噪检测模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_v3_manual.html#mfdt">5.7.10. MFDT麦克风故障检测模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_v3_manual.html#id14">5.7.11. 流程参数模块</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_v3_manual.html#id17">5.7.12. 配置文件生成</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_v3_manual.html#id18">5.7.13. 在线调试</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_v3_manual.html#id19">5.7.14. 数据导出指引</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_v3_manual.html#id20">5.7.15. 常用接口</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_cvp/AEC%28FullBand%29.html">5.8. <strong>单麦AEC(FullBand)算法</strong>调试指引</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/AEC%28FullBand%29.html#id1">5.8.1. 模块特征</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/AEC%28FullBand%29.html#id2">5.8.2. 资源统计</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/AEC%28FullBand%29.html#id3">5.8.3. 算法说明</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/AEC%28FullBand%29.html#id4">5.8.4. 使用说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_cvp/cvp_third_party_manual.html">5.9. <strong>第三方通话算法</strong>通话调试指引</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_cvp/cvp_third_party_manual.html#id2">5.9.1. 通话第三方算法节点集成</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="SDK/audio_FAQ/index.html">6. 音频FAQ</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_FAQ/Licensing_FAQ.html">6.1. 授权FAQ（Licensing）</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_FAQ/Licensing_FAQ.html#lc3-lc3plus-advanced-plc-license">6.1.1. LC3/LC3plus Advanced PLC License</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_FAQ/DAC_FAQ/index.html">6.2. DAC FAQ</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_FAQ/DAC_FAQ/DAC_Clipping_FAQ.html">6.2.1. DAC最大输出削顶失真</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_FAQ/DAC_FAQ/DAC_Pop_Up_Noise_FAQ.html">6.2.2. DAC Pop-Up Noise调试指引</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_FAQ/ClassD_FAQ.html">6.3. Class-D FAQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_FAQ/ADC_FAQ.html">6.4. ADC FAQ</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_FAQ/ADC_FAQ.html#micldo">6.4.1. MICLDO供电，麦克风底噪大</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_FAQ/MIC_Capless_FAQ.html">6.5. 省电容麦 FAQ</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_FAQ/MIC_Capless_FAQ.html#id1">6.5.1. 注意事项</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_FAQ/MIC_Capless_FAQ.html#id2">6.5.2. 音频指标差</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_FAQ/MIC_Capless_FAQ.html#id3">6.5.3. 采集声音异常</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_FAQ/IIS_FAQ.html">6.6. IIS FAQ</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_FAQ/IIS_FAQ.html#iis">6.6.1. 小机作IIS主机，更改全局采样率后出现播放卡顿等异常</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_FAQ/IIS_FAQ.html#iisdac">6.6.2. IIS与DAC同时输出，出现协商不过或卡顿问题</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_FAQ/IIS_FAQ.html#id2">6.6.3. 如何保持时钟</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_FAQ/bt_music_FAQ.html">6.7. 蓝牙音乐FAQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_FAQ/bt_call_FAQ.html">6.8. 蓝牙通话FAQ</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_FAQ/bt_call_FAQ.html#micmic2mic-beamforming">6.8.1. 单端MIC和差分MIC是否支持做2mic-beamforming通话</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_FAQ/Codec_FAQ.html">6.9. 编解码FAQ</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_FAQ/Codec_FAQ.html#id1">6.9.1. 解码器最高支持采样率配置</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_FAQ/HiRes_FAQ.html">6.10. Hi-Res Audio FAQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_FAQ/UART_Data_Export_FAQ.html">6.11. 串口数据导出FAQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SDK/audio_FAQ/JLStudio_Audio_Flow_FAQ.html">6.12. 可视化音频流FAQ</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SDK/audio_FAQ/JLStudio_Audio_Flow_FAQ.html#id1">6.12.1. 数据流接口说明</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="SDK/framework/index.html" class="btn btn-neutral float-right" title="1. 技术框架" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

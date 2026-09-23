@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>5.9. 第三方通话算法通话调试指引 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../_static/js/custom.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="6. 音频FAQ" href="../audio_FAQ/index.html" />
+    <link rel="prev" title="5.8. 单麦AEC(FullBand)算法调试指引" href="AEC%28FullBand%29.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">5. 通话清晰语音</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="cvp_algorithm_list.html">5.1. 清晰语音算法列表</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfg_index.html">5.2. 常用配置说明</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cvp_1mic_manual.html">5.3. <strong>1-mic</strong>通话调试指引</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cvp_2mic_manual.html">5.4. <strong>2-mic</strong>通话调试指引</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cvp_2mic_hybrid_manual.html">5.5. <strong>2-mic hybrid</strong>通话调试指引</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cvp_3mic_manual.html">5.6. <strong>3-mic</strong>通话调试指引</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cvp_v3_manual.html">5.7. <strong>三代通话算法</strong>调试指引</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AEC%28FullBand%29.html">5.8. <strong>单麦AEC(FullBand)算法</strong>调试指引</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">5.9. <strong>第三方通话算法</strong>通话调试指引</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">5.9.1. 通话第三方算法节点集成</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id3">5.9.1.1. 节点使能</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">5.9.1.2. 算法类型选择与预设配置</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">5.9.1.3. 流程配置</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">5.9.1.4. 用户自定义算法实现</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vpu">5.9.1.5. 大象声科3麦+VPU算法配置</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html"><span class="section-number">5. </span>通话清晰语音</a> &raquo;</li>
+      <li><span class="section-number">5.9. </span><strong>第三方通话算法</strong>通话调试指引</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="id1">
+<h1><span class="section-number">5.9. </span><strong>第三方通话算法</strong>通话调试指引<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h1>
+<p>通话第三方算法节点集成（3rdParty-CVP）集成了<strong>用户自定义（USER_DEFINED）</strong>、<strong>思必驰3mic(AIS_3MIC)</strong>、<strong>大象声科3mic+vpu(ELEVOC_3MIC_VPU)</strong> 算法</p>
+<section id="id2">
+<h2><span class="section-number">5.9.1. </span>通话第三方算法节点集成<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p><strong>资源统计</strong>：算法资源消耗统计（统计包含所有的算法模块）</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>算法类型</p></th>
+<th class="text-right head"><p>RAM (k)</p></th>
+<th class="text-right head"><p>MIPS (MHz)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>大象声科(3mic+vpu)</p></td>
+<td class="text-right"><p>124</p></td>
+<td class="text-right"><p>114</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>大象声科3mic+vpu MIPS统计是在独立核，模型段和代码段放ram的统计结果。其中124k RAM资源不包含54K模型段大小
+</pre></div>
+</div>
+<section id="id3">
+<h3><span class="section-number">5.9.1.1. </span>节点使能<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h3>
+<p>在可视化开发界面中，用户可通过拖拽通话第三方算法节点将算法集成到流程中，使能通话第三方算法节点
+<img alt="" src="../../_images/cvp_third_1.png" /></br></p>
+</section>
+<section id="id4">
+<h3><span class="section-number">5.9.1.2. </span>算法类型选择与预设配置<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h3>
+<p>不同算法预设要求选择对应的算法类型，并使能适配的ADC通道数：</p>
+<ol class="arabic simple">
+<li><p>用户自定义算法：根据项目实际需求选择对应的算法类型。</p></li>
+<li><p>思必驰3麦算法：选择“三麦算法”类型。</p></li>
+<li><p>大象声科3麦+VPU算法：选择“四麦算法”类型。
+<img alt="" src="../../_images/cvp_third_2.png" /></br></p></li>
+</ol>
+</section>
+<section id="id5">
+<h3><span class="section-number">5.9.1.3. </span>流程配置<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h3>
+<p>对于第三方算法，传入算法的数据需根据实际硬件进行配置。在<strong>cvp_develop_node.c</strong>文件中，传递给算法的麦克风数据需与硬件麦克风布局一一对应。例如，以思必驰3麦算法为例，流程文件是<strong>audio_cvp_ais_3mic.c</strong>，硬件上MIC通道假如是：</p>
+<ul class="simple">
+<li><p>FF 麦克风对应 mic1</p></li>
+<li><p>FB 麦克风对应 mic2</p></li>
+<li><p>TALK 麦克风对应 mic0
+拆分mic的数据，传入对应的APi接口
+<img alt="" src="../../_images/cvp_third_3.png" /></br></p></li>
+</ul>
+</section>
+<section id="id6">
+<h3><span class="section-number">5.9.1.4. </span>用户自定义算法实现<a class="headerlink" href="#id6" title="Permalink to this headline"></a></h3>
+<p>对于用户自定义算法，开发者需在<strong>audio_cvp_develop.c</strong>文件中实现相应的接口。具体接口实现应根据自定义算法需求进行调整。
+以下为用户自定义算法接口实现示例：
+<img alt="" src="../../_images/cvp_third_4.png" /></br></p>
+</section>
+<section id="vpu">
+<h3><span class="section-number">5.9.1.5. </span>大象声科3麦+VPU算法配置<a class="headerlink" href="#vpu" title="Permalink to this headline"></a></h3>
+<p>对于大象声科3麦+VPU算法，流程文件是<strong>audio_cvp_elevoc.c</strong>，开发者需确保传递给算法的数据顺序为：</p>
+<ul class="simple">
+<li><p>FF、FB、TALK、VPU、REF
+对应传入API的数据buffer数据要对应
+<img alt="" src="../../_images/cvp_third_5.png" /></br></p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="AEC%28FullBand%29.html" class="btn btn-neutral float-left" title="5.8. 单麦AEC(FullBand)算法调试指引" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../audio_FAQ/index.html" class="btn btn-neutral float-right" title="6. 音频FAQ" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,96 @@
+# DAC Pop-Up Noise调试指引
+
+## DAC Po声介绍
+---
+
+DAC Pop-Up Noise是指**开关DAC**或者**开关Mute**出现的Po声
+- 开关DAC一般关联系统进出低功耗，即进入低功耗前关闭DAC，退出低功耗播放之前打开DAC
+- 开关Mute一般用在DAC播放小信号或者静音时候关联的操作
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>一般来说，DAC<b>差分输出</b>和<b>VCOMO输出</b>方式，Pop-Up Noise可以得到有效抑制，<b>单端输出</b>方式一般仅做有限优化</p>
+</div>
+
+
+## 技术指标
+---
+
+### DACP和DACN两端的压差
+DAC trim成功过后，一般来说P端和N端的压差在**100uVrms**以内。如果压差超过这个范围，则可能是trim不成功，可以按照以下方法重新确认
+- 擦除VM，重新trim
+- 去掉DAC外围trim
+
+### DAC Pop声幅度
+一般来说，在DACP和DACN的压差合理的情况下，Pop-Up Noise幅度大概**30uVrms**以内
+
+## 调试指引
+---
+
+### 项目基本信息确认
+- **明确产品形态**
+    - TWS耳机
+    - 挂脖耳机
+    - 头戴式耳机
+- **明确DAC输出模式**<br>
+DAC输出模式一般有以下几种<br>
+    - 差分输出模式
+    - 单端输出模式
+    - VCMO输出模式
+
+    一般来说，只有差分输出和VCMO输出模式，DAC Pop-Up Noie才能得到有效抑制。
+
+- **明确SDK版本**<br>
+线上反馈问题或者PMS反馈问题的时候，需要明确当前**SDK版本**，且附上当前项目工程使用的**media.a**，方便确认版本，以及后续修改确认基于什么版本进行修改。<br>
+附上**media.a**，是因为有些项目针对特定的需求或者问题，进行特定的修改，已经不是标准SDK的lib，所以需要通过**media.a**进行确认
+
+- **明确芯片版本**<br>
+芯片之间不同的版本，可能存在驱动适配问题。如果是芯片版本变更，且SDK没有进行针对性驱动更新才测到的问题，则可怀疑是驱动未适配导致
+
+### 确认DAC trim结果
+- trim流程确认：根据log信息，确认是否trim成功（如有疑惑，建议先擦除flash，然后重新trim一次）
+- trim的技术指标参考：[trim指标](#dacpdacn)
+
+### 确认DAC外围硬件电路
+<mark>提示：测试过程，可以去掉所有外围，确认po声是否跟外围电路有关</mark>
+
+![](./assets/DAC_circuit.png)
+
+- **对地电容**：严格按照标准原理图使用电容，<mark>建议电容不超过100p</mark><br>
+<mark>注意：对于特定项目，需要使用超过建议值的电容，会带来额外的影响(底噪和功耗)。以708N为例，如果电容超过100p导致有po声，需要提高DAC电流挡位加速DAC稳定时间</mark>
+
+- **电感**：是否有对地电感以及内阻大小
+- **TVS管/ESD管**<br>
+
+- **确认DAC输出是否接耳放**
+    - 对于外接耳放的应用项目，优先通过开关PA的mute来抑制po声
+
+### 确认是否受到蓝牙干扰
+- **开关mute过程有po声，确认是否跟蓝牙干扰有关**<br>
+    以710N为例，audio_setup.c，将以下代码#if 0修改成#if 1，测试是否有改善，如果没改善，则恢复原先状态，如果有改善，则可以使能使用<br>
+    <mark>注意：如果SDK没有对应的代码实现，则表示暂未支持</mark>
+    ```C
+    /*
+    * DAC MUTE/UNMUTE 回调
+    */
+    #if 0
+    extern void pwr_set_soft(u8 enable);
+    void audio_dac_ch_mute_notify(u8 mute_state, u8 step)
+    {
+        if (step == 1) {
+            pwr_set_soft(0);
+            udelay(50);
+        } else if (step == 2) {
+            udelay(50);
+            pwr_set_soft(1);
+        }
+    }
+    #endif
+
+    ```
+
+## 不同系列注意事项
+### AC710N
+- **miller_en配置**<br>
+    - 涉及SDK版本：3.0.0(patch_04)和3.0.0(patch_04.02)
+    - 修改配置：audio_setup.c文件中的dac_data.miller_en应该配置1，即配置0是错误的

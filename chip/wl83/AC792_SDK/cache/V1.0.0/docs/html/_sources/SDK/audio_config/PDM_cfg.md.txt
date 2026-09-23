@@ -1,0 +1,20 @@
+# PDM配置
+
+## PDM MIC节点配置
+
+- **通道选择**
+    - 单通道(固定使用CH0)/双通道(同时使用CH0和CH1)
+- **SCLK_IO**
+    - 设置SCLK_IO
+- CH0_IO
+    - 设置数据通道0的IO
+- CH1_IO
+    - 设置数据通道1的IO，只使用单通道时候设置为-1，与数据通道0共用数据IO时候设置为相同IO
+
+## PDM MIC代码配置
+
+- **代码配置在pdm_mic_file.c文件中**
+- **SCLK频率**
+    - SDK默认设置 #define ESCO_PDM_SCLK          2400000 /*1M-4M,SCLK/SR需为整数且在1-4096范围*/
+- **采样模式**
+    - pdm_mic_file_param_init()函数中,SDK默认设置pdm_mic->ch_cfg[0].mode = DATA0_SCLK_RISING_EDGE; pdm_mic->ch_cfg[1].mode = DATA0_SCLK_FALLING_EDGE; 硬件通道0对数据通道0在SCLK上升沿采样，硬件通道1对数据通道0在SCLK下降沿采样(打开双通道时候)，可自行修改采样模式

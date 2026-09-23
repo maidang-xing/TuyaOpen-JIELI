@@ -1,0 +1,29 @@
+# VirtualBass Pro
+
+**类型**：封装节点
+
+## 功能介绍
+通过心理声学增强低音表现，适合受限于腔体喇叭等因素无法重现更低频的情况
+## 参数说明
+* **FC:** 进行增强的低音部分上限，默认75，步进1，范围30 ~ 200
+* **Compressor Attack Time:**   谐波生成部分压缩器的启动时间，默认5，步进1，范围1 ~ 500
+* **Compressor Release Time:**  谐波生成部分压缩器的释放时间，默认300，步进1，范围1 ~ 1500
+* **Wet Compressor Threshold：** 谐波生成部分压缩器的阈值，幅度高于阈值以wet_ratio压制，默认-6，步进0.1，范围-50 ~ 0
+* **Wet Compressor Ratio:** 谐波生成部分幅度高于wet_threshold的压缩比例，默认4，步进 1，范围 1 ~ 100
+* **Wet Gain:** 谐波生成部分的增益，默认5，步进 0.01，范围 -10~ 15
+* **Wet Low Pass FC：** 谐波生成部分的低通频率且控制谐波的上限，默认120，范围20 ~ 1000
+* **Wet High Pass FC:** 谐波生成部分的高通频率且控制谐波的下限，默认50，范围20 ~ 1000
+* **Dry Gain:** 低频部分的增益，默认0，步进 0.01，范围 -10~ 20
+* **Dry High Pass FC:** Dry gain高通频率，默认75，步进1，范围30 ~ 200
+* **Noisegate Attack Time：** 噪声门限启动时间，默认值50，范围1 ~ 1000
+* **Noisegate Release Time:** 噪声门限释放时间，默认值5，范围1 ~ 1000
+* **Noisegate Attack Hold Time:** 噪声门限启动前保持时间，默认15，范围 0 ~ 25
+* **Noisegate Threshold:** 噪声门限阈值，默认-85，步进 1，范围-138.4 ~ 0
+
+## FAQ
+* 1、增加低音力度感，增加Wet Gain 与 Dry Gain的增益
+* 2、增加低音圆润度，增加Dry Gain的增益
+* 3、增加高次谐波成份，加大Wet Low Pass FC频率
+* 4、减少超低频基频成份，加大Wet High Pass FC频率
+* 5、降低大音量谐波比例，减小Wet Compressor Threshold阈值及加大 Wet Compressor Ratio斜率，增加Dry Gain值
+

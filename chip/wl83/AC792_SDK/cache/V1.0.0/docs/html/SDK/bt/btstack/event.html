@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>协议栈事件说明 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../_static/js/custom.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>协议栈事件说明</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="id1">
+<h1>协议栈事件说明<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h1>
+<section id="id2">
+<h2>1.蓝牙协议栈处理函数说明<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<p>原型：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/*-----------------------------------------------------------------------------</span>
+<span class="cm">@brief 蓝牙协议栈处理函数</span>
+<span class="cm">    @param   bt : 事件结构体</span>
+<span class="cm">    @return  默认0</span>
+<span class="cm">    @note</span>
+<span class="cm">    @demo</span>
+<span class="cm">------------------------------------------------------------------------------*/</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">bt_connction_status_event_handler</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">bt_event</span><span class="w"> </span><span class="o">*</span><span class="n">bt</span><span class="p">)</span><span class="w"></span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 67%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>名称</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>bt</p></td>
+<td><p>事件结构体</p></td>
+</tr>
+</tbody>
+</table>
+<p>结构体原型：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">bt_event</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="n">event</span><span class="p">;</span><span class="w">   </span><span class="c1">// 事件类型</span>
+<span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="n">args</span><span class="p">[</span><span class="mi">7</span><span class="p">];</span><span class="w"> </span><span class="c1">// 事件参数，如带蓝牙地址等</span>
+<span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">value</span><span class="p">;</span><span class="w">  </span><span class="c1">// 事件值，如HCI_EVENT_CONNECTION_COMPLETE事件的子事件</span>
+<span class="p">};</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h2>2.协议栈事件介绍<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<p>在蓝牙app模式中有针对协议栈连接事件的处理，在其他app中如有需要也会注册处理函数针对相关的协议栈事件进行后续处理</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>名称</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>BT_STATUS_INIT_OK</p></td>
+<td><p>蓝牙协议栈初始化完成事件</p></td>
+</tr>
+<tr class="row-odd"><td><p>BT_STATUS_FIRST_CONNECTED</p></td>
+<td><p>首个设备连接成功事件</p></td>
+</tr>
+<tr class="row-even"><td><p>BT_STATUS_SECOND_CONNECTED</p></td>
+<td><p>第二个设备连接成功事件</p></td>
+</tr>
+<tr class="row-odd"><td><p>BT_STATUS_FIRST_DISCONNECT</p></td>
+<td><p>首个连接设备断开事件</p></td>
+</tr>
+<tr class="row-even"><td><p>BT_STATUS_SECOND_DISCONNECT</p></td>
+<td><p>第二个连接设备断开事件</p></td>
+</tr>
+<tr class="row-odd"><td><p>BT_STATUS_CONN_A2DP_CH</p></td>
+<td><p>A2DP连接</p></td>
+</tr>
+<tr class="row-even"><td><p>BT_STATUS_DISCON_A2DP_CH</p></td>
+<td><p>A2DP断开</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="hci">
+<h2>3.HCI事件介绍<a class="headerlink" href="#hci" title="Permalink to this headline"></a></h2>
+<p>在蓝牙app模式中有针对HCI连接事件的处理，在其他app中如有需要也会注册处理函数针对相关的HCI事件进行处理</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 45%" />
+<col style="width: 55%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>名称</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>HCI_EVENT_VENDOR_META</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>HCI_EVENT_INQUIRY_COMPLETE</p></td>
+<td><p>蓝牙搜索完成的事件</p></td>
+</tr>
+<tr class="row-even"><td><p>HCI_EVENT_USER_CONFIRMATION_REQUEST</p></td>
+<td><p>蓝牙连接确认</p></td>
+</tr>
+<tr class="row-odd"><td><p>HCI_EVENT_USER_PASSKEY_REQUEST</p></td>
+<td><p>蓝牙连接配对码请求</p></td>
+</tr>
+<tr class="row-even"><td><p>HCI_EVENT_USER_PRESSKEY_NOTIFICATION</p></td>
+<td><p>蓝牙配对码通知</p></td>
+</tr>
+<tr class="row-odd"><td><p>HCI_EVENT_PIN_CODE_REQUEST</p></td>
+<td><p>连接PIN CODE请求</p></td>
+</tr>
+<tr class="row-even"><td><p>HCI_EVENT_VENDOR_NO_RECONN_ADDR</p></td>
+<td><p>杰理自定义的事件:上电回连的时候读不到VM的地址</p></td>
+</tr>
+<tr class="row-odd"><td><p>HCI_EVENT_DISCONNECTION_COMPLETE</p></td>
+<td><p>蓝牙断连完成</p></td>
+</tr>
+<tr class="row-even"><td><p>BTSTACK_EVENT_HCI_CONNECTIONS_DELETE</p></td>
+<td><p>杰理自定义的事件:断开之后协议栈资源释放完成</p></td>
+</tr>
+<tr class="row-odd"><td><p>HCI_EVENT_CONNECTION_COMPLETE</p></td>
+<td><p>连接完成的事件</p></td>
+</tr>
+</tbody>
+</table>
+<p>连接完成事件子事件介绍:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 42%" />
+<col style="width: 58%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>名称</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ERROR_CODE_SUCCESS</p></td>
+<td><p>连接成功</p></td>
+</tr>
+<tr class="row-odd"><td><p>ERROR_CODE_PIN_OR_KEY_MISSING</p></td>
+<td><p>连接过程中linkkey丢失，手机删除了linkkey</p></td>
+</tr>
+<tr class="row-even"><td><p>ERROR_CODE_SYNCHRONOUS_CONNECTION_LIMIT_TO_A_DEVICE_EXCEEDED</p></td>
+<td><p>连接个数超出了资源允许</p></td>
+</tr>
+<tr class="row-odd"><td><p>ERROR_CODE_CONNECTION_REJECTED_DUE_TO_LIMITED_RESOURCES</p></td>
+<td><p>需要回连的设备资源不够。有些手机连了一个设备之后就会用这个拒绝。或者其它的资源原因</p></td>
+</tr>
+<tr class="row-even"><td><p>ERROR_CODE_CONNECTION_REJECTED_DUE_TO_UNACCEPTABLE_BD_ADDR</p></td>
+<td><p>有些可能只允许指定地址连接的，可能会用这个去拒绝连接。或者我们设备的地址全0或者有问题</p></td>
+</tr>
+<tr class="row-odd"><td><p>ERROR_CODE_CONNECTION_ACCEPT_TIMEOUT_EXCEEDED</p></td>
+<td><p>连接的时间太长了，手机要断开了</p></td>
+</tr>
+<tr class="row-even"><td><p>ERROR_CODE_REMOTE_USER_TERMINATED_CONNECTION</p></td>
+<td><p>常用的连接断开消息</p></td>
+</tr>
+<tr class="row-odd"><td><p>ERROR_CODE_CONNECTION_TERMINATED_BY_LOCAL_HOST</p></td>
+<td><p>正常的断开消息，本地L2CAP资源释放之后就会发这个值上来了</p></td>
+</tr>
+<tr class="row-even"><td><p>ERROR_CODE_AUTHENTICATION_FAILURE</p></td>
+<td><p>连接过程中linkkey丢失，手机删除了linkkey，回连就会出现一次</p></td>
+</tr>
+<tr class="row-odd"><td><p>ERROR_CODE_PAGE_TIMEOUT</p></td>
+<td><p>回连超时退出消息</p></td>
+</tr>
+<tr class="row-even"><td><p>ERROR_CODE_CONNECTION_TIMEOUT</p></td>
+<td><p>连接过程中linkkey错误</p></td>
+</tr>
+<tr class="row-odd"><td><p>ERROR_CODE_ACL_CONNECTION_ALREADY_EXISTS</p></td>
+<td><p>回连的时候发现设备还没释放我们这个地址，一般直接断电开机回连会出现</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

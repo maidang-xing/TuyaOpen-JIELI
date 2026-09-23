@@ -1,0 +1,22 @@
+开机流程
+###############
+
+概述
+------------
+介绍芯片启动后的应用软件流程
+
+启动函数
+-------------------
+JL芯片启动后，会调用cpu/brxx/setup.c的void setup_arch()函数（这里一般开发流程不会改到），设备会在这个函数里面进行硬件、操作系统等的初始化后，调用void app_main()函数。
+
+
+app_main函数
+-------------------
+apps/earphone(等根据项目类型而定，还可以是soundbox/watch)/app_main.c文件中的app_main()函数会创建一个app_core任务（JL设备的主任务），并启动操作系统，操作系统初始化完成后会执行第一个任务：app_core。
+
+    .. figure:: imgs/device_start.png
+       :scale: 80%
+       :align: center
+
+
+

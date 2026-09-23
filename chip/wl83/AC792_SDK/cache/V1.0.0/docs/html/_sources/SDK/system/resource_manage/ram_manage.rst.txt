@@ -1,0 +1,72 @@
+RAM管理帮助
+##############
+
+目前默认部分代码放在RAM来提高运行效率，同时可以避免频繁读写flash而导致功耗增加，在RAM不够的情况下可以将部分代码放回flash到达释放RAM资源的目的。
+
+.. tip:: 
+   建议将RAM资源用到极致，保证RAM使用最高峰值的情况下不会出现RAM不足即可。
+
+问题现象
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+RAM不足的情况下，打印会出现断言死机，ASSERT: vmalloc_147
+
+   .. figure:: imgs/vmalloc_147.png
+
+
+查看当前运行RAM剩余
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+开启定时器打印。
+
+   .. figure:: imgs/ram_timer.png
+
+   .. figure:: imgs/ram_timer_log.png
+
+
+RAM资源使用优化方法
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. tip:: 
+   根据需求释放RAM，不一定需要全部放。下述操作执行后均需要重新编译。
+
+音频算法放到flash
+=============
+
+   .. figure:: imgs/audio_config_ram.png
+
+释放overlay代码
+=============
+
+   .. figure:: imgs/overlay.png
+
+修改sdk_ld.c将RAM中的data_code区域中一些代码注释掉，就会放回flash
+=============
+
+.. tip:: 
+   前两点修改完还不够再考虑改这个
+
+   .. figure:: imgs/sdk_ld_ram.png
+
+
+LE_AUDIO_JL_UNICAST_SINK项目优化
+=============
+
+如果是耳机端配置jl_unicast的工程RAM不够，可以根据dongle端的unicast配置修改删减LC3的帧长和采样率使能、以及代码段（20K左右）。
+
+比如dongle端的unicast配置如下：
+
+   .. figure:: imgs/lea_jl_dongle.png
+      
+头戴式耳机只需要保留帧长是10ms、采样率是48K的配置：
+
+   .. figure:: imgs/lea_jl_earphone.png
+
+   .. figure:: imgs/lea_jl_earphone_data_text.png
+
+其余参考优化链接
+=============
+
+- 详细见：
+
+   - 音频配置->音频代码段链接配置 章节

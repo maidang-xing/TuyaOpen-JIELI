@@ -1,0 +1,13 @@
+# 立体声增益模块（Split Gain）
+
+## 功能介绍
+支持双声道分别控制增益
+
+### 参数介绍
+* **bypass**：勾选后模块不运行
+* **CH0 reverse_phase**：勾选后，CH0 数据做反相处理
+* **CH0 Gain**：CH0 增加或减少dB数
+* **CH1 reverse_phase**：勾选后，CH1 数据做反相处理
+* **CH1 Gain**：CH1 增加或减少dB数
+
+

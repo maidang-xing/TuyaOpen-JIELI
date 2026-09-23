@@ -1,0 +1,91 @@
+#include "app_config.h"
+#ifdef CONFIG_UI_STYLE_LY_ENABLE
+/*Generate Code, Do NOT Edit!*/
+#ifndef __COMMON_H__
+#define __COMMON_H__
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "./gui_res/res_common.h"
+
+#define GUI_UIT_VERSION_MAJOR 1
+#define GUI_UIT_VERSION_MINOR 0
+#define GUI_UIT_VERSION_PATCH 0
+#define GUI_UIT_VERSION_INFO "20260227"
+
+#define GUI_CORE_VERSION_MAJOR 3
+#define GUI_CORE_VERSION_MINOR 0
+#define GUI_CORE_VERSION_PATCH 3
+#define GUI_CORE_VERSION_INFO "GENERIC(with tools)"
+
+#define GUI_TEMPLATE_VERSION_MAJOR 1
+#define GUI_TEMPLATE_VERSION_MINOR 3
+#define GUI_TEMPLATE_VERSION_PATCH 3
+#define GUI_TEMPLATE_VERSION_INFO "full"
+
+#if LV_USE_GUIBUILDER_SIMULATOR
+#define GUI_TM_MON(mon) ((mon) + 1)
+#else
+#define GUI_TM_MON(mon) (mon)
+#endif
+
+typedef enum {
+    GUI_SCREEN_ACTION_LOAD = 0,
+    GUI_SCREEN_ACTION_UNLOAD
+} gui_screen_action_t;
+
+typedef enum {
+    GUI_SCREEN_USB_SLAVE = 0,
+    GUI_SCREEN_VIDEO_REC,
+    GUI_SCREEN_SYS_PROMPT,
+    GUI_SCREEN_SYS_SETTING,
+    GUI_SCREEN_VIDEO_PHOTO,
+    GUI_SCREEN_VIDEO_PLAY,
+    GUI_SCREEN_VIDEO_FILE,
+    GUI_SCREEN_VIDEO_DIR,
+    GUI_SCREEN_CAR_PARKING,
+    GUI_SCREEN_LINE_DRIFT,
+    GUI_SCREEN_SYS_POPWIN,
+    GUI_SCREEN_VIDEO_DEC,
+    GUI_SCREEN_VIDEO_DEC_OPTIONS,
+    GUI_SCREEN_PAGE_MAP,
+    GUI_SCREEN_PAGE_MUSIC,
+    GUI_SCREEN_PAGE_METER,
+    GUI_SCREEN_POWER_ON,
+} gui_screen_id_t;
+
+static const int32_t gui_screen_ids[] = {
+    GUI_SCREEN_USB_SLAVE,
+    GUI_SCREEN_VIDEO_REC,
+    GUI_SCREEN_SYS_PROMPT,
+    GUI_SCREEN_SYS_SETTING,
+    GUI_SCREEN_VIDEO_PHOTO,
+    GUI_SCREEN_VIDEO_PLAY,
+    GUI_SCREEN_VIDEO_FILE,
+    GUI_SCREEN_VIDEO_DIR,
+    GUI_SCREEN_CAR_PARKING,
+    GUI_SCREEN_LINE_DRIFT,
+    GUI_SCREEN_SYS_POPWIN,
+    GUI_SCREEN_VIDEO_DEC,
+    GUI_SCREEN_VIDEO_DEC_OPTIONS,
+    GUI_SCREEN_PAGE_MAP,
+    GUI_SCREEN_PAGE_MUSIC,
+    GUI_SCREEN_PAGE_METER,
+    GUI_SCREEN_POWER_ON,
+};
+
+#define GUI_KEY_F1 1
+#define GUI_KEY_up 200
+#define GUI_KEY_left 201
+#define GUI_KEY_right 202
+#define GUI_KEY_down 203
+#define GUI_KEY_return 204
+#define GUI_KEY_ok 205
+
+#ifdef __cplusplus
+}
+#endif
+#endif
+
+#endif

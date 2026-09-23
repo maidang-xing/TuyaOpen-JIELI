@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cbuf &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../../_static/js/custom.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>cbuf</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="cbuf">
+<h1>cbuf<a class="headerlink" href="#cbuf" title="Permalink to this headline"></a></h1>
+<p>circular_buf，循环buf，主要用于数据流的输入输出缓冲管理，具有如下特点：</p>
+<ul class="simple">
+<li><p>buf 空间大小固定；</p></li>
+<li><p>数据先进先出；</p></li>
+<li><p>buf 开始和结束头尾相连的，在写到 buf 结束会从 buf 开始位置继续写入，形成环形结构；</p></li>
+<li><p>数据可以多次写入一次读出或者一次写入多次读出；</p></li>
+<li><p>无碎片产生问题；</p></li>
+<li><p>适合用于数据流读写动态平衡的应用。</p></li>
+</ul>
+<section id="cbuf-init">
+<h2>cbuf_init<a class="headerlink" href="#cbuf-init" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p>函数原型：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_init</span><span class="p">(</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbuffer</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">size</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>功能说明：在使用 cbuf 前初始化;</p></li>
+<li><p>参数说明：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>cbuffer</p></td>
+<td><p>用于管理 cbuffer 的句柄指针</p></td>
+</tr>
+<tr class="row-odd"><td><p>buf</p></td>
+<td><p>需要管理的 buf 空间</p></td>
+</tr>
+<tr class="row-even"><td><p>size</p></td>
+<td><p>需要管理的 buf 空间大小，单位 byte</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>返回值：无</p></li>
+<li><p>示例：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="n">cbuf_hdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos">2</span><span class="kt">int</span><span class="w"> </span><span class="n">cbuf</span><span class="p">[</span><span class="mi">512</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos">3</span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_user_demo</span><span class="p">()</span><span class="w"></span>
+<span class="linenos">4</span><span class="p">{</span><span class="w"></span>
+<span class="linenos">5</span><span class="w">    </span><span class="n">cbuf_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">cbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">cbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">6</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="cbuf-write">
+<h2>cbuf_write<a class="headerlink" href="#cbuf-write" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p>函数原型：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u32</span><span class="w"> </span><span class="nf">cbuf_write</span><span class="p">(</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbuffer</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">size</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>功能说明：把 buf 里的数据写到 cbuf;</p></li>
+<li><p>参数说明：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>cbuffer</p></td>
+<td><p>用于管理 cbuffer 的句柄指针</p></td>
+</tr>
+<tr class="row-odd"><td><p>buf</p></td>
+<td><p>存放写入数据的 buf</p></td>
+</tr>
+<tr class="row-even"><td><p>size</p></td>
+<td><p>需要写入数据的长度， 单位 byte</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>返回值：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>u32</p></td>
+<td><p>实际写入的长度</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>示例：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="n">cbuf_hdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 2</span><span class="kt">int</span><span class="w"> </span><span class="n">cbuf</span><span class="p">[</span><span class="mi">512</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 3</span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_user_demo</span><span class="p">()</span><span class="w"></span>
+<span class="linenos"> 4</span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="n">wbuf</span><span class="p">[</span><span class="mi">100</span><span class="p">];</span><span class="w"></span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="n">cbuf_init</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">cbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">cbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos"> 8</span><span class="w">    </span><span class="c1">//cbuf 写入</span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="n">memset</span><span class="p">(</span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="mh">0x5A</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">10</span><span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_write</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">11</span><span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;cbuf_write ret = %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">12</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="cbuf-read">
+<h2>cbuf_read<a class="headerlink" href="#cbuf-read" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p>函数原型：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u32</span><span class="w"> </span><span class="nf">cbuf_read</span><span class="p">(</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbuffer</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">size</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>功能说明：读取 cbuf 里的数据到 buf;</p></li>
+<li><p>参数说明：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>cbuffer</p></td>
+<td><p>用于管理 cbuffer 的句柄指针</p></td>
+</tr>
+<tr class="row-odd"><td><p>buf</p></td>
+<td><p>存放读取数据的 buf</p></td>
+</tr>
+<tr class="row-even"><td><p>size</p></td>
+<td><p>需要读取数据的长度， 单位 byte</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>返回值：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>u32</p></td>
+<td><p>实际读取的长度</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>示例：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="n">cbuf_hdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 2</span><span class="kt">int</span><span class="w"> </span><span class="n">cbuf</span><span class="p">[</span><span class="mi">512</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 3</span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_user_demo</span><span class="p">()</span><span class="w"></span>
+<span class="linenos"> 4</span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="n">wbuf</span><span class="p">[</span><span class="mi">100</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="n">rbuf</span><span class="p">[</span><span class="mi">100</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 8</span><span class="w">    </span><span class="n">cbuf_init</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">cbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">cbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="c1">//cbuf 写入</span>
+<span class="linenos">10</span><span class="w">    </span><span class="n">memset</span><span class="p">(</span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="mh">0x5A</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">11</span><span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_write</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">12</span><span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;cbuf_write ret = %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">13</span><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">14</span><span class="w">        </span><span class="c1">//cbuf 读出</span>
+<span class="linenos">15</span><span class="w">        </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_read</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">rbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">rbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">16</span><span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;cbuf_read ret = %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">17</span><span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="linenos">18</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="cbuf-is-write-able">
+<h2>cbuf_is_write_able<a class="headerlink" href="#cbuf-is-write-able" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p>函数原型：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u32</span><span class="w"> </span><span class="nf">cbuf_is_write_able</span><span class="p">(</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbuffer</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>功能说明：判断 cbuf 是否可以写入长度为 len 的数据</p></li>
+<li><p>参数说明：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>cbuffer</p></td>
+<td><p>用于管理 cbuffer 的句柄指针</p></td>
+</tr>
+<tr class="row-odd"><td><p>len</p></td>
+<td><p>需要写入数据的长度， 单位 byte</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>返回值：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>cbuf 剩余长度小于 len；</p></td>
+</tr>
+<tr class="row-even"><td><p>&gt; 0</p></td>
+<td><p>cbuf 剩余长度大于 len；</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>示例：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="n">cbuf_hdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 2</span><span class="kt">int</span><span class="w"> </span><span class="n">cbuf</span><span class="p">[</span><span class="mi">512</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 3</span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_user_demo</span><span class="p">()</span><span class="w"></span>
+<span class="linenos"> 4</span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="n">wbuf</span><span class="p">[</span><span class="mi">100</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="n">rbuf</span><span class="p">[</span><span class="mi">100</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 8</span><span class="w">    </span><span class="n">cbuf_init</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">cbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">cbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="c1">//cbuf 写入</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span><span class="w">    </span><span class="n">cbuf_write</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">12</span><span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_is_write_able</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">13</span><span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;cbuf_is_write_able ret = %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">14</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="cbuf-write-alloc">
+<h2>cbuf_write_alloc<a class="headerlink" href="#cbuf-write-alloc" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p>函数原型：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="nf">cbuf_write_alloc</span><span class="p">(</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbuffer</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="o">*</span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>功能说明：从 cbuf 获取写入长度为 len 数据的 buf 指针</p></li>
+<li><p>参数说明：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>cbuffer</p></td>
+<td><p>用于管理 cbuffer 的句柄指针</p></td>
+</tr>
+<tr class="row-odd"><td><p>len</p></td>
+<td><p>需要写入数据的长度， 返回实际申请到的写入 buf 大小，单位 byte</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>返回值：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>void *</p></td>
+<td><p>申请到需要写入数据的 buf 指针</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>示例：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="n">cbuf_hdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos">2</span><span class="kt">int</span><span class="w"> </span><span class="n">cbuf</span><span class="p">[</span><span class="mi">512</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos">3</span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_user_demo</span><span class="p">()</span><span class="w"></span>
+<span class="linenos">4</span><span class="p">{</span><span class="w"></span>
+<span class="linenos">5</span><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">6</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">wptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="linenos">7</span><span class="w">    </span><span class="n">cbuf_init</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">cbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">cbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">8</span><span class="w">    </span><span class="n">wptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_write_alloc</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">9</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="cbuf-write-updata">
+<h2>cbuf_write_updata<a class="headerlink" href="#cbuf-write-updata" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p>函数原型：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_write_updata</span><span class="p">(</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbuffer</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>功能说明：更新 cbuf 写指针， 与 cbuf_write_alloc 匹配使用</p></li>
+<li><p>参数说明：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>cbuffer</p></td>
+<td><p>用于管理 cbuffer 的句柄指针</p></td>
+</tr>
+<tr class="row-odd"><td><p>len</p></td>
+<td><p>写入数据的长度，单位 byte</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>返回值：无</p></li>
+<li><p>示例：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="n">cbuf_hdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 2</span><span class="kt">int</span><span class="w"> </span><span class="n">cbuf</span><span class="p">[</span><span class="mi">512</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 3</span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_user_demo</span><span class="p">()</span><span class="w"></span>
+<span class="linenos"> 4</span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">wptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="n">cbuf_init</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">cbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">cbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos"> 8</span><span class="w">    </span><span class="n">wptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_write_alloc</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span><span class="w"></span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="c1">//cbuf 写入</span>
+<span class="linenos">10</span><span class="w">    </span><span class="n">memset</span><span class="p">(</span><span class="n">wptr</span><span class="p">,</span><span class="w"> </span><span class="mh">0x5A</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">11</span><span class="w">    </span><span class="n">cbuf_write_updata</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">12</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="cbuf-read-alloc">
+<h2>cbuf_read_alloc<a class="headerlink" href="#cbuf-read-alloc" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p>函数原型：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="nf">cbuf_read_alloc</span><span class="p">(</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbuffer</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="o">*</span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>功能说明：从 cbuf 获取读取长度为 len 数据的 buf 指针</p></li>
+<li><p>参数说明：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>cbuffer</p></td>
+<td><p>用于管理 cbuffer 的句柄指针</p></td>
+</tr>
+<tr class="row-odd"><td><p>len</p></td>
+<td><p>需要读取数据的长度， 返回实际申请到的读取 buf 大小，单位 byte</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>返回值：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>void *</p></td>
+<td><p>申请到需要读取数据的 buf 指针</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>示例：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="n">cbuf_hdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 2</span><span class="kt">int</span><span class="w"> </span><span class="n">cbuf</span><span class="p">[</span><span class="mi">512</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 3</span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_user_demo</span><span class="p">()</span><span class="w"></span>
+<span class="linenos"> 4</span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="n">wbuf</span><span class="p">[</span><span class="mi">100</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">rptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 8</span><span class="w">    </span><span class="n">cbuf_init</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">cbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">cbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="c1">//cbuf 写入</span>
+<span class="linenos">10</span><span class="w">    </span><span class="n">memset</span><span class="p">(</span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="mh">0x5A</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">11</span><span class="w">    </span><span class="n">cbuf_write</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">12</span><span class="w">    </span><span class="n">rptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_read_alloc</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">13</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="cbuf-read-updata">
+<h2>cbuf_read_updata<a class="headerlink" href="#cbuf-read-updata" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p>函数原型：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_read_updata</span><span class="p">(</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbuffer</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>功能说明：更新 cbuf 读指针， 与 cbuf_read_alloc 匹配使用</p></li>
+<li><p>参数说明：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>cbuffer</p></td>
+<td><p>用于管理 cbuffer 的句柄指针</p></td>
+</tr>
+<tr class="row-odd"><td><p>len</p></td>
+<td><p>读取数据的长度，单位 byte</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>返回值：无</p></li>
+<li><p>示例：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="n">cbuf_hdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 2</span><span class="kt">int</span><span class="w"> </span><span class="n">cbuf</span><span class="p">[</span><span class="mi">512</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 3</span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_user_demo</span><span class="p">()</span><span class="w"></span>
+<span class="linenos"> 4</span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="n">wbuf</span><span class="p">[</span><span class="mi">100</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">rptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 8</span><span class="w">    </span><span class="n">cbuf_init</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">cbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">cbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="c1">//cbuf 写入</span>
+<span class="linenos">10</span><span class="w">    </span><span class="n">memset</span><span class="p">(</span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="mh">0x5A</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">11</span><span class="w">    </span><span class="n">cbuf_write</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">12</span><span class="w">    </span><span class="n">rptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_read_alloc</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">13</span><span class="w">    </span><span class="n">cbuf_read_updata</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">14</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="cbuf-clear">
+<h2>cbuf_clear<a class="headerlink" href="#cbuf-clear" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p>函数原型：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_clear</span><span class="p">(</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbuffer</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>功能说明：清除 cbuf 中所有数据</p></li>
+<li><p>参数说明：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>cbuffer</p></td>
+<td><p>用于管理 cbuffer 的句柄指针</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>返回值：无</p></li>
+<li><p>示例：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="n">cbuf_hdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 2</span>
+<span class="linenos"> 3</span><span class="kt">int</span><span class="w"> </span><span class="n">cbuf</span><span class="p">[</span><span class="mi">512</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 4</span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_user_demo</span><span class="p">()</span><span class="w"></span>
+<span class="linenos"> 5</span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="n">wbuf</span><span class="p">[</span><span class="mi">100</span><span class="p">];</span><span class="w"></span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 8</span><span class="w">    </span><span class="n">cbuf_init</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">cbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">cbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="c1">//cbuf 写入</span>
+<span class="linenos">10</span><span class="w">    </span><span class="n">memset</span><span class="p">(</span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="mh">0x5A</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">11</span><span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_write</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">12</span><span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;cbuf_write ret = %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">13</span><span class="w">    </span><span class="n">cbuf_clear</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">14</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="cbuf-rewrite">
+<h2>cbuf_rewrite<a class="headerlink" href="#cbuf-rewrite" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p>函数原型：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u32</span><span class="w"> </span><span class="nf">cbuf_rewrite</span><span class="p">(</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbuffer</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">begin</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>功能说明：重写 cbuf 中指定位置的数据</p></li>
+<li><p>参数说明：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>cbuffer</p></td>
+<td><p>用于管理 cbuffer 的句柄指针</p></td>
+</tr>
+<tr class="row-odd"><td><p>begin</p></td>
+<td><p>重写数据的 buf 地址</p></td>
+</tr>
+<tr class="row-even"><td><p>buf</p></td>
+<td><p>写入buf数据</p></td>
+</tr>
+<tr class="row-odd"><td><p>len</p></td>
+<td><p>重写数据长度</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>返回值：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>u32</p></td>
+<td><p>实际重写的数据大小</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>示例：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="n">cbuf_hdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 2</span><span class="kt">int</span><span class="w"> </span><span class="n">cbuf</span><span class="p">[</span><span class="mi">512</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 3</span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_user_demo</span><span class="p">()</span><span class="w"></span>
+<span class="linenos"> 4</span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="n">wbuf</span><span class="p">[</span><span class="mi">50</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">wptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 8</span><span class="w">    </span><span class="n">cbuf_init</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">cbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">cbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="n">wptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_write_alloc</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">10</span><span class="w">    </span><span class="c1">//cbuf 写入</span>
+<span class="linenos">11</span><span class="w">    </span><span class="n">memset</span><span class="p">(</span><span class="n">wptr</span><span class="p">,</span><span class="w"> </span><span class="mh">0x5A</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">12</span><span class="w">    </span><span class="n">cbuf_write_updata</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">13</span><span class="w">    </span><span class="n">memset</span><span class="p">(</span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="mh">0xA5</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">14</span><span class="w">    </span><span class="n">cbuf_rewrite</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">wptr</span><span class="p">,</span><span class="w"> </span><span class="n">wbuf</span><span class="p">,</span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">))</span><span class="w"></span>
+<span class="linenos">15</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="cbuf-prewrite">
+<h2>cbuf_prewrite<a class="headerlink" href="#cbuf-prewrite" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p>函数原型：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_updata_prewrite</span><span class="p">(</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbuffer</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>功能说明：更新预写信息</p></li>
+<li><p>参数说明：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>cbuffer</p></td>
+<td><p>用于管理 cbuffer 的句柄指针</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>返回值： 无</p></li>
+<li><p>示例：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="cbuf-updata-prewrite">
+<h2>cbuf_updata_prewrite<a class="headerlink" href="#cbuf-updata-prewrite" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p>函数原型：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u32</span><span class="w"> </span><span class="nf">cbuf_prewrite</span><span class="p">(</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbuffer</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">len</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>功能说明：把 buf 数据写入， 但是不更新写指针，预写</p></li>
+<li><p>参数说明：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>cbuffer</p></td>
+<td><p>用于管理 cbuffer 的句柄指针</p></td>
+</tr>
+<tr class="row-odd"><td><p>buf</p></td>
+<td><p>存放写入数据的 buf</p></td>
+</tr>
+<tr class="row-even"><td><p>size</p></td>
+<td><p>需要写入数据的长度，单位 byte</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>返回值：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>u32</p></td>
+<td><p>实际写入的数据大小</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>示例：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="n">cbuf_hdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 2</span><span class="kt">int</span><span class="w"> </span><span class="n">cbuf</span><span class="p">[</span><span class="mi">512</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 3</span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_user_demo</span><span class="p">()</span><span class="w"></span>
+<span class="linenos"> 4</span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="n">wbuf</span><span class="p">[</span><span class="mi">100</span><span class="p">];</span><span class="w"></span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="n">cbuf_init</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">cbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">cbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos"> 8</span><span class="w">    </span><span class="c1">//cbuf 写入</span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="n">memset</span><span class="p">(</span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="mh">0x5A</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">10</span><span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_prewrite</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">11</span><span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;cbuf_write ret = %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">12</span><span class="w">    </span><span class="n">cbuf_updata_prewrite</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">13</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="cbuf-discard-prewrite">
+<h2>cbuf_discard_prewrite<a class="headerlink" href="#cbuf-discard-prewrite" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p>函数原型：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_discard_prewrite</span><span class="p">(</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbuffer</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>功能说明：取消预写信息</p></li>
+<li><p>参数说明：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>cbuffer</p></td>
+<td><p>用于管理 cbuffer 的句柄指针</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>返回值：无</p></li>
+<li><p>示例：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="n">cbuf_hdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 2</span><span class="kt">int</span><span class="w"> </span><span class="n">cbuf</span><span class="p">[</span><span class="mi">512</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 3</span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_user_demo</span><span class="p">()</span><span class="w"></span>
+<span class="linenos"> 4</span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="n">wbuf</span><span class="p">[</span><span class="mi">100</span><span class="p">];</span><span class="w"></span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="n">cbuf_init</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">cbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">cbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos"> 8</span><span class="w">    </span><span class="c1">//cbuf 写入</span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="n">memset</span><span class="p">(</span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="mh">0x5A</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">10</span><span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_prewrite</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">11</span><span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;cbuf_write ret = %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">12</span><span class="w">    </span><span class="n">cbuf_discard_prewrite</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">13</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="cbuf-get-writeptr">
+<h2>cbuf_get_writeptr<a class="headerlink" href="#cbuf-get-writeptr" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p>函数原型：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="nf">cbuf_get_writeptr</span><span class="p">(</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbuffer</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>功能说明：获取 cbuf 写指针</p></li>
+<li><p>参数说明：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>cbuffer</p></td>
+<td><p>用于管理 cbuffer 的句柄指针</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>返回值：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>void *</p></td>
+<td><p>当前 cbuf 写指针</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>示例：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="n">cbuf_hdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 2</span><span class="kt">int</span><span class="w"> </span><span class="n">cbuf</span><span class="p">[</span><span class="mi">512</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 3</span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_user_demo</span><span class="p">()</span><span class="w"></span>
+<span class="linenos"> 4</span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="n">wbuf</span><span class="p">[</span><span class="mi">100</span><span class="p">];</span><span class="w"></span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">wptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 8</span><span class="w">    </span><span class="n">cbuf_init</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">cbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">cbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="c1">//cbuf 写入</span>
+<span class="linenos">10</span><span class="w">    </span><span class="n">memset</span><span class="p">(</span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="mh">0x5A</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">11</span><span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_write</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">12</span><span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;cbuf_write ret = %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">13</span><span class="w">    </span><span class="n">wptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_get_writeptr</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">)</span><span class="w"></span>
+<span class="linenos">14</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="cbuf-get-readptr">
+<h2>cbuf_get_readptr<a class="headerlink" href="#cbuf-get-readptr" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p>函数原型：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="nf">cbuf_get_readptr</span><span class="p">(</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbuffer</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>功能说明：获取 cbuf 读指针</p></li>
+<li><p>参数说明：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>cbuffer</p></td>
+<td><p>用于管理 cbuffer 的句柄指针</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>返回值：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>void *</p></td>
+<td><p>当前 cbuf 读指针</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>示例：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="n">cbuf_hdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 2</span><span class="kt">int</span><span class="w"> </span><span class="n">cbuf</span><span class="p">[</span><span class="mi">512</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 3</span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_user_demo</span><span class="p">()</span><span class="w"></span>
+<span class="linenos"> 4</span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="n">wbuf</span><span class="p">[</span><span class="mi">100</span><span class="p">];</span><span class="w"></span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">rptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 8</span><span class="w">    </span><span class="n">cbuf_init</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">cbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">cbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="c1">//cbuf 写入</span>
+<span class="linenos">10</span><span class="w">    </span><span class="n">memset</span><span class="p">(</span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="mh">0x5A</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">11</span><span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_write</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">12</span><span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;cbuf_write ret = %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">13</span><span class="w">    </span><span class="n">rptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_get_readptr</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">)</span><span class="w"></span>
+<span class="linenos">14</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="cbuf-get-data-size">
+<h2>cbuf_get_data_size<a class="headerlink" href="#cbuf-get-data-size" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p>函数原型：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u32</span><span class="w"> </span><span class="n">cbuf_get_data_size</span><span class="p">(</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="o">*</span><span class="n">cbuffer</span><span class="p">)</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>功能说明：获取 cbuf 读指针</p></li>
+<li><p>参数说明：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>cbuffer</p></td>
+<td><p>用于管理 cbuffer 的句柄指针</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>返回值：</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>参数</p></td>
+<td><p>说明</p></td>
+</tr>
+<tr class="row-even"><td><p>u32</p></td>
+<td><p>获取 cbuf 中可读数据长度</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p>示例：</p>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">cbuffer_t</span><span class="w"> </span><span class="n">cbuf_hdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 2</span><span class="kt">int</span><span class="w"> </span><span class="n">cbuf</span><span class="p">[</span><span class="mi">512</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
+<span class="linenos"> 3</span><span class="kt">void</span><span class="w"> </span><span class="nf">cbuf_user_demo</span><span class="p">()</span><span class="w"></span>
+<span class="linenos"> 4</span><span class="p">{</span><span class="w"></span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="n">wbuf</span><span class="p">[</span><span class="mi">100</span><span class="p">];</span><span class="w"></span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">rptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="linenos"> 8</span><span class="w">    </span><span class="n">cbuf_init</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">cbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">cbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="c1">//cbuf 写入</span>
+<span class="linenos">10</span><span class="w">    </span><span class="n">memset</span><span class="p">(</span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="mh">0x5A</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">11</span><span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_write</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">wbuf</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">wbuf</span><span class="p">));</span><span class="w"></span>
+<span class="linenos">12</span><span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;cbuf_write ret = %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">13</span><span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cbuf_get_data_size</span><span class="p">(</span><span class="n">cbuf_hdl</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">14</span><span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;cbuf data size = %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="p">);</span><span class="w"></span>
+<span class="linenos">15</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>通话算法API介绍 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../_static/js/custom.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>通话算法API介绍</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="api">
+<h1>通话算法API介绍<a class="headerlink" href="#api" title="Permalink to this headline"></a></h1>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Version</p></th>
+<th class="head"><p>Date</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>V1.0</p></td>
+<td><p>2025-04-26</p></td>
+<td><p>初始版本</p></td>
+</tr>
+</tbody>
+</table>
+<section id="id1">
+<h2>单麦通话算法API介绍<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<section id="audio-aec-open">
+<h3>audio_aec_open<a class="headerlink" href="#audio-aec-open" title="Permalink to this headline"></a></h3>
+<p>初始化AEC
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">audio_aec_open</span><span class="p">(</span><span class="nx">struct</span> <span class="nx">audio_aec_init_param_t</span> <span class="o">*</span><span class="nx">init_param</span><span class="p">,</span> <span class="nx">s16</span> <span class="nx">enablebit</span><span class="p">,</span> <span class="kr">int</span> <span class="p">(</span><span class="o">*</span><span class="nx">out_hdl</span><span class="p">)(</span><span class="nx">s16</span> <span class="o">*</span><span class="nx">data</span><span class="p">,</span> <span class="nx">u16</span> <span class="nx">len</span><span class="p">));</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>init_param</p></td>
+<td class="text-center"><p>参数值（sr、ref_sr等）</p></td>
+</tr>
+<tr class="row-odd"><td class="text-center"><p>ebablebit</p></td>
+<td class="text-center"><p>使能模块</p></td>
+</tr>
+<tr class="row-even"><td class="text-center"><p>out_hdl</p></td>
+<td class="text-center"><p>自定义回调函数</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">audio_aec_open</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">init_param</span><span class="p">,</span> <span class="p">(</span><span class="nx">ANS_EN</span> <span class="o">|</span> <span class="nx">ENC_EN</span><span class="p">),</span> <span class="nx">cvp_output_hdl</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-aec-reboot">
+<h3>audio_aec_reboot<a class="headerlink" href="#audio-aec-reboot" title="Permalink to this headline"></a></h3>
+<p>AEC模块复位接口
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="ow">void</span> <span class="nx">audio_aec_reboot</span><span class="p">(</span><span class="nx">u8</span> <span class="nx">reduce</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>reduce</p></td>
+<td class="text-center"><p>复位/恢复标记</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">audio_aec_reboot</span><span class="p">(</span><span class="mf">1</span><span class="p">);</span><span class="c1">//如果AEC在运行，重新启动使能模块</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-aec-close">
+<h3>audio_aec_close<a class="headerlink" href="#audio-aec-close" title="Permalink to this headline"></a></h3>
+<p>关闭AEC模块
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="ow">void</span> <span class="nx">audio_aec_close</span><span class="p">(</span><span class="ow">void</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">audio_aec_close</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-aec-status">
+<h3>audio_aec_status<a class="headerlink" href="#audio-aec-status" title="Permalink to this headline"></a></h3>
+<p>获取AEC模块的当前状态
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">u8</span> <span class="nx">audio_aec_status</span><span class="p">(</span><span class="ow">void</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">audio_aec_status</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-aec-inbuf">
+<h3>audio_aec_inbuf<a class="headerlink" href="#audio-aec-inbuf" title="Permalink to this headline"></a></h3>
+<p>AEC源数据输入
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="ow">void</span> <span class="nx">audio_aec_inbuf</span><span class="p">(</span><span class="nx">s16</span> <span class="o">*</span><span class="nx">buf</span><span class="p">,</span> <span class="nx">u16</span> <span class="nx">len</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>data</p></td>
+<td class="text-center"><p>输入源数据地址</p></td>
+</tr>
+<tr class="row-odd"><td class="text-center"><p>len</p></td>
+<td class="text-center"><p>输入源数据长度（默认帧长256points）</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">audio_aec_inbuf</span><span class="p">(</span><span class="nx">s16</span> <span class="o">*</span><span class="nx">buf</span><span class="p">,</span> <span class="nx">u16</span> <span class="nx">len</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-aec-inbuf-ref">
+<h3>audio_aec_inbuf_ref<a class="headerlink" href="#audio-aec-inbuf-ref" title="Permalink to this headline"></a></h3>
+<p>双mic ENC AEC的参考mic数据输入
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="ow">void</span> <span class="nx">audio_aec_inbuf_ref</span><span class="p">(</span><span class="nx">s16</span> <span class="o">*</span><span class="nx">buf</span><span class="p">,</span> <span class="nx">u16</span> <span class="nx">len</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>data</p></td>
+<td class="text-center"><p>输入源数据地址</p></td>
+</tr>
+<tr class="row-odd"><td class="text-center"><p>len</p></td>
+<td class="text-center"><p>输入源数据长度</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">audio_aec_inbuf_ref</span><span class="p">(</span><span class="nx">s16</span> <span class="o">*</span><span class="nx">buf</span><span class="p">,</span> <span class="nx">u16</span> <span class="nx">len</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-aec-refbuf">
+<h3>audio_aec_refbuf<a class="headerlink" href="#audio-aec-refbuf" title="Permalink to this headline"></a></h3>
+<p>AEC参考数据输入（外部提供参考数据使用）
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="ow">void</span> <span class="nx">audio_aec_refbuf</span><span class="p">(</span><span class="nx">s16</span> <span class="o">*</span><span class="nx">data0</span><span class="p">,</span> <span class="nx">s16</span> <span class="o">*</span><span class="nx">data1</span><span class="p">,</span> <span class="nx">u16</span> <span class="nx">len</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>data0</p></td>
+<td class="text-center"><p>输入源数据地址</p></td>
+</tr>
+<tr class="row-odd"><td class="text-center"><p>data1</p></td>
+<td class="text-center"><p>输入源数据地址(拓展接口，目前不使用)</p></td>
+</tr>
+<tr class="row-even"><td class="text-center"><p>len</p></td>
+<td class="text-center"><p>输入源数据长度</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">audio_aec_refbuf</span><span class="p">(</span><span class="nx">s16</span> <span class="o">*</span><span class="nx">data0</span><span class="p">,</span> <span class="nx">s16</span> <span class="o">*</span><span class="nx">data1</span><span class="p">,</span> <span class="nx">u16</span> <span class="nx">len</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-cvp-ioctl">
+<h3>audio_cvp_ioctl<a class="headerlink" href="#audio-cvp-ioctl" title="Permalink to this headline"></a></h3>
+<p>CVP功能配置
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">audio_cvp_ioctl</span><span class="p">(</span><span class="kr">int</span> <span class="nx">cmd</span><span class="p">,</span> <span class="kr">int</span> <span class="nx">value</span><span class="p">,</span> <span class="ow">void</span> <span class="o">*</span><span class="nx">priv</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>cmd</p></td>
+<td class="text-center"><p>操作命令</p></td>
+</tr>
+<tr class="row-odd"><td class="text-center"><p>value</p></td>
+<td class="text-center"><p>操作数</p></td>
+</tr>
+<tr class="row-even"><td class="text-center"><p>priv</p></td>
+<td class="text-center"><p>操作内存地址</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="cm">/*比如动态开关降噪NS模快*/</span>
+<span class="nx">audio_cvp_ioctl</span><span class="p">(</span><span class="nx">CVP_NS_SWITCH</span><span class="p">,</span><span class="mf">1</span><span class="p">,</span><span class="nx">NULL</span><span class="p">);</span>	<span class="c1">//降噪关</span>
+<span class="nx">audio_cvp_ioctl</span><span class="p">(</span><span class="nx">CVP_NS_SWITCH</span><span class="p">,</span><span class="mf">0</span><span class="p">,</span><span class="nx">NULL</span><span class="p">);</span>  <span class="c1">//降噪开</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-cvp-toggle-set">
+<h3>audio_cvp_toggle_set<a class="headerlink" href="#audio-cvp-toggle-set" title="Permalink to this headline"></a></h3>
+<p>CVP模块算法开关使能
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">audio_cvp_toggle_set</span><span class="p">(</span><span class="nx">u8</span> <span class="nx">toggle</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>toggle</p></td>
+<td class="text-center"><p>0 关闭算法 1 打开算法</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">audio_cvp_toggle_set</span><span class="p">(</span><span class="mf">0</span><span class="p">);</span>  <span class="c1">//关闭算法</span>
+<span class="nx">audio_cvp_toggle_set</span><span class="p">(</span><span class="mf">1</span><span class="p">);</span>  <span class="c1">//打开算法</span>
+</pre></div>
+</div>
+</section>
+<section id="get-audio-aec-rebooting">
+<h3>get_audio_aec_rebooting<a class="headerlink" href="#get-audio-aec-rebooting" title="Permalink to this headline"></a></h3>
+<p>获得AEC是否在重启
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">u8</span> <span class="nx">get_audio_aec_rebooting</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">get_audio_aec_rebooting</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+<section id="get-audio-cvp-output-way-writable-len">
+<h3>get_audio_cvp_output_way_writable_len<a class="headerlink" href="#get-audio-cvp-output-way-writable-len" title="Permalink to this headline"></a></h3>
+<p>获得输出cbuf可写长度
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">get_audio_cvp_output_way_writable_len</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">get_audio_cvp_output_way_writable_len</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+<section id="aec-estimate-dump">
+<h3>aec_estimate_dump<a class="headerlink" href="#aec-estimate-dump" title="Permalink to this headline"></a></h3>
+<p>AEC模块回声消除延时打印
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="ow">void</span> <span class="nx">aec_estimate_dump</span><span class="p">(</span><span class="kr">int</span> <span class="nx">DlyEst</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="aec-cfg-update">
+<h3>aec_cfg_update<a class="headerlink" href="#aec-cfg-update" title="Permalink to this headline"></a></h3>
+<p>AEC模块配置动态更新
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">aec_cfg_update</span><span class="p">(</span><span class="nx">AEC_CONFIG</span> <span class="o">*</span><span class="nx">cfg</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>cfg</p></td>
+<td class="text-center"><p>AEC模块参数</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">aec_cfg_update</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">cfg</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="sms-tde-cfg-update">
+<h3>sms_tde_cfg_update<a class="headerlink" href="#sms-tde-cfg-update" title="Permalink to this headline"></a></h3>
+<p>SMS_TDE模式下AEC模块配置动态更新
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">sms_tde_cfg_update</span><span class="p">(</span><span class="nx">AEC_CONFIG</span> <span class="o">*</span><span class="nx">cfg</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>cfg</p></td>
+<td class="text-center"><p>AEC模块参数</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">sms_tde_cfg_update</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">cfg</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id2">
+<h2>双麦通话算法API介绍<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<section id="audio-aec-output-sel">
+<h3>audio_aec_output_sel<a class="headerlink" href="#audio-aec-output-sel" title="Permalink to this headline"></a></h3>
+<p>输出源选择
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="ow">void</span> <span class="nx">audio_aec_output_sel</span><span class="p">(</span><span class="nx">CVP_OUTPUT_ENUM</span> <span class="nx">sel</span><span class="p">,</span> <span class="nx">u8</span> <span class="nx">agc</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>sel</p></td>
+<td class="text-center"><p>DMS_OUTPUT_SEL_DEFAULT 默认输出算法处理结果<br>DMS_OUTPUT_SEL_MASTER 输出主mic(通话mic)的原始数据<br>DMS_OUTPUT_SEL_SLAVE 输出副mic(降噪mic)的原始数据</p></td>
+</tr>
+<tr class="row-odd"><td class="text-center"><p>agc</p></td>
+<td class="text-center"><p>输出数据要不要经过agc自动增益控制模块</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span>audio_aec_output_sel(DMS_OUTPUT_SEL_DEFAULT，0);
+</pre></div>
+</div>
+</section>
+<section id="audio-cvp-dms-wnc-state">
+<h3>audio_cvp_dms_wnc_state<a class="headerlink" href="#audio-cvp-dms-wnc-state" title="Permalink to this headline"></a></h3>
+<p>获取风噪的检测结果，1：有风噪，0：无风噪
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">audio_cvp_dms_wnc_state</span><span class="p">(</span><span class="ow">void</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">audio_cvp_dms_wnc_state</span><span class="p">(</span><span class="ow">void</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-cvp-dms-malfunc-state">
+<h3>audio_cvp_dms_malfunc_state<a class="headerlink" href="#audio-cvp-dms-malfunc-state" title="Permalink to this headline"></a></h3>
+<p>获取单双麦切换状态</p>
+<ul class="simple">
+<li><p>0: 正常双麦 ;</p></li>
+<li><p>1: 副麦坏了，触发故障</p></li>
+<li><p>-1: 主麦坏了，触发故障</p></li>
+</ul>
+<p>原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">audio_cvp_dms_malfunc_state</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">audio_cvp_dms_malfunc_state</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+<section id="jlsp-get-wind-detect-info">
+<h3>jlsp_get_wind_detect_info<a class="headerlink" href="#jlsp-get-wind-detect-info" title="Permalink to this headline"></a></h3>
+<p>新算法获取风噪检测信息
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">jlsp_get_wind_detect_info</span><span class="p">(</span><span class="kr">int</span> <span class="o">*</span><span class="nx">wd_flag</span><span class="p">,</span> <span class="kr">int</span> <span class="o">*</span><span class="nx">wd_val</span><span class="p">,</span> <span class="kr">int</span> <span class="o">*</span><span class="nx">wd_lev</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>wd_flag</p></td>
+<td class="text-center"><p>0 没有风噪，1 有风噪</p></td>
+</tr>
+<tr class="row-odd"><td class="text-center"><p>wd_val</p></td>
+<td class="text-center"><p>风噪强度r: 0~BIT(16)</p></td>
+</tr>
+<tr class="row-even"><td class="text-center"><p>wd_lev</p></td>
+<td class="text-center"><p>风噪等级，0：弱风，1：中风，2：强风</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">wd_flag</span><span class="p">;</span>
+<span class="kr">int</span> <span class="nx">wd_val</span><span class="p">;</span>
+<span class="kr">int</span> <span class="nx">wd_lev</span><span class="p">;</span>
+<span class="nx">jlsp_get_wind_detect_info</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">wd_flag</span><span class="p">,</span> <span class="kr">int</span> <span class="o">&amp;</span><span class="nx">wd_val</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">wd_lev</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-cvp-dms-mic-energy">
+<h3>audio_cvp_dms_mic_energy<a class="headerlink" href="#audio-cvp-dms-mic-energy" title="Permalink to this headline"></a></h3>
+<p>获取mic的能量值，开了MFDT_EN才能用</p>
+<ul class="simple">
+<li><p>return：返回能量值，[0~90.3],返回-1表示错误</p></li>
+</ul>
+<p>原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">float</span> <span class="nx">audio_cvp_dms_mic_energy</span><span class="p">(</span><span class="nx">u8</span> <span class="nx">mic</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>mic</p></td>
+<td class="text-center"><p>0 获取主麦能量； 1 获取副麦能量</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">audio_cvp_dms_mic_energy</span><span class="p">(</span><span class="mf">0</span><span class="p">);</span><span class="c1">//获取主麦能量</span>
+<span class="nx">audio_cvp_dms_mic_energy</span><span class="p">(</span><span class="mf">1</span><span class="p">);</span><span class="c1">//获取副麦能量</span>
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h3>audio_cvp_toggle_set<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h3>
+<p>双麦Hybrid CVP模块算法开关使能
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="ow">void</span> <span class="nx">aec_dms_hybrid_toggle</span><span class="p">(</span><span class="nx">u8</span> <span class="nx">toggle</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>toggle</p></td>
+<td class="text-center"><p>0 关闭算法 1 打开算法</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">aec_dms_hybrid_toggle</span><span class="p">(</span><span class="mf">0</span><span class="p">);</span>  <span class="c1">//关闭算法</span>
+<span class="nx">aec_dms_hybrid_toggle</span><span class="p">(</span><span class="mf">1</span><span class="p">);</span>  <span class="c1">//打开算法</span>
+</pre></div>
+</div>
+</section>
+<section id="aec-dms-hybrid-cfg-update">
+<h3>aec_dms_hybrid_cfg_update<a class="headerlink" href="#aec-dms-hybrid-cfg-update" title="Permalink to this headline"></a></h3>
+<p>双麦Hybrid AEC模块配置动态更新
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">aec_dms_hybrid_cfg_update</span><span class="p">(</span><span class="nx">DMS_HYBRID_CONFIG</span> <span class="o">*</span><span class="nx">cfg</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>cfg</p></td>
+<td class="text-center"><p>AEC模块参数</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">aec_dms_hybrid_cfg_update</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">cfg</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="jlsp-dms-hybrid-get-wind-energy">
+<h3>jlsp_dms_hybrid_get_wind_energy<a class="headerlink" href="#jlsp-dms-hybrid-get-wind-energy" title="Permalink to this headline"></a></h3>
+<p>获取双麦Hybrid风噪能量值，dB
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">float</span> <span class="nx">jlsp_dms_hybrid_get_wind_energy</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">jlsp_dms_hybrid_get_wind_energy</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+<section id="jlsp-dms-hybrid-get-cur-state">
+<h3>jlsp_dms_hybrid_get_cur_state<a class="headerlink" href="#jlsp-dms-hybrid-get-cur-state" title="Permalink to this headline"></a></h3>
+<p>获取双麦Hybrid风噪检测状态
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">jlsp_dms_hybrid_get_cur_state</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">jlsp_dms_hybrid_get_cur_state</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+<section id="aec-dms-flexible-cfg-update">
+<h3>aec_dms_flexible_cfg_update<a class="headerlink" href="#aec-dms-flexible-cfg-update" title="Permalink to this headline"></a></h3>
+<p>在线更新双麦flexible配置
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">aec_dms_flexible_cfg_update</span><span class="p">(</span><span class="nx">DMS_FLEXIBLE_CONFIG</span> <span class="o">*</span><span class="nx">cfg</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">aec_dms_flexible_cfg_update</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">cfg</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="aec-dms-flexible-selete-mic">
+<h3>aec_dms_flexible_selete_mic<a class="headerlink" href="#aec-dms-flexible-selete-mic" title="Permalink to this headline"></a></h3>
+<p>话务耳机切换使用的mic
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">aec_dms_flexible_selete_mic</span><span class="p">(</span><span class="nx">DMS_FLEXIBLE_MIC</span> <span class="nx">mic</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>mic</p></td>
+<td class="text-center"><p>DMS_FLEXIBLE_DUAL_MIC ：正常双麦话务耳机<br>DMS_FLEXIBLE_USE_TALK_MIC ：使用主麦<br>DMS_FLEXIBLE_USE_REF_MIC ：使用副麦</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">aec_dms_flexible_selete_mic</span><span class="p">(</span><span class="nx">DMS_FLEXIBLE_DUAL_MIC</span><span class="p">);</span> <span class="c1">//正常双麦话务耳机</span>
+</pre></div>
+</div>
+</section>
+<section id="aec-dms-awn-cfg-update">
+<h3>aec_dms_awn_cfg_update<a class="headerlink" href="#aec-dms-awn-cfg-update" title="Permalink to this headline"></a></h3>
+<p>在线更新双麦awn配置
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">aec_dms_awn_cfg_update</span><span class="p">(</span><span class="nx">DMS_AWN_CONFIG</span> <span class="o">*</span><span class="nx">cfg</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">aec_dms_awn_cfg_update</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">cfg</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="jlsp-dms-awn-get-wind-energy">
+<h3>jlsp_dms_awn_get_wind_energy<a class="headerlink" href="#jlsp-dms-awn-get-wind-energy" title="Permalink to this headline"></a></h3>
+<p>获取风噪能量值，dB
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">float</span> <span class="nx">jlsp_dms_awn_get_wind_energy</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">jlsp_dms_awn_get_wind_energy</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+<section id="id4">
+<h3>jlsp_dms_awn_get_wind_energy<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h3>
+<p>获取风噪检测状态
+原型：
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">jlsp_dms_awn_get_cur_state</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">jlsp_dms_awn_get_cur_state</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id5">
+<h2>三麦通话算法API介绍<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h2>
+<section id="audio-cvp-tms-wnc-state">
+<h3>audio_cvp_tms_wnc_state<a class="headerlink" href="#audio-cvp-tms-wnc-state" title="Permalink to this headline"></a></h3>
+<p>三麦获取风噪检测结果,1：有风噪，0：无风噪
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">audio_cvp_tms_wnc_state</span><span class="p">(</span><span class="ow">void</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">audio_cvp_tms_wnc_state</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-cvp-get-wind-detect-info">
+<h3>audio_cvp_get_wind_detect_info<a class="headerlink" href="#audio-cvp-get-wind-detect-info" title="Permalink to this headline"></a></h3>
+<p>获取风噪检测信息
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">audio_cvp_get_wind_detect_info</span><span class="p">(</span><span class="kr">int</span> <span class="o">*</span><span class="nx">wd_flag</span><span class="p">,</span> <span class="kr">int</span> <span class="o">*</span><span class="nx">wd_val</span><span class="p">,</span> <span class="kr">int</span> <span class="o">*</span><span class="nx">wd_lev</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>wd_flag</p></td>
+<td class="text-center"><p>0 没有风噪，1 有风噪</p></td>
+</tr>
+<tr class="row-odd"><td class="text-center"><p>wd_val</p></td>
+<td class="text-center"><p>风噪强度r: 0~BIT(16)</p></td>
+</tr>
+<tr class="row-even"><td class="text-center"><p>wd_lev</p></td>
+<td class="text-center"><p>风噪等级，0：弱风，1：中风，2：强风</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">wd_flag</span><span class="p">;</span>
+<span class="kr">int</span> <span class="nx">wd_val</span><span class="p">;</span>
+<span class="kr">int</span> <span class="nx">wd_lev</span><span class="p">;</span>
+<span class="nx">audio_cvp_get_wind_detect_info</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">wd_flag</span><span class="p">,</span> <span class="kr">int</span> <span class="o">&amp;</span><span class="nx">wd_val</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">wd_lev</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-tms-mode-choose">
+<h3>audio_tms_mode_choose<a class="headerlink" href="#audio-tms-mode-choose" title="Permalink to this headline"></a></h3>
+<p>设置跑2mic/3mic降噪, CONST_JLSP_3MIC_MODE != JLSP_3MIC_MODE0时设置才有效
+原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">audio_tms_mode_choose</span><span class="p">(</span><span class="kr">enum</span> <span class="nx">cvp_tms_mode</span> <span class="nx">mode</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>mode</p></td>
+<td class="text-center"><p>TMS_MODE_2MIC  跑双麦降噪，不使用FB MIC数据<br>TMS_MODE_3MIC  跑3MIC降噪</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">audio_tms_mode_choose</span><span class="p">(</span><span class="nx">TMS_MODE_2MIC</span><span class="p">);</span><span class="c1">//跑双麦降噪</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-cvp-tms-malfunc-state">
+<h3>audio_cvp_tms_malfunc_state<a class="headerlink" href="#audio-cvp-tms-malfunc-state" title="Permalink to this headline"></a></h3>
+<p>获取单/三麦切换状态</p>
+<ul class="simple">
+<li><p>0: 正常三麦 ;</p></li>
+<li><p>1: 副麦坏了，触发故障</p></li>
+<li><p>-1: 主麦坏了，触发故障</p></li>
+</ul>
+<p>原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">int</span> <span class="nx">audio_cvp_tms_malfunc_state</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">audio_cvp_tms_malfunc_state</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-cvp-tms-mic-energy">
+<h3>audio_cvp_tms_mic_energy<a class="headerlink" href="#audio-cvp-tms-mic-energy" title="Permalink to this headline"></a></h3>
+<p>获取mic的能量值，开了MFDT_EN才能用
+return：返回能量值，[0~90.3],返回-1表示错误</p>
+<p>原型：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kr">float</span> <span class="nx">audio_cvp_tms_mic_energy</span><span class="p">(</span><span class="nx">u8</span> <span class="nx">mic</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>参数：</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>参数名称</p></th>
+<th class="text-center head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>mic</p></td>
+<td class="text-center"><p>0 获取主麦能量<br>1 获取副麦能量</p></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">audio_cvp_tms_mic_energy</span><span class="p">(</span><span class="mf">0</span><span class="p">);</span><span class="c1">// 获取主麦能量</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

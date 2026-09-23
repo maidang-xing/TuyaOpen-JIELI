@@ -1,0 +1,789 @@
+# FindMy
+
+> 本文档基于`release/AC701N_watch_release_V3.0.0` ，使用`AC701N Watch Develp v1.1`开发板环境进行验证 ,其余SDK的findmy功能使用可以参考此文档
+
+## findmy原理简介和概述
+
+![image1](assets/findmy_principle.png)
+
+1. Find My 是苹果公司提供的一种寻找丢失设备的服务和协议。它可以帮助用户定位并追踪丢失的苹果设备，如 AirTag 和 AirPods 等。findmy协议依托庞大的findmy network网络，即使本身没有 GPS 模块，也能利用它周围的苹果设备（iPhone，iPad，Mac）来帮助其定位。
+2. 如图1，在findmy协议中主要可以分为以下角色：
+   - `拥有者设备（Owner device）`：拥有者设备是用户的苹果设备，如iPhone或iPad，通过使用Find My应用程序与外设进行连接和配对。拥有者设备与用户的Apple ID关联，并成为Find My网络的拥有者设备角色。
+   - `Find My服务器（findmy apple server）`：Find My功能涉及到苹果的服务器，用于处理设备的定位和数据传输。这些服务器经过IOS设备通过网络协议接收来自支持Find My功能的设备发送的定位数据，并将其提供给用户的Find My应用程序进行显示和处理。
+   - `外设（Accessory）`：外设是实现了Find My网络协议的设备，如AirTag或其他支持Find My功能的设备（使用烧录JL FindMy SDK的芯片的产品）。外设可以通过与拥有者设备进行BLE协议连接和配对数据交互，加入Find My网络。
+
+## 快速上手
+
+本章节主要介绍拿到sdk后如何快速运行findmy应用功能（基于release/AC701N_watch_release_V3.0.0）
+
+### 开发环境搭建
+
+- 首先请确保正确的搭建了 Windows 下的第三方集成开发环境 CodeBlocks和杰理的编译工具链 jl_toolchain。
+
+https://doc.zh-jieli.com/AC63/zh-cn/master/getting_started/environmental_install/index.html
+
+- 打开findmy功能
+
+`board_701n_demo_cfg.h`
+
+```c
+#ifdef CONFIG_APP_BT_ENABLE
+#define    TRANS_DATA_EN             0
+#define    SMART_BOX_EN 			 1
+#define    OTA_RX_EN 			     0
+#define    FINDMY_EN                 1
+#else
+#define    TRANS_DATA_EN             0
+#define    SMART_BOX_EN 			 0
+#define    OTA_RX_EN 			     0
+#define    FINDMY_EN                 0
+#endif
+```
+
+###  添加苹果授权信息
+
+> 
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>由于findmy配件还需要依赖苹果服务器去做功能的运转，因此需要向苹果申请对应的授权信息才能成功绑定入网,注意第一次烧写一定要修改以下信息，这个只是JL的示例数据无法正常使用，否则无法配对入网。</p>
+</div>
+
+授权信息的修改文件位于：`ble_fmy_cfg.h`
+
+```C
+// fmy authentication information
+static const uint8_t fmy_serial_number[16] = "xxx";
+static const uint8_t fmy_product_data[8] = {xxx};//JL
+static const char fmy_Server_Encryption_Key[] = "xxx";
+static const char fmy_Signature_Verification_Key[] = "xxx";
+
+#if UUID_TOKEN_IS_BASE64_MODE
+static const char fmy_token_uuid_char[] = "xxx";
+static const char fmy_token_auth_char[] = "xxx";
+
+#else
+
+static const uint8_t fmy_token_uuid_hex[16] = {
+   xxx
+};
+
+static const uint8_t fmy_token_auth_hex[] = {
+   xxx
+};
+#endif
+
+```
+
+- `fmy_serial_number`：从apple申请的序列序列号
+- `fmy_product_data`：从apple申请的产品信息
+- `fmy_Server_Encryption_Key`：从apple申请的Encryption_Key
+- `fmy_Signature_Verification_Key`：从apple申请的Verification_Key
+- `fmy_token_uuid_char`：从mfi申请的每个产品授权的uuid
+- `fmy_token_auth_char`：从mfi申请的每个产品授权的token
+- `fmy_token_uuid_hex`:从mfi申请的每个产品授权的uuid的十六进制格式
+- `fmy_token_auth_hex`:从mfi申请的每个产品授权的token的十六进制格式
+
+>  正确烧写苹果授权数据后，此时之后的固件烧写不会影响苹果的授权数据，并且每次新的绑定后都会进行新的密钥轮转（除非你擦除了所有的flash数据，非必要不要擦除所有flash数据）。
+
+### 添加杰理授权使用
+
+目前JL FindMy SDK对fmna.a库进行授权的方式进行生产样机个数进行收费，有关授权算法的使用介绍如下:
+
+https://doc.zh-jieli.com/Tools/zh-cn/mass_prod_tools/multi_auth/index.html
+
+并且参考以下步骤完成对授权数据的烧录：
+
+https://doc.zh-jieli.com/Tools/zh-cn/mass_prod_tools/multi_auth/prod-user.html#authroization-id
+
+操作步骤提示如下：
+
+- 获取授权Lic： 请在下单采购701N具体芯片型号时，备注“findmy多算法授权”，并联系珠海杰理客服。
+- 修改授权文件名称，并放在cpu的下载目录(和download.bat一个路径)才能编译生成带算法授权功能的fw文件。其中tkn文件的名字应与`isd_config.ini`的配置信息一致 `file_authrunFindmy.tkn`，生成完fw文件后使用烧写器进行算法授权信息的烧录
+- 运行的芯片第一次需要经过1拖2或者1拖8烧写器（lastest version）烧写授权码；如果你未完成这一步直接烧写固件，如果fw程序运行出现异常复位或者添加调试信息后出现`ASSERT-FAILD: 0 fmna forbidden cfg!!!`，说明芯片还没被授权，需要通过烧写器写入授权数据。
+
+```ini
+// ini文件的最后一段配置
+[FW_ADDITIONAL]
+FILE_LIST=(file=file_authrunFindmy.tkn:type=0xec)
+```
+
+> 
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>正确烧写杰理授权数据后，此时之后的固件烧写不会影响杰理的授权数据（除非你擦除了所有的flash数据，非必要不要擦除所有flash数据）。</p>
+</div>
+
+###  烧录固件
+
+> 
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>如果杰理授权数据已经烧录到芯片里面，并且你也正确的修改了sdk的苹果授权信息,那么现在把findmy固件写入，打开codeblocks工程，,点击编译烧录，编译烧录教程参考：</p>
+</div>
+
+https://doc.zh-jieli.com/Tools/zh-cn/dev_tools/build_download/build_with_codeblocks.html
+
+### 测试使用
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>初始化findmy功能后，默认不打开广播，在手表中进入设置界面，点击findmy打开findmy功能，点击开始配对，此时用户可打开IOS终端查找应用->物品->添加其他应用->搜索到设备->命名绑定连接->播放声音</p>
+</div>
+
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>如果成功连接绑定连接，在app上可以成功点击播放声音，那么恭喜你！已经完成了JL Findmy SDK的上手使用，可以依靠后续章节去开发属于你的findmy应用</p>
+</div>
+
+## 代码架构介绍
+
+### FindMy SDK框图介绍
+
+![image2](assets/findmy_sdk_block_diagram.png)
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>上图为JL FINDMY SDK的框图架构，依托杰理的平台和fmna协议库，用户工程师不需要关注fmna中findmy状态机的转换运作原理，也不需要关注findmy协议是如何和IOS进行加密交握手完成配对，只需要简单的在我们上层留出的接口和杰理SDK原有的功能去适配自己产品上层的交互逻辑和外设即可。</p>
+</div>
+
+### 应用层代码文件介绍
+
+> 手表的sdk都位于bt_fmy这个文件夹,用户的应用开发基本都围绕着这几个文件进行
+
+
+![](assets/findmy1.png)
+
+fmy功能接口应用层文件架构介绍见上图
+
+## findmy状态介绍
+
+### 状态介绍
+
+findmy通过状态机的控制会在不同行为场景中转化为不同的状态,常见的状态如下：
+
+1. `等待配对状态（pair mode）`：产品还未与苹果设备（例如iPhone或者iPad）配对时，或者产品从Find My应用中移除配对时，此状态会发送等待配对的蓝牙广播。为了尽可能快的被苹果设备发现，此状态会高速广播，功耗比较大。
+2. `配对连接状态(pairing)`：产品与苹果设备连接完成配对过程，此状态产品与苹果设备交换大量的数据，功耗也比较大，因为此状态出现非常低频， 所以此状态对产品续航影响小。
+3. `高速连接并寻找状态（产品响铃）(high connected)`：完成配对的产品，可以在Find My应用中点击 “播放声音”按钮，可以使产品响铃，来找到产品，因为此状态出现低频， 所以此状态对产品续航影响小。
+4. `低速连接状态(low connected)`：如果已配对产品与苹果设备重连时，会处于高速连接过程（高速可以理解为产品与苹果设备的数据交互高速很高），如果没有“播放声音”操作，30秒后就会进入低速连接状态。此状态下功耗比较低。如果产品与苹果设备不断开，此状态会一直保持着。
+5. `慢速广播状态（待机状态）(separated)`：如果已配对产品与苹果设备远离，产品与苹果设备蓝牙断开了，此时产品就会发送慢速蓝牙广播，等待下一次重连被寻找，如果用户不尝试“播放声音”功能，产品会一直处于此状态。
+
+### findmy状态回调函数
+
+- JL FindMy SDK中在外部设置定义了回调函数供用户捕捉对应的状态以便用户自定义外设行为（例如配对完成后或者解绑有特殊的铃声）。
+
+`ble_fmy_fmna.c`
+
+```C
+/*
+ * @brief findmy state callback，状态类别参考FMNA_SM_State_t枚举体
+ */
+static uint16_t fmy_state_callback(FMNA_SM_State_t fmy_state, const char *state_string)
+{
+    log_info("fmy state change->fmy_state:%s", state_string);
+    __fydata->fmna_state = fmy_state;
+    switch (fmy_state) {
+    case FMNA_SM_CONNECTING:
+        UI_MSG_POST("SET_CONNECTING_FLAG:a=%4", 1);
+        break;
+    case FMNA_SM_FMNA_PAIR_COMPLETE:
+        log_info("findmy pair success!!");
+        UI_MSG_POST("PAIR_SUCCESS");
+        break;
+    case FMNA_SM_UNPAIR:
+        // 锁住pairing mode 广播,待重新开启
+        UI_MSG_POST("UNPAIR_SUCCESS");
+        __fydata->pairing_mode_enable = 0;
+        log_info("findmy unpair success!!");
+        break;
+    case FMNA_SM_FMNA_PAIR:
+        log_info("SM_FMNA_PAIR!!");
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
+
+```
+
+`fmna_api.h`
+
+```c
+typedef enum {
+    FMNA_SM_BOOT = 0,
+    FMNA_SM_PAIR,
+    FMNA_SM_SEPARATED,
+    FMNA_SM_NEARBY,
+    FMNA_SM_CONNECTING,
+    FMNA_SM_FMNA_PAIR,
+    FMNA_SM_FMNA_PAIR_COMPLETE,
+    FMNA_SM_CONNECTED,
+    FMNA_SM_DISCONNECTING,
+    FMNA_SM_NOCHANGE,
+    FMNA_SM_UNPAIR
+} FMNA_SM_State_t;
+```
+
+## apple license和产品信息配置
+
+### 产品信息配置
+
+`ble_fmy.c`
+
+```c
+static const char FMY_ManufacturerName[64] = "Zhuhai Jieli Technology Co.,Ltd.";
+static const char FMY_ModelName[64] = "JLtag";
+static const uint8_t FMY_AccessoryCategory[8] = {FMY_CATEGORY_Finder, 0, 0, 0, 0, 0, 0, 0};
+```
+
+- `FMY_ManufacturerName`：公司名称
+- `FMY_ModelName`：配件名字
+- `FMY_AccessoryCategory`：产品类型
+
+`ble_fmy_cfg.h`
+
+- `TOKEN_ID_PRODUCTION_MODE`:选择debug模式还是production
+- `FMY_FW_VERSION_MAJOR_NUMBER`:固件主要版本
+- `FMY_FW_VERSION_MINOR_NUMBER`:固件次要版本
+- `FMY_FW_VERSION_REVISION_NUMBER`:固件修订版本号
+
+固件版本需遵循以下规则
+
+```tex
+The firmware revision string shall use the x[.y[.z]] format where :
+• <x> is the major version number, required.
+• <y> is the minor version number, required if it is non zero or if <z> is present.
+• <z> is the revision version number, required if non zero.
+```
+
+
+
+### apple license信息配置和说明
+
+`ble_fmy_cfg.h`
+
+```c
+
+#define  UUID_TOKEN_IS_BASE64_MODE                    1 //0--hex,   1--base64
+
+static const uint8_t fmy_serial_number[16] = "";
+static const uint8_t fmy_product_data[8] = {};
+static const char fmy_Server_Encryption_Key[] = "";
+static const char fmy_Signature_Verification_Key[] = "";
+
+
+static const char fmy_token_uuid_char[] = "";
+static const char fmy_token_auth_char[] = "";
+```
+
+- `TOKEN_ID_PRODUCTION_MODE`:产品模式选择（debug和production）
+- `UUID_TOKEN_IS_BASE64_MODE`:UUID和TOKEN数据格式（hex：以十六进制填入，base64：以base64数据格式填入）
+- `fmy_serial_number`：从apple申请的序列序列号
+- `fmy_product_data`：从apple申请的产品信息
+- `fmy_Server_Encryption_Key`：从apple申请的Encryption_Key
+- `fmy_Signature_Verification_Key`：从apple申请的Verification_Key
+- `fmy_token_uuid_char`：从mfi申请的每个产品授权的uuid
+- `fmy_token_auth_char`：从mfi申请的每个产品授权的token
+
+有关apple findmy开发资格申请可参考以下链接：
+
+https://www.apple.com/newsroom/2021/04/apples-find-my-network-now-offers-new-third-party-finding-experiences/
+
+授权信息写入函数如下：
+
+`ble_fmy_fmna.c`
+
+```c
+static int fmy_set_user_infomation(void)
+{
+    ret_code_t ret = FMY_SUCCESS;
+    fmna_input_cfg_t input_cfg;
+
+    fmna_user_cfg_set_patch(fmy_user_config_path);
+    fmna_set_product_data(fmy_product_data);
+    fmna_set_crypto_enc_key_config(fmy_Server_Encryption_Key, fmy_Signature_Verification_Key);
+
+    uint8_t *data_ram = zalloc(16 + 1024);
+    int len;
+    if (data_ram) {
+        fmna_user_cfg_set_patch(fmy_user_config_path);
+        ret = fmna_user_cfg_open();
+        if (ret == FMY_SUCCESS) {
+            if (fmna_user_cfg_is_exist()) {
+                log_info("exist user_cfg info");
+                goto w_end;
+            }
+            //配置区有效，并且为空才写入
+            input_cfg.serial_number = (uint8_t *)fmy_serial_number;
+            input_cfg.uuid = data_ram;
+            input_cfg.token = &data_ram[16];
+
+#if UUID_TOKEN_IS_BASE64_MODE
+            len = uuid_str_to_hex(fmy_token_uuid_char, input_cfg.uuid);
+            if (len != 16) {
+                log_info("err uuid char");
+                ret = FMY_ERROR_INVALID_DATA;
+                goto w_end;
+            }
+            len = fmna_Base64Decode(fmy_token_auth_char, input_cfg.token, 1024);
+            if (len == 0) {
+                log_info("err token char");
+                ret = FMY_ERROR_INVALID_DATA;
+                goto w_end;
+            }
+#else
+            memcpy(input_cfg.uuid, fmy_token_uuid_hex, 16);
+            int cpy_len = sizeof(fmy_token_auth_hex);
+            if (cpy_len > 1024) {
+                cpy_len =  1024;
+            }
+            memcpy(input_cfg.token, fmy_token_auth_hex, sizeof(fmy_token_auth_hex));
+
+#endif
+            ret = fmna_user_cfg_write(&input_cfg);
+        }
+w_end:
+        fmna_user_cfg_close();
+        if (ret == FMY_SUCCESS) {
+            log_info("set user_cfg succ");
+        } else {
+            log_info("set user_cfg fail,%d", ret);
+        }
+
+        free(data_ram);
+    }
+    return 0;
+}
+```
+
+```c
+if (fmna_user_cfg_is_exist()) {
+                log_info("exist user_cfg info");
+                goto w_end;
+            }
+```
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>上参考上述流程，如果当前苹果授权数据不正确，可以注释掉这部分逻辑重新烧录新的apple授权数据，但上电更新后，需要重新打开这段代码再烧一次回来避免每次上电后又覆盖之前的apple授权数据信息。 其中fmy_token_uuid_char和fmy_token_auth_char都将写入在flash自定义区域，并且在每次配对绑定时会进行轮转，不可随意擦除此区域数据，否则之后将无法成功绑定，起始地址和大小如下（以512k AC63x平台为例）,可在isd_config.ini见。</p>
+</div>
+
+`isd_config.ini`
+
+```ini
+[RESERVED_EXPAND_CONFIG]
+FINDMY_ADR=0x1FC000;
+FINDMY_LEN=0x2000;
+FINDMY_OPT=1;
+```
+
+###  fmy功能特性设置
+
+`fmna_api.h`
+
+```c
+//Accessory capability
+#define FMY_CAPABILITY_SUPPORTS_PLAY_SOUND            BIT(0) //Supports play sound
+#define FMY_CAPABILITY_SUPPORTS_MOTION_DETECTOR_UT    BIT(1) //Supports motion detector UT
+#define FMY_CAPABILITY_SUPPORTS_SN_LOOKUP_BY_NFC      BIT(2) //Supports serial number lookup by NFC
+#define FMY_CAPABILITY_SUPPORTS_SN_LOOKUP_BY_BLE      BIT(3) //Supports serial number lookup by BLE
+#define FMY_CAPABILITY_SUPPORTS_FW_UPDATE_SERVICE     BIT(4) //Supports ﬁrmware update service
+```
+
+`ble_fmy.c`
+
+```c
+//set capability
+static const uint8_t FMY_AccessoryCapabilities[4] = {
+    (FMY_CAPABILITY_SUPPORTS_PLAY_SOUND
+
+#if FMY_OTA_SUPPORT_CONFIG
+    | FMY_CAPABILITY_SUPPORTS_FW_UPDATE_SERVICE
+#endif
+
+#if TCFG_GSENSOR_ENABLE
+    | FMY_CAPABILITY_SUPPORTS_MOTION_DETECTOR_UT
+#endif
+
+    | FMY_CAPABILITY_SUPPORTS_SN_LOOKUP_BY_BLE),
+    0x00, 0x00, 0x00
+};
+```
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>AccessoryCapabilities描述了findmy配件支持的各种功能，默认打开play sound和serial_number_look_up功能，motion_detection和uarp用户可根据产品特性选择打开对应的宏控制，如何控制可见下表:</p>
+</div>
+
+| Characteristic name  | Data type | Size(octets) | Description                                                  |
+| -------------------- | --------- | ------------ | ------------------------------------------------------------ |
+| Accessory capability | Uint32    | 4            | Bit 0 : Supports play sound Bit 1 :Supports motion detector UT Bit 2 : Supports serial number lookup by NFC Bit 3 : Supports serial number lookup by BLE Bit 4: Supports firmware update service |
+
+- 例如我要打开playSound, Supports serial number lookup by BLE, motion detector，firmware update service 功能，则可以将这个数组的第一个字节的前五个bit设置对应的二进制值即可：10101，由于findmy产品定位是防丢器，其中motion detection和play sound是否需要取决于产品的体积，当符合以下所有标准则需要这两项功能：
+
+> - The accessory is ≤ 30 cm in at least one dimension.
+> - The accessory is ≤ 18 cm X 13 cm in two of its dimensions.
+> - The accessory is ≤ 250 cm3 in three dimensional space.
+
+## 绑定和解绑功能
+
+### 绑定功能
+
+> findmy绑定功能依赖ble的gatt交互握手实现，对于小机来说只需要打开开启findmy和配对广播即可，sdk默认在UI界面已经交互调用以下接口实现，开启配对广播后，打开IOS终端查找应用->物品->添加其他应用->搜索到设备->命名绑定连接->播放声音
+
+- findmy总开关
+
+```c
+int fmy_enable(bool en)
+```
+
+- 开启配对广播
+
+```c
+void fmy_open_close_pairing_mode(bool en)
+```
+
+> 其中findmy绑定的握手数据会话流程在sdk已经实现，用户无需去关注
+
+### 解绑功能
+
+- **方法1（推荐）**：手机打开蓝牙靠近配件，打开查找app-点击物品名字-下拉"移除物品"（这个操作需要手机在旁边开启蓝牙连接才能操作）
+- **方法2**（这种方法适合配对手机在远程时无法解绑时操作，或者误在手机删除绑定而手表设备未收到通知的情况，两者缺一不可）：
+  - 进行物品单方面解绑复位操作，调用`fmy_factory_reset`，从机强制解除配对（可以在connect separated nearby三种状态下解绑））
+  - 并在手机上移除物品（会显示连接不上直接强制删掉就可以）这个操作不需要手机在旁边蓝牙连接操作
+
+##  play sound功能
+
+### play sound功能介绍
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>play sound功能是fmna官方定义的近距离查找功能，`SDK中默认打开`，当IOS终端靠近findmy设备并且点击findmy app 的播放声音的按键则可以通过ble连接gatt控制触发这种行为，SDK中默认的方案使用GPIO驱动蜂鸣器(有源或无源)来实现响声。</p>
+</div>
+
+### play sound配置
+
+`ble_fmy_fmna.c`
+
+```c
+#define  SOUND_GPIO_PORT                 IO_PORTA_00
+```
+
+### play sound 驱动函数
+
+`ble_fmy_fmna.c`
+
+```c
+static void fmy_sound_timer_control(void *priv)
+{
+    DEV_SOUND_STATE(__fydata->sound_onoff);
+    __fydata->sound_onoff = !__fydata->sound_onoff;
+}
+
+static int fmy_sound_control(FMNA_SOUND_OP_t op)
+{
+    log_info("func:%s,op= %d", __FUNCTION__, op);
+    switch (op) {
+    case FMNA_SOUND_INIT:
+        DEV_SOUND_INIT();
+        DEV_SOUND_STATE(PORT_VALUE_LOW);
+        break;
+
+    case FMNA_SOUND_START:
+#if TCFG_PWMLED_ENABLE
+        fmy_state_idle_set_active(true);
+#endif
+        __fydata->sound_onoff = 1;
+        if (!__fydata->sound_ctrl_timer_id) {
+            __fydata->sound_ctrl_timer_id = sys_timer_add(NULL, fmy_sound_timer_control, SOUND_TICKS_MS);
+        }
+        break;
+
+    case FMNA_SOUND_STOP:
+#if TCFG_PWMLED_ENABLE
+        fmy_state_idle_set_active(false);
+#endif
+
+        if (__fydata->sound_ctrl_timer_id) {
+            sys_timer_del(__fydata->sound_ctrl_timer_id);
+            __fydata->sound_ctrl_timer_id = 0;
+        }
+        DEV_SOUND_STATE(PORT_VALUE_LOW);
+        break;
+
+    default:
+        break;
+    }
+    return 0;
+}
+```
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>SDK中只是简单的用定时器做IO翻转达到驱动蜂鸣器发声的功能，用户可以自行修改这部分声音外设逻辑来达到自己的发声效果</p>
+</div>
+
+
+## Motion Detection功能
+
+### Motion Detection功能介绍
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>由于findmy产品定位为防丢器协议，因此为了如何防止findmy设备被用于恶意跟踪，findmy协议设计了Motion Detection功能，当别人的设备混入您的随身物品时，并跟踪超过一段时间（设备远离拥有者设备时将会处于待机分离状态），此时设备将会开启加速度传感器gsensor检测设备是否移动，当移动时，将会发出响声提醒此时你正在被findmy设备跟踪。JL FINDMY SDK中默认集成了三种加速度传感器来采集加速度数据来完成这个功能。具体代码功能参考`ble_fmy_modet.c`</p>
+</div>
+
+### gsensor外设配置
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>默认使用watch sdk的p11 sensor hub数据做数据处理检测，p11 的 sensor hub iic配置参考p11具体工程</p>
+</div> 
+
+`board_701n_demo_cfg.h`
+
+```c
+//*********************************************************************************//
+//                                  g-sensor配置                                   //
+//*********************************************************************************//
+#define TCFG_GSENSOR_ENABLE                       1    //gSensor使能
+#define TCFG_DA230_EN                             0
+#define TCFG_SC7A20_EN                            0 //"sc7a20"
+#define TCFG_MSA310_EN                            0 //"msa310"
+#define TCFG_P11GSENSOR_EN                        1 //"p11gsensor", 使用p11 sensor hub
+#define TCFG_STK8321_EN                           0
+#define TCFG_IRSENSOR_ENABLE                      0
+#define TCFG_JSA1221_ENABLE                       0
+#define TCFG_MC3433_EN							  0
+#define TCFG_MPU6050_EN							  0
+#define TCFG_GSENOR_USER_IIC_TYPE                 0     //0:软件IIC  1:硬件IIC
+#define TCFG_GSENOR_USER_IIC_INDEX                0     //IIC 序号
+#define TCFG_GSENSOR_NAME                         "p11gsensor"     //传感器名称 需要和宏开关匹配
+#define TCFG_GSENSOR_DETECT_IO                    (-1) //传感器中断io
+#define TCFG_GSENSOR_ALGO_SILAN                   (0) //士兰微的G-Sensor算法
+```
+
+### gsensor调试功能
+
+> 可以简单使用以下代码进行测试sensor采集检测是否正常
+
+```c
+int fmy_motion_detection_test(void)
+{
+    fmy_motion_detection_init();
+    sys_timer_add(NULL,fmy_motion_detection, 1000);
+}
+```
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>如果传感器初始化和采集数据正常，可以尝试移动旋转传感器观察打印信息看是否检测到移动，如未观测到，则需要检测传感器是否工作正常。</p>
+</div>
+
+## UARP功能
+
+> JL watch sdk并未接入Findmy 的 UARP功能,具体UARP使用介绍参考AC632N的findmy SDK
+>
+> https://doc.zh-jieli.com/AC63/zh-cn/master/module_demo/spple/FindMy.html
+
+## 按键调试
+
+- 用户可以添加button行为来调试产品的一些按键特性
+
+按键行为控制：`ble_fmy_fmna.c`
+
+```c
+void fmy_key_process(u8 key_event)
+{
+#if 0//过认证的测试按键,用到的时候在打开需要再iokey.c去配置
+    switch (key_event) {
+    case BATTERY_LOW:
+        fmy_test_switch_battery_level(BAT_STATE_CRITICALLY_LOW);
+        break;
+    case SERIALNUMBER_LOOKUP_OPEN:
+        fmna_paired_serialnumber_lookup_enable(1);
+        break;
+    case BATTERY_FULL:
+        fmy_test_switch_battery_level(BAT_STATE_FULL);
+        break;
+    case SERIALNUMBER_LOOKUP_CLOSE:
+        fmna_paired_serialnumber_lookup_enable(0);
+        break;
+    case PAIRING_OPEN:
+        fmy_enable(1);
+        fmy_open_close_pairing_mode(1);
+        break;
+    }
+#endif
+}
+```
+
+##  findmy电池相关功能
+
+**在配对时，IOS主机将会读取配件的产品信息，其中包括此时产品的电量，用户根据产品电池特性来设置电池类型。**
+
+```c
+fmna_api.h
+/*
+0 = Powered
+1 = Non-rechargeable battery
+2 = Rechargeable battery
+*/
+typedef enum {
+    FMNA_BAT_POWERED = 0,
+    FMNA_BAT_NON_RECHARGEABLE,
+    FMNA_BAT_RECHARGEABLE,
+} FMNA_battery_level_t;
+```
+
+**使用杰理平台的电量检测来获取产品的电量数据**
+
+`fmna_api.h`
+
+```
+typedef enum {
+    BAT_STATE_FULL = 0,
+    BAT_STATE_MEDIUM,
+    BAT_STATE_LOW,
+    BAT_STATE_CRITICALLY_LOW,//5.1.4,stop advertising
+} fmna_bat_state_level_t;
+```
+
+`ble_fmy.c`
+
+```c
+static void fmy_update_battery_level(void)
+{
+
+#if TCFG_SYS_LVD_EN
+    uint8_t  bat_level = get_cur_battery_level();//0~9
+    log_info("read vbat:%d\n", bat_level);
+
+    if (bat_level > 8) {
+        __fydata->battery_level = BAT_STATE_FULL;
+    } else if (bat_level < 2) {
+        __fydata->battery_level = BAT_STATE_CRITICALLY_LOW;
+    } else if (bat_level < 4) {
+        __fydata->battery_level = BAT_STATE_LOW;
+    } else {
+        __fydata->battery_level = BAT_STATE_MEDIUM;
+    }
+#else
+    __fydata->battery_level = BAT_STATE_FULL;
+#endif
+
+    log_info("%s,bat_lev= %d", __FUNCTION__, __fydata->battery_level);
+}
+```
+
+## findmy第三方认证
+
+### 申请流程
+
+> 杰理作为芯片原厂为findmy的 MFI的生产型会员，目前sdk已经通过的findmy的所有的软件测试，对于后续用户的产品认证来说，只需要做以下步骤
+>
+> - 申请成为mfi 的findmy会员，拿到属于自家产品的产品license，按前面章节文档将apple license 和产品信息配置烧录进芯片中
+> - 申请mfi会员后，可以拿到findmy的内部文档`Find My Network Self-Certification Test Cases R1.6`,根据此文档对自家产品进行自测试（可见`Find My Certification Assistant User Manual R1.2`文档，apple针对findmy测试设计了一个专门的app），测试完所有项pass后寄送样机到apple认可的findmy实验室
+> - findmy实验室完成确认测试后会有邮件通知
+
+![](assets/findmy5.png)
+
+### MFi工具使用
+
+> 客户申请到MFi资格后，需要自己生成证书和密钥并上传到Mfi系统上，参考苹果官方文档`Software Token Authentication Server Specification R2.1.pdf`，上传完后可以使用杰理提供的MFiTools.exe工具(需向杰理申请)获取token
+
+步骤如下：
+
+1. **双击MFiTools.exe 工具启动**
+
+![](assets/findmy2.png)
+
+2. **配置好MFi.pem MFi.key 证书**
+
+![](assets/findmy3.png)
+
+3. **配置好PPID、数量，点击获取Token**
+
+![](assets/findmy4.png)
+
+
+## 常用api介绍
+
+**已封装以下控制行为函数,可根据产品特性功能使用**
+
+- 模拟设置配件电量
+
+```c
+void fmy_test_switch_battery_level(u8 bat_val)；
+```
+
+**bat_val** – 电池状态值可参考以下结构体
+
+```c
+typedef enum {
+    BAT_STATE_FULL = 0,
+    BAT_STATE_MEDIUM,
+    BAT_STATE_LOW,
+    BAT_STATE_CRITICALLY_LOW,//5.1.4,stop advertising
+} fmna_bat_state_level_t;
+```
+
+- 获得电池电量状态
+
+```c
+static int fmy_get_battery_level(void)；
+```
+
+- 打开/关闭serial number_lookup read
+
+```c
+void fmna_paired_serialnumber_lookup_enable(uint8_t enable)
+```
+
+**enable**:true/false打开或关闭
+
+- 手动强制解除配对（可以在connect separated nearby三种状态下解绑）
+
+```c
+void fmy_factory_reset(void)
+```
+
+- 检测是否已经配对
+
+```c
+bool fmy_get_pair_state(void)
+```
+
+- findmy总开关
+
+```c
+int fmy_enable(bool en)
+```
+
+- 开启配对广播
+
+```c
+void fmy_open_close_pairing_mode(bool en)
+```
+
+
+
+##  常见问题汇总
+
+- codeblocks提示tkn文件不存在
+
+![image4](assets/findmy_tkn_not_exist.png)
+
+<div class="admonition danger">
+<p class="admonition-title">Note</p>
+<p>没有把tkn文件放到指定路径，需要向杰理申请tkn授权文件</p>
+</div>
+
+- 绑定时显示无法继续
+
+![image5](assets/findmy_not_right_applelic.jpg)
+
+<div class="admonition danger">
+<p class="admonition-title">Note</p>
+<p>没有使用正确的apple授权信息，或者存储信息错误，需要重新擦写授权信息</p>
+</div>
+

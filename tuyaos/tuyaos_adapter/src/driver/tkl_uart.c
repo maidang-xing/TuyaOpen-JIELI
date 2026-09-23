@@ -4,11 +4,26 @@
 #include "device.h"
 #include "uart.h"
 
+#if defined(CONFIG_CPU_WL83)
+#define JIELI_UART_SET_RECV_BLOCK IOCTL_UART_SET_RECV_BLOCK
+#define JIELI_UART_SET_BAUDRATE  IOCTL_UART_SET_BAUDRATE
+#define JIELI_UART_START         IOCTL_UART_START
+#else
+#define JIELI_UART_SET_RECV_BLOCK UART_SET_RECV_BLOCK
+#define JIELI_UART_SET_BAUDRATE  UART_SET_BAUDRATE
+#define JIELI_UART_START         UART_START
+#endif
+
 static void *s_uart_handles[TUYA_UART_NUM_MAX];
 
 static const char *jieli_uart_device_name(TUYA_UART_NUM_E port_id)
 {
+#if defined(CONFIG_CPU_WL82)
+    /* UART1 is reserved for the AC79 board's PB3 debug console. */
+    return port_id == 0u ? "uart2" : NULL;
+#else
     return port_id == 0u ? "uart1" : "uart2";
+#endif
 }
 
 OPERATE_RET tkl_uart_init(TUYA_UART_NUM_E port_id, TUYA_UART_BASE_CFG_T *cfg)
@@ -16,15 +31,19 @@ OPERATE_RET tkl_uart_init(TUYA_UART_NUM_E port_id, TUYA_UART_BASE_CFG_T *cfg)
     if (port_id >= TUYA_UART_NUM_MAX || cfg == NULL) {
         return OPRT_INVALID_PARM;
     }
+    const char *device_name = jieli_uart_device_name(port_id);
+    if (device_name == NULL) {
+        return OPRT_NOT_SUPPORTED;
+    }
     if (s_uart_handles[port_id] != NULL) {
         return OPRT_OK;
     }
 
-    s_uart_handles[port_id] = dev_open(jieli_uart_device_name(port_id), NULL);
+    s_uart_handles[port_id] = dev_open(device_name, NULL);
     if (s_uart_handles[port_id] != NULL &&
-        (dev_ioctl(s_uart_handles[port_id], UART_SET_RECV_BLOCK, 1u) != 0 ||
-         dev_ioctl(s_uart_handles[port_id], UART_SET_BAUDRATE, cfg->baudrate) != 0 ||
-         dev_ioctl(s_uart_handles[port_id], UART_START, 0u) != 0)) {
+        (dev_ioctl(s_uart_handles[port_id], JIELI_UART_SET_RECV_BLOCK, 1u) != 0 ||
+         dev_ioctl(s_uart_handles[port_id], JIELI_UART_SET_BAUDRATE, cfg->baudrate) != 0 ||
+         dev_ioctl(s_uart_handles[port_id], JIELI_UART_START, 0u) != 0)) {
         dev_close(s_uart_handles[port_id]);
         s_uart_handles[port_id] = NULL;
     }

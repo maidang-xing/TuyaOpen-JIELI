@@ -1,0 +1,578 @@
+# 通话算法API介绍
+|Version|Date|Notes|
+|---|---|---|
+|V1.0|2025-04-26|初始版本|
+## 单麦通话算法API介绍
+### audio_aec_open
+初始化AEC
+原型：
+
+``` javascript
+int audio_aec_open(struct audio_aec_init_param_t *init_param, s16 enablebit, int (*out_hdl)(s16 *data, u16 len));
+```
+
+参数：
+| 参数名称 |  说明  |
+| :------: | :----: |
+|    init_param   | 参数值（sr、ref_sr等） |
+| ebablebit | 使能模块|
+| out_hdl | 自定义回调函数|
+
+示例：
+
+``` javascript
+audio_aec_open(&init_param, (ANS_EN | ENC_EN), cvp_output_hdl);
+```
+
+### audio_aec_reboot
+AEC模块复位接口
+原型：
+
+``` javascript
+void audio_aec_reboot(u8 reduce);
+```
+
+参数：
+| 参数名称 |           说明          |
+| :------: | :---------------------: |
+|   reduce   | 复位/恢复标记 |
+
+示例：
+
+``` javascript
+audio_aec_reboot(1);//如果AEC在运行，重新启动使能模块
+```
+
+### audio_aec_close
+关闭AEC模块
+原型：
+
+``` javascript
+void audio_aec_close(void);
+```
+
+示例：
+
+``` javascript
+audio_aec_close();
+```
+
+### audio_aec_status
+获取AEC模块的当前状态
+原型：
+
+``` javascript
+u8 audio_aec_status(void);
+```
+
+示例：
+
+``` javascript
+audio_aec_status();
+```
+
+### audio_aec_inbuf
+AEC源数据输入
+原型：
+
+``` javascript
+void audio_aec_inbuf(s16 *buf, u16 len);
+```
+
+参数：
+| 参数名称 |           说明          |
+| :------: | :---------------------: |
+|   data   | 输入源数据地址 |
+|   len   |  输入源数据长度（默认帧长256points） |
+
+示例：
+
+``` javascript
+audio_aec_inbuf(s16 *buf, u16 len);
+```
+
+### audio_aec_inbuf_ref
+双mic ENC AEC的参考mic数据输入
+原型：
+
+``` javascript
+void audio_aec_inbuf_ref(s16 *buf, u16 len);
+```
+
+参数：
+| 参数名称 |           说明          |
+| :------: | :---------------------: |
+|   data   | 输入源数据地址 |
+|   len   |  输入源数据长度 |
+
+示例：
+
+``` javascript
+audio_aec_inbuf_ref(s16 *buf, u16 len);
+```
+
+### audio_aec_refbuf
+AEC参考数据输入（外部提供参考数据使用）
+原型：
+
+``` javascript
+void audio_aec_refbuf(s16 *data0, s16 *data1, u16 len);
+```
+
+参数：
+| 参数名称 |           说明          |
+| :------: | :---------------------: |
+|   data0   | 输入源数据地址 |
+|   data1   | 输入源数据地址(拓展接口，目前不使用) |
+|   len   |  输入源数据长度 |
+
+示例：
+
+``` javascript
+audio_aec_refbuf(s16 *data0, s16 *data1, u16 len);
+```
+
+### audio_cvp_ioctl
+CVP功能配置
+原型：
+
+``` javascript
+int audio_cvp_ioctl(int cmd, int value, void *priv);
+```
+
+参数：
+| 参数名称 |           说明          |
+| :------: | :---------------------: |
+|   cmd   | 操作命令 |
+|   value | 操作数 |
+|   priv  | 操作内存地址  |
+
+示例：
+
+``` javascript
+/*比如动态开关降噪NS模快*/
+audio_cvp_ioctl(CVP_NS_SWITCH,1,NULL);	//降噪关
+audio_cvp_ioctl(CVP_NS_SWITCH,0,NULL);  //降噪开
+```
+
+### audio_cvp_toggle_set
+CVP模块算法开关使能
+原型：
+
+``` javascript
+int audio_cvp_toggle_set(u8 toggle);
+```
+
+参数：
+| 参数名称 |           说明          |
+| :------: | :---------------------: |
+|   toggle   | 0 关闭算法 1 打开算法|
+
+示例：
+
+``` javascript
+audio_cvp_toggle_set(0);  //关闭算法
+audio_cvp_toggle_set(1);  //打开算法
+```
+
+### get_audio_aec_rebooting
+获得AEC是否在重启
+原型：
+
+``` javascript
+u8 get_audio_aec_rebooting();
+```
+示例：
+
+``` javascript
+get_audio_aec_rebooting();
+```
+
+### get_audio_cvp_output_way_writable_len
+获得输出cbuf可写长度
+原型：
+
+``` javascript
+int get_audio_cvp_output_way_writable_len();
+```
+示例：
+
+``` javascript
+get_audio_cvp_output_way_writable_len();
+```
+
+### aec_estimate_dump
+AEC模块回声消除延时打印
+原型：
+
+``` javascript
+void aec_estimate_dump(int DlyEst);
+```
+
+### aec_cfg_update
+AEC模块配置动态更新
+原型：
+
+``` javascript
+int aec_cfg_update(AEC_CONFIG *cfg);
+```
+
+参数：
+| 参数名称 |           说明          |
+| :------: | :---------------------: |
+|   cfg   | AEC模块参数|
+
+示例：
+
+``` javascript
+aec_cfg_update(&cfg);
+```
+
+### sms_tde_cfg_update
+SMS_TDE模式下AEC模块配置动态更新
+原型：
+
+``` javascript
+int sms_tde_cfg_update(AEC_CONFIG *cfg);
+```
+
+参数：
+| 参数名称 |           说明          |
+| :------: | :---------------------: |
+|   cfg   | AEC模块参数|
+
+示例：
+
+``` javascript
+sms_tde_cfg_update(&cfg);
+```
+
+## 双麦通话算法API介绍
+### audio_aec_output_sel
+输出源选择
+原型：
+
+``` javascript
+void audio_aec_output_sel(CVP_OUTPUT_ENUM sel, u8 agc);
+```
+
+参数：
+| 参数名称 | 说明 |
+| :------: | :--: |
+| sel | DMS_OUTPUT_SEL_DEFAULT 默认输出算法处理结果<br>DMS_OUTPUT_SEL_MASTER 输出主mic(通话mic)的原始数据<br>DMS_OUTPUT_SEL_SLAVE 输出副mic(降噪mic)的原始数据 |
+| agc | 输出数据要不要经过agc自动增益控制模块 |
+
+
+示例：
+
+``` javascript
+audio_aec_output_sel(DMS_OUTPUT_SEL_DEFAULT，0);
+```
+
+### audio_cvp_dms_wnc_state
+获取风噪的检测结果，1：有风噪，0：无风噪
+原型：
+
+``` javascript
+int audio_cvp_dms_wnc_state(void);
+```
+示例：
+
+``` javascript
+audio_cvp_dms_wnc_state(void);
+```
+
+### audio_cvp_dms_malfunc_state
+获取单双麦切换状态
+ * 0: 正常双麦 ;
+ * 1: 副麦坏了，触发故障
+ * -1: 主麦坏了，触发故障
+
+原型：
+
+``` javascript
+int audio_cvp_dms_malfunc_state();
+```
+示例：
+
+``` javascript
+audio_cvp_dms_malfunc_state();
+```
+
+### jlsp_get_wind_detect_info
+新算法获取风噪检测信息
+原型：
+``` javascript
+int jlsp_get_wind_detect_info(int *wd_flag, int *wd_val, int *wd_lev);
+```
+
+参数：
+| 参数名称 |           说明          |
+| :------: | :---------------------: |
+|   wd_flag   | 0 没有风噪，1 有风噪|
+|   wd_val   | 风噪强度r: 0~BIT(16)|
+|   wd_lev   | 风噪等级，0：弱风，1：中风，2：强风|
+
+示例：
+
+``` javascript
+int wd_flag;
+int wd_val;
+int wd_lev;
+jlsp_get_wind_detect_info(&wd_flag, int &wd_val, &wd_lev);
+```
+
+### audio_cvp_dms_mic_energy
+获取mic的能量值，开了MFDT_EN才能用
+ * return：返回能量值，[0~90.3],返回-1表示错误
+
+原型：
+
+``` javascript
+float audio_cvp_dms_mic_energy(u8 mic);
+```
+
+参数：
+| 参数名称 |           说明          |
+| :------: | :---------------------: |
+|   mic   | 0 获取主麦能量； 1 获取副麦能量|
+
+示例：
+
+``` javascript
+audio_cvp_dms_mic_energy(0);//获取主麦能量
+audio_cvp_dms_mic_energy(1);//获取副麦能量
+```
+
+### audio_cvp_toggle_set
+双麦Hybrid CVP模块算法开关使能
+原型：
+
+``` javascript
+void aec_dms_hybrid_toggle(u8 toggle);
+```
+
+参数：
+| 参数名称 |           说明          |
+| :------: | :---------------------: |
+|   toggle   | 0 关闭算法 1 打开算法|
+
+示例：
+
+``` javascript
+aec_dms_hybrid_toggle(0);  //关闭算法
+aec_dms_hybrid_toggle(1);  //打开算法
+```
+
+### aec_dms_hybrid_cfg_update
+双麦Hybrid AEC模块配置动态更新
+原型：
+
+``` javascript
+int aec_dms_hybrid_cfg_update(DMS_HYBRID_CONFIG *cfg);
+```
+
+参数：
+| 参数名称 |           说明          |
+| :------: | :---------------------: |
+|   cfg   | AEC模块参数|
+
+示例：
+
+``` javascript
+aec_dms_hybrid_cfg_update(&cfg);
+```
+
+### jlsp_dms_hybrid_get_wind_energy
+获取双麦Hybrid风噪能量值，dB
+原型：
+
+``` javascript
+float jlsp_dms_hybrid_get_wind_energy();
+```
+
+示例：
+
+``` javascript
+jlsp_dms_hybrid_get_wind_energy();
+```
+
+### jlsp_dms_hybrid_get_cur_state
+获取双麦Hybrid风噪检测状态
+原型：
+
+``` javascript
+int jlsp_dms_hybrid_get_cur_state();
+```
+
+示例：
+
+``` javascript
+jlsp_dms_hybrid_get_cur_state();
+```
+
+### aec_dms_flexible_cfg_update
+在线更新双麦flexible配置
+原型：
+
+``` javascript
+int aec_dms_flexible_cfg_update(DMS_FLEXIBLE_CONFIG *cfg);
+```
+
+示例：
+
+``` javascript
+aec_dms_flexible_cfg_update(&cfg);
+```
+
+### aec_dms_flexible_selete_mic
+话务耳机切换使用的mic
+原型：
+
+``` javascript
+int aec_dms_flexible_selete_mic(DMS_FLEXIBLE_MIC mic);
+```
+
+参数：
+| 参数名称 |           说明          |
+| :------: | :---------------------: |
+|   mic   |  DMS_FLEXIBLE_DUAL_MIC ：正常双麦话务耳机<br>DMS_FLEXIBLE_USE_TALK_MIC ：使用主麦<br>DMS_FLEXIBLE_USE_REF_MIC ：使用副麦|
+
+示例：
+
+``` javascript
+aec_dms_flexible_selete_mic(DMS_FLEXIBLE_DUAL_MIC); //正常双麦话务耳机
+```
+
+### aec_dms_awn_cfg_update
+在线更新双麦awn配置
+原型：
+
+``` javascript
+int aec_dms_awn_cfg_update(DMS_AWN_CONFIG *cfg);
+```
+
+示例：
+
+``` javascript
+aec_dms_awn_cfg_update(&cfg);
+```
+
+### jlsp_dms_awn_get_wind_energy
+获取风噪能量值，dB
+原型：
+``` javascript
+float jlsp_dms_awn_get_wind_energy()
+```
+
+示例：
+
+``` javascript
+jlsp_dms_awn_get_wind_energy();
+```
+
+### jlsp_dms_awn_get_wind_energy
+获取风噪检测状态
+原型：
+原型：
+``` javascript
+int jlsp_dms_awn_get_cur_state()
+```
+示例：
+
+``` javascript
+jlsp_dms_awn_get_cur_state();
+```
+
+## 三麦通话算法API介绍
+### audio_cvp_tms_wnc_state
+三麦获取风噪检测结果,1：有风噪，0：无风噪
+原型：
+
+``` javascript
+int audio_cvp_tms_wnc_state(void);
+```
+
+示例：
+
+``` javascript
+audio_cvp_tms_wnc_state();
+```
+
+### audio_cvp_get_wind_detect_info
+获取风噪检测信息
+原型：
+``` javascript
+int audio_cvp_get_wind_detect_info(int *wd_flag, int *wd_val, int *wd_lev);
+```
+
+参数：
+| 参数名称 |           说明          |
+| :------: | :---------------------: |
+|   wd_flag   | 0 没有风噪，1 有风噪|
+|   wd_val   | 风噪强度r: 0~BIT(16)|
+|   wd_lev   | 风噪等级，0：弱风，1：中风，2：强风|
+
+示例：
+
+``` javascript
+int wd_flag;
+int wd_val;
+int wd_lev;
+audio_cvp_get_wind_detect_info(&wd_flag, int &wd_val, &wd_lev);
+```
+
+### audio_tms_mode_choose
+设置跑2mic/3mic降噪, CONST_JLSP_3MIC_MODE != JLSP_3MIC_MODE0时设置才有效
+原型：
+``` javascript
+int audio_tms_mode_choose(enum cvp_tms_mode mode);
+```
+
+参数：
+| 参数名称 |           说明          |
+| :------: | :---------------------: |
+|   mode   |  TMS_MODE_2MIC  跑双麦降噪，不使用FB MIC数据<br>TMS_MODE_3MIC  跑3MIC降噪|
+
+示例：
+
+``` javascript
+audio_tms_mode_choose(TMS_MODE_2MIC);//跑双麦降噪
+```
+
+### audio_cvp_tms_malfunc_state
+获取单/三麦切换状态
+ * 0: 正常三麦 ;
+ * 1: 副麦坏了，触发故障
+ * -1: 主麦坏了，触发故障
+
+原型：
+``` javascript
+int audio_cvp_tms_malfunc_state();
+```
+
+示例：
+
+``` javascript
+audio_cvp_tms_malfunc_state();
+```
+
+### audio_cvp_tms_mic_energy
+获取mic的能量值，开了MFDT_EN才能用
+return：返回能量值，[0~90.3],返回-1表示错误
+
+原型：
+``` javascript
+float audio_cvp_tms_mic_energy(u8 mic);
+```
+
+参数：
+| 参数名称 |           说明          |
+| :------: | :---------------------: |
+|   mic   |  0 获取主麦能量<br>1 获取副麦能量|
+
+示例：
+
+``` javascript
+audio_cvp_tms_mic_energy(0);// 获取主麦能量
+```

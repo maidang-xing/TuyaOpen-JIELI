@@ -1,0 +1,13 @@
+# Distortion Clipping
+
+## 功能介绍
+对输入信号进行放大，如果放大之后的信号超过所设定的阈值，则按照不同的削波方式对放大之后的输入信号进行失真削波处理
+
+### 参数介绍
+* **bypass：** 勾选后当前模块不运行
+* **Distortion Type:** 削波处理处理函数的类型 下拉菜单 Hardclip(0) Softclip1(1) Softclip2(2)
+* **Driver dB:** 放大倍数 对输入信号进行放大的倍数（dB）
+* **Clip Threshold：** 削波阈值 设置对信号进行削波处理的阈值大小
+* **Softclip1 KneeWidth:** knee宽度 当选择削波处理函数为Softclip1时，设置削波处理函数的knee宽度;
+* **Dry Wet:** 干湿比 0.0f时全为湿信号，1.0f时候全为干信号;
+* **Volume:** 音量 控制最终输出信号的音量大小（dB）;

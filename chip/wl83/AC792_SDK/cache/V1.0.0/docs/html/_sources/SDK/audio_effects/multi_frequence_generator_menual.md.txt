@@ -1,0 +1,11 @@
+# Multi Frequency Generator
+
+## 功能介绍
+通过输入信号产生谐波
+
+## 参数说明
+**Attack Time：** 噪声门限启动时间  默认值50 范围1 ~ 1000<br>
+**Release Time：** 噪声门限释放时间  默认值5  范围1 ~ 1000<br>
+**Attack Hold Time：** 噪声门限启动前保持时间  默认15  范围 0 ~ 25<br>
+**Threshold：** 噪声门限阈值 默认-85 步进 1 范围-138.4 ~ 0 界面保留两位小数<br>
+

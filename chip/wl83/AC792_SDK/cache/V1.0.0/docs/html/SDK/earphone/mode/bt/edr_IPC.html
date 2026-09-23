@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>蓝牙的可发现可连接与回连 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../../_static/js/custom.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>蓝牙的可发现可连接与回连</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="id1">
+<h1>蓝牙的可发现可连接与回连<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h1>
+<ul class="simple">
+<li><p>可发现：指设备可被发现</p></li>
+<li><p>可连接：指设备可被进行蓝牙连接</p></li>
+<li><p>回连：指设备曾经被连接过，根据连接的设备地址来进行回连</p></li>
+</ul>
+<section id="id2">
+<h2>蓝牙的可发现可连接及回连流程图<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<img alt="经典蓝牙可发现可连接.drawio" src="../../../../_images/总体设计005.png" />
+<ul class="simple">
+<li><dl class="simple">
+<dt>上图蓝牙的可发现可连接及回连业务流程简述如下：</dt><dd><ul>
+<li><p>没有设备连接：开启可发现可连接；</p></li>
+<li><p>有连接记录：短时内开启回连，超时没连接则开启可发现可连接；</p></li>
+<li><p>连接后如果还有连接记录：短时内开启回连，超时没连接开启可连接；</p></li>
+<li><p>全部连接成功或已连接一台设备后等待连接超时：关闭可发现可连接。</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>以上流程图为SDK默认流程，开发者可根据自身业务需求对其进行更改。</p>
+</div>
+</section>
+<section id="id3">
+<h2>蓝牙的可发现可连接及回连的设置<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<img alt="../../../../_images/edr_ipc_setting.png" src="../../../../_images/edr_ipc_setting.png" />
+</section>
+<section id="id4">
+<h2>蓝牙的可发现可连接及回连打印与函数调用说明<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h2>
+<section id="ipc">
+<h3>经典蓝牙可发现可连接与回连常见打印：“I”、“P”、“C”的打印，相关说明如下<a class="headerlink" href="#ipc" title="Permalink to this headline"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/********edr蓝牙相关状态debug打印说明***********************</span>
+<span class="cm">*** 等待被发现inquiry_scan   打印 &#39;I&#39;(大写)</span>
+<span class="cm">*** 回连手机page:            打印 &#39;C&#39;(大写)</span>
+<span class="cm">*** 等待手机连接page_scan:   打印 &#39;P&#39;(大写)</span>
+<span class="cm">*********************************************************/</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h3>设置蓝牙的可发现可连接<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h3>
+<p>write_scan_conn_enable -&gt; lmp_hci_write_scan_enable</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm">* @brief 设置inquiry scan和page scan</span>
+<span class="cm">*</span>
+<span class="cm">* @param scan_enable inquiry_scan_en</span>
+<span class="cm">* @param conn_enable page_scan_en</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">write_scan_conn_enable</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">scan_enable</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">conn_enable</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 蓝牙库API设置inquiry scan和page scan</span>
+<span class="cm">*</span>
+<span class="cm">* @param enable BIT(0):设置可发现; BIT(1):设置可连接</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">lmp_hci_write_scan_enable</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="n">enable</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h3>获取蓝牙的已连接记录与回连<a class="headerlink" href="#id6" title="Permalink to this headline"></a></h3>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>回连阶段，建议回连与可发现可连接是交替的，保证回连的时候还可以被其他手机连接。增加蓝牙设备的灵活性。</p>
+</div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm">* @brief 蓝牙库API获取当前设备曾经连接过的设备数量</span>
+<span class="cm">*</span>
+<span class="cm">* @return 曾经连接过的设备数量</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">btstack_get_num_of_remote_device_recorded</span><span class="p">();</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 蓝牙库API获取index的蓝牙设备地址</span>
+<span class="cm">*</span>
+<span class="cm">* @param addr 蓝牙设备地址</span>
+<span class="cm">* @param index 范围0-(btstack_get_num_of_remote_device_recorded() - 1)</span>
+<span class="cm">*</span>
+<span class="cm">* @return 获取结果</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">bool</span><span class="w"> </span><span class="nf">btstack_get_remote_addr</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">addr</span><span class="p">,</span><span class="w"> </span><span class="n">u8</span><span class="w"> </span><span class="n">index</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 回连设备函数调用</span>
+<span class="cm">*</span>
+<span class="cm">* @param USER_CTRL_START_CONNEC_VIA_ADDR 回连设备命令</span>
+<span class="cm">* @param mac_addr_len mac_addr的长度</span>
+<span class="cm">* @param mac_addr 回连设备蓝牙地址</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="n">bt_cmd_prepare</span><span class="p">(</span><span class="n">USER_CTRL_START_CONNEC_VIA_ADDR</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="n">mac_addr</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 取消回连设备函数调用</span>
+<span class="cm">*</span>
+<span class="cm">* @param USER_CTRL_PAGE_CANCEL 取消回连设备命令</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="n">bt_cmd_prepare</span><span class="p">(</span><span class="n">USER_CTRL_PAGE_CANCEL</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id7">
+<h2>蓝牙的连接消息<a class="headerlink" href="#id7" title="Permalink to this headline"></a></h2>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">BT_STATUS_INIT_OK</span><span class="p">,</span><span class="w">          </span><span class="cm">/*初始化完成*/</span><span class="w"></span>
+<span class="n">BT_STATUS_FIRST_CONNECTED</span><span class="p">,</span><span class="w">        </span><span class="cm">/*连接成功*/</span><span class="w"></span>
+<span class="n">BT_STATUS_SECOND_CONNECTED</span><span class="p">,</span><span class="w">        </span><span class="cm">/*连接成功*/</span><span class="w"></span>
+<span class="n">BT_STATUS_FIRST_DISCONNECT</span><span class="p">,</span><span class="w">       </span><span class="cm">/*断开连接*/</span><span class="w"></span>
+<span class="n">BT_STATUS_SECOND_DISCONNECT</span><span class="p">,</span><span class="w">        </span><span class="cm">/*断开连接*/</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

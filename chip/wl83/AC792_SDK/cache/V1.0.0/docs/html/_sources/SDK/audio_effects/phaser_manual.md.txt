@@ -1,0 +1,20 @@
+# Phaser
+
+## 功能介绍
+phaser模块用于实现相位调制效果，它通过改变音频信号的相位来实现音色变化。
+
+## 参数简述
+* **反馈系数[Feedback]**:单位percent
+* **调制频率[Modulation Rate]**:单位Hz       
+* **延迟时间[Delay]**:影响申请的buf大小,单位ms
+* **调制长度[Modulation  Depth]**  :实际值是delay*mod_depth/100,单位percent，影响原声跟效果声来回抖动的长度
+* **湿声增益[Wet Gain]**:单位percent，效果声的音量
+* **干声增益[Dry Gain]**:单位percent，原声的音量
+* **左右相位差异[LRphase Diff]**:范围0到360度
+* **相位滤波器阶数[N-Stage]**:实际阶数是N-Stage*2阶
+
+
+### 如果需要单声道进双声道出，【LRphasediff设成非0生效】，可以先单变双：
+
+
+![phaser](./assets/phaser.png)

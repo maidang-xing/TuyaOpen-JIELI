@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auracast Broadcast Audio介绍 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../../../_static/js/custom.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Auracast Broadcast Audio介绍</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="auracast-broadcast-audio">
+<h1>Auracast Broadcast Audio介绍<a class="headerlink" href="#auracast-broadcast-audio" title="Permalink to this headline"></a></h1>
+<section id="id1">
+<h2>介绍<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<p>LE Audio 支持一系列全新的用户体验，提供了一个新的音频性能水平和一系列新的音频用例的支持。为了支持许多新功能。在它支持的许多功能中，影响最大的功能可能是广播音频，Auracast发射器可以同时向无限数量的Auracast接收器广播音频数据。</p>
+<section id="id2">
+<h3>常见的使用场景<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h3>
+<figure class="align-default">
+<img alt="../../../../../_images/1多接收器同时收听音频.png" src="../../../../../_images/1多接收器同时收听音频.png" />
+</figure>
+<p>广播音频支持范围内多个接收器同时收听广播音频数据，如上图所示，两个用户同时在收听电视的广播音频。</p>
+<p>LE Audio的一个重要功能是新的LC3编解码器，允许非常低的延迟来实现音频传输。这意味着在环境音频和接收器播放的声音之间没有明显的延迟。</p>
+</section>
+</section>
+<section id="id3">
+<h2>基础角色介绍<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<section id="auracast-transmitter">
+<h3>Auracast transmitter<a class="headerlink" href="#auracast-transmitter" title="Permalink to this headline"></a></h3>
+<p>Auracast 发射器可以发射广播音频流。许多设备将与现在输出音频的设备完全相同，例如电视、智能手机、个人电脑、平板电脑、杰理音箱等。</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/7广播音频发射设备.png" src="../../../../../_images/7广播音频发射设备.png" />
+</figure>
+</div></blockquote>
+<p>此外还有一些不带显示屏幕的发射器设备，如下所示</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/7其他广播音频发射设备.png" src="../../../../../_images/7其他广播音频发射设备.png" />
+</figure>
+</div></blockquote>
+<p>这些设备只是实现将音源通过广播音频发射出去的功能，音源可以来自 HDMI、3.5mm模拟接口、USB 等接口。</p>
+</section>
+<section id="auracast-receiver">
+<h3>Auracast receiver<a class="headerlink" href="#auracast-receiver" title="Permalink to this headline"></a></h3>
+<p>Auracast 接收器可能是最常见的设备，比如助听器、头戴耳机、TWS耳机或在更大空间内放大声音的设备，即扬声器和音箱。</p>
+<p>Auracast 接收器会一直扫描和过滤附近设备的广播包，考虑到功耗原因，接收器必须限制扫描广播的持续时间。扫描到符合条件的设备可以直接进行连接，或者添加到列表中，通过其他方式来切换连接。</p>
+<p>所有Auracast接收器必须支持广播音频扫描服务(BASS)，包含两个特性 —— the Broadcast Receive State characteristic 和 the Broadcast Audio Scan Control Point characteristic。这两个特性是为了让 Auracast assistant 填充发射器广播扫描数据库、实时获取接收器的状态和控制Auracast接收器。</p>
+<p>Auracast接收器还应该支持 Published Audio Capability (PAC)服务，用于支持多个接收器之间的配对、编解码器支持范围的描述等功能。</p>
+<p>接收器应该检查附近是否有功能齐全的Auracast助手能够帮忙扫描。接收器可以在广播中增加委托扫描的字段，将扫描活动委托给这些Auracast助手，以节省电池消耗。</p>
+</section>
+<section id="auracast-assistant">
+<h3>Auracast assistant<a class="headerlink" href="#auracast-assistant" title="Permalink to this headline"></a></h3>
+<p>Auracast assistant可以作为一个应用程序实现在智能手表、智能手机、专用遥控器或任何其他用户界面更丰富的设备上。</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/8常见的助手设备.png" src="../../../../../_images/8常见的助手设备.png" />
+</figure>
+<figure class="align-default">
+<a class="reference internal image-reference" href="../../../../../_images/JLAuracastAssistant.JPG"><img alt="../../../../../_images/JLAuracastAssistant.JPG" src="../../../../../_images/JLAuracastAssistant.JPG" style="width: 320px; height: 650px;" /></a>
+</figure>
+</div></blockquote>
+<p>常见的 Auracast assistant 可以是手机和手表，还有杰理Auracast助手。</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/9其他形式的助手设备.png" src="../../../../../_images/9其他形式的助手设备.png" />
+</figure>
+</div></blockquote>
+<p>另外也有其他形式的 Auracast assistant，例如充电仓、带触摸屏幕的卡片，和按键遥控器。</p>
+<p>对于支持蓝牙版本5.2及以上的手机等设备，Auracast assistant可以直接集成到设备系统中，直接扫描附近发射器的广播包获取发射器列表，再通过 BASS 服务控制接收器。</p>
+<p>对于不支持蓝牙版本5.2及以上的或不支持LE Audio功能的手机等设备，Auracast assistant 则需要以应用的方式存在于设备上，接收器承担扫描的工作，并通过BLE ACL连接与应用交互广播信息和控制命令。</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

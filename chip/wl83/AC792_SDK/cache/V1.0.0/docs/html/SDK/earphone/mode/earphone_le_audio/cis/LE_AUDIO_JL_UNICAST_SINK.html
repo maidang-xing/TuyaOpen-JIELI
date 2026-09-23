@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>游戏耳机 - LE_AUDIO_JL_UNICAST_SINK开发说明 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../../../_static/js/custom.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>游戏耳机 - LE_AUDIO_JL_UNICAST_SINK开发说明</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="le-audio-jl-unicast-sink">
+<h1>游戏耳机 - LE_AUDIO_JL_UNICAST_SINK开发说明<a class="headerlink" href="#le-audio-jl-unicast-sink" title="Permalink to this headline"></a></h1>
+<ol class="arabic simple">
+<li><p>该章节以讲解LE_Audio头戴式游戏耳机与Dongle为主。</p></li>
+<li><p>LE_Audio TWS游戏耳机(Beta)，持续更新中。</p></li>
+</ol>
+<section id="id1">
+<h2>开发简介<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<ol class="arabic simple">
+<li><p>基于《LE_Audio技术简介》说明，我们运用了LE_AUDIO的特性来开发实现低延时的游戏耳机。即通过LE_AUDIO_UNICAST dongle与LE_AUDIO_UNICAST earphone之间建立CIS链接来实现音频数据的低延时传输。</p></li>
+<li><p>LE_AUDIO_UNICAST dongle是指杰理自研的蓝牙转换头，通过USB连接手机或者电脑等设备，使一些不支持LE_AUDIO_UNICAST功能的电脑和手机能够支持LE_AUDIO_UNICAST。允许自定义帧长、采样率、重发次数、码率等等。</p></li>
+</ol>
+</section>
+<section id="id2">
+<h2>底层链路说明<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/开发说明1.png" src="../../../../../_images/开发说明1.png" />
+</figure>
+</div></blockquote>
+<section id="aclcis">
+<h3>ACL与CIS链路的关系<a class="headerlink" href="#aclcis" title="Permalink to this headline"></a></h3>
+<ol class="arabic simple">
+<li><p>ACL链路负责命令数据传输，CIS链路负责音频数据传输（播歌、通话）；</p></li>
+<li><p>耳机连上Dongle，则ACL链路必然已经建立。反之，如果ACL链路断开，则耳机与Dongle必然已经断开连接；</p></li>
+<li><p>如果ACL链路断开，则CIS链路必然会断开。</p></li>
+</ol>
+</section>
+</section>
+<section id="id3">
+<h2>工程配置<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<section id="id4">
+<h3>耳机工程配置<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h3>
+<ol class="arabic">
+<li><p>根据产品类型开关：蓝牙配置-&gt;TWS功能</p></li>
+<li><dl>
+<dt>打开BLE开关</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/工程配置01.png" src="../../../../../_images/工程配置01.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>LE_AUDIO配置选择LE_AUDIO_JL_UNICAST_SINK_EN</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/工程配置11.png" src="../../../../../_images/工程配置11.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>“蓝牙音乐”或“媒体”导航栏处的音频流程图选择LE_Audio流程图</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/leaudio音频流程图1.png" src="../../../../../_images/leaudio音频流程图1.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>“蓝牙通话”导航栏处的音频流程图选择LE_Audio流程图</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/leaudio音频流程图2.png" src="../../../../../_images/leaudio音频流程图2.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>耳机项目的蓝牙名需要同Dongle可视化工程的蓝牙配置-&gt;经典蓝牙-&gt;蓝牙名、LE_AUDIO配置-&gt;UNICAST配置-&gt;配对名一致。</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/工程配置21.png" src="../../../../../_images/工程配置21.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>全局采样率选择48000Hz</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/工程配置31.png" src="../../../../../_images/工程配置31.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>头戴式耳机选择双声道，TWS耳机选择单声道</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/工程配置5.png" src="../../../../../_images/工程配置5.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>“LE_Audio”导航栏处的音频流程图使能，并导出配置</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/leaudio音频流程图3.png" src="../../../../../_images/leaudio音频流程图3.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><p>点击编译</p></li>
+</ol>
+</section>
+<section id="dongle">
+<h3>Dongle工程配置<a class="headerlink" href="#dongle" title="Permalink to this headline"></a></h3>
+<ol class="arabic">
+<li><dl>
+<dt>Dongle项目创建(创建可视化工程-&gt;dongle-&gt;Dongle_3in1_v2)：</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/dongle_project.png" src="../../../../../_images/dongle_project.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Dongle项目的蓝牙配置-&gt;EDR（经典蓝牙），右边选择功能关闭，不关闭就需要通过按键来切换经典蓝牙和cis模式：</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/dongle配置蓝牙名1.png" src="../../../../../_images/dongle配置蓝牙名1.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Dongle项目的LE_AUDIO配置-&gt;UNICAST配置-&gt;配对名：</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/dongle配置蓝牙名2.png" src="../../../../../_images/dongle配置蓝牙名2.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Dongle项目头戴式单链接，“unicast”导航栏处的音频流程图选择“默认分组”：</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/dongle音频流程配置.png" src="../../../../../_images/dongle音频流程配置.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><p>点击编译</p></li>
+<li><dl>
+<dt>（选配，TWS耳机项目开启）Dongle项目的TWS双链接的LE_AUDIO配置：</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/dongle配置TWS双链接.png" src="../../../../../_images/dongle配置TWS双链接.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>（选配，TWS耳机项目开启）Dongle项目TWS双链接，“unicast”导航栏处的音频流程图选择unicast_double_conn流程图：</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/dongle双链接音频流程配置.png" src="../../../../../_images/dongle双链接音频流程配置.png" />
+</figure>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+</section>
+<section id="id5">
+<h2>参数规格<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h2>
+<p>LE_AUDIO_JL_UNICAST资源统计如下：</p>
+<p>Bluetooth: 支持蓝牙CIS+ACL 双工传输</p>
+<p>代码量：249kb</p>
+<p>Codec: LC3编码器（RAM13.3K）， LC3解码器（RAM13.1K），播歌（48k）；通话：上行（48k） 、下行（48k）；码率：主机128kbps（发射器） 从机40kbps（耳机）</p>
+<p>MIPS：LC3解码：20MHz（64kbps）、40MHz（80kbps），LC3编码：40-50MHz</p>
+<p>Algorithm: 音频同步，变采样</p>
+</section>
+<section id="id6">
+<h2>流程说明（一拖一流程）<a class="headerlink" href="#id6" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/流程说明1.png" src="../../../../../_images/流程说明1.png" />
+</figure>
+</div></blockquote>
+</section>
+<section id="id7">
+<h2>接口说明<a class="headerlink" href="#id7" title="Permalink to this headline"></a></h2>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm">* @brief le_audio功能总初始化</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="n">le_audio_profile_init</span><span class="p">()</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 蓝牙线程消息按需处理，包括连接、断开、超时等事件处理</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">le_audio_conn_btstack_event_handler</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">_event</span><span class="p">)</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief le_audio广播开关，只有开启广播才能被扫描到进行连接</span>
+<span class="cm">*</span>
+<span class="cm">* @param en:1:开广播   0：关广播</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="n">le_audio_adv_api_enable</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="n">en</span><span class="p">)</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief  le_audio媒体控制接口</span>
+<span class="cm">*</span>
+<span class="cm">* @param data[0] :CIG_EVENT_OPID_VOLUME_UP音量加、CIG_EVENT_OPID_PLAY开始播放等cmd命令</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="n">le_audio_media_control_cmd</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">u8</span><span class="w"> </span><span class="n">len</span><span class="p">)</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief CIG从机连接成功事件处理，在这个接口里面会打开播歌和通话的编解码器</span>
+<span class="cm">*</span>
+<span class="cm">* @param priv:连接成功附带的句柄参数</span>
+<span class="cm">*</span>
+<span class="cm">* @return 是否执行成功 -- 0为成功，其他为失败</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="n">connected_perip_connect_deal</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">priv</span><span class="p">)</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief CIG从机连接断开成功处理接口，在这个接口里面会关闭播歌和通话的编解码器</span>
+<span class="cm">*</span>
+<span class="cm">* @param priv:断连成功附带的句柄参数</span>
+<span class="cm">*</span>
+<span class="cm">* @return 是否执行成功 -- 0为成功，其他为失败</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="n">connected_perip_disconnect_deal</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">priv</span><span class="p">)</span><span class="w"></span>
+
+<span class="w"> </span><span class="cm">/**</span>
+<span class="cm">* @brief  CIG状态处理函数，包括接收到CIG_EVENT_PERIP_CONNECT、CIG_EVENT_ACL_CONNECT、CIG_EVENT_JL_DONGLE_CONNECT等事件的处理</span>
+<span class="cm">*</span>
+<span class="cm">* @param msg:状态事件附带的返回参数</span>
+<span class="cm">*</span>
+<span class="cm">* @return 是否执行成功 -- 0为成功，其他为失败</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">app_connected_conn_status_event_handler</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="p">)</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>其余更多接口使用说明，详细见app_le_connected.h/.c和le_connected.h/.c</p>
+<ul class="simple">
+<li><p>Dongle和耳机交互协议 <a class="reference download internal" download="" href="../../../../../_downloads/fb7fa371d385ec930c306015cbdaa60b/JL_Unicast%E7%A7%81%E6%9C%89%E5%91%BD%E4%BB%A4%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE%E5%BC%80%E5%8F%91%E6%96%87%E6%A1%A3_v0.0.4%20-%2020251015.pdf"><code class="xref download docutils literal notranslate"><span class="pre">JL_Unicast私有命令通信协议开发文档</span></code></a></p></li>
+</ul>
+</div>
+</section>
+<section id="cig">
+<h2>CIG事件说明<a class="headerlink" href="#cig" title="Permalink to this headline"></a></h2>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="c1">// for CIS</span>
+
+<span class="c1">// ...</span>
+
+<span class="n">CIG_EVENT_PERIP_CONNECT</span><span class="p">,</span><span class="w">                    </span><span class="c1">// Receiver connect succ.创建了CIS链路，运行开启编解码器</span>
+<span class="n">CIG_EVENT_PERIP_DISCONNECT</span><span class="p">,</span><span class="w">                 </span><span class="c1">// Receiver disconnect.断开了CIS链路，关闭关闭编解码器</span>
+
+<span class="c1">// ...</span>
+
+<span class="c1">// for ACL</span>
+<span class="n">CIG_EVENT_ACL_CONNECT</span><span class="p">,</span><span class="w">                       </span><span class="c1">// 创建ACL链路</span>
+<span class="n">CIG_EVENT_ACL_DISCONNECT</span><span class="p">,</span><span class="w">                    </span><span class="c1">// 断开ACL链路。如果ACL链路断开则CIS链路一定会断开</span>
+
+<span class="c1">//for phone</span>
+<span class="n">CIG_EVENT_PHONE_CONNECT</span><span class="p">,</span><span class="w"></span>
+<span class="n">CIG_EVENT_PHONE_DISCONNECT</span><span class="p">,</span><span class="w"></span>
+<span class="n">CIG_EVENT_JL_DONGLE_CONNECT</span><span class="p">,</span><span class="w"></span>
+<span class="n">CIG_EVENT_JL_DONGLE_DISCONNECT</span><span class="p">,</span><span class="w"></span>
+
+<span class="c1">// ...</span>
+
+<span class="p">}</span><span class="w"> </span><span class="n">CIG_EVENT</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id8">
+<h2>模式切换功能<a class="headerlink" href="#id8" title="Permalink to this headline"></a></h2>
+<p>允许在经典蓝牙与LE_Audio模式之间进行切换，单模式能极大保证通讯的稳定性及低延时（因为单模式可以保证帧长够短）。</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/mode_switch.png" src="../../../../../_images/mode_switch.png" />
+</figure>
+</div></blockquote>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm">* @brief 获取当前JLUNICAST模式的状态</span>
+<span class="cm">*</span>
+<span class="cm">* @return JL_UNICAST_MODE</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="n">u8</span><span class="w"> </span><span class="nf">jl_unicast_edr_mode_get</span><span class="p">();</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief 控制dongle模式和手机模式切换，切换后复位生效</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">jl_unicast_edr_mode_switch</span><span class="p">();</span><span class="w"></span>
+</pre></div>
+</div>
+<section id="id9">
+<h3>切换到经典蓝牙模式<a class="headerlink" href="#id9" title="Permalink to this headline"></a></h3>
+<ol class="arabic simple">
+<li><p>断开ACL、CIS链路，关闭LE_Audio广播</p></li>
+<li><p>开启可连接可发现、回连设备等，开启BLE广播</p></li>
+<li><p>具体见：void jl_unicast_edr_mode_switch();函数实现</p></li>
+</ol>
+</section>
+<section id="le-audio">
+<h3>LE_Audio模式<a class="headerlink" href="#le-audio" title="Permalink to this headline"></a></h3>
+<ol class="arabic simple">
+<li><p>关闭可连接可发现、回连设备等，断开经典蓝牙连接，关闭BLE广播</p></li>
+<li><p>开启LE_Audio广播</p></li>
+<li><p>具体见：void jl_unicast_edr_mode_switch();函数实现</p></li>
+</ol>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>目前仅经典蓝牙模式中BLE连接手机APP后支持走升级流程，LE_Audio的一拖二（经典蓝牙、LE_Audio）同时连接手机APP进行升级功能（仅限JL708N、JL709N、AC710、AC689系列）持续开发中。</p>
+</div>
+</section>
+</section>
+<section id="id10">
+<h2>低延时配置<a class="headerlink" href="#id10" title="Permalink to this headline"></a></h2>
+<section id="id11">
+<h3>耳机工程低延时配置<a class="headerlink" href="#id11" title="Permalink to this headline"></a></h3>
+<p>设置unicast耳机端的LE_AUDIO播放延时（头戴式耳机，Dongle配置5ms帧长，LE_AUDIO播放延时设置为2.5ms； TWS耳机，Dongle配置10ms帧长，LE_AUDIO播放延时设置为5.0ms）</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/耳机低延时.png" src="../../../../../_images/耳机低延时.png" />
+</figure>
+</div></blockquote>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>当需要实测耳机与dongle的延时时，除了上述耳机工程LE_AUDIO播放延时需要配置，还需要以下代码更改：（如果是作为终端产品生产请保留默认配置即可）</p>
+</div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// apps/earphone/log_config/lib_media_config.c文件中，</span>
+
+<span class="c1">// 开发者需要实测耳机与dongle的延时时，请设置config_audio_dac_noisefloor_optimize_enable变量为0.</span>
+<span class="c1">// 不然测出来的延时会抖动，是个范围值</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">config_audio_dac_noisefloor_optimize_enable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+
+<span class="c1">// 注意：如果不是延时测试，作为终端产品生产请保留以下的默认配置即可</span>
+<span class="c1">//&lt;DAC NoiseGate&gt;</span>
+<span class="cp">#if (defined(TCFG_AUDIO_DAC_NOISEGATE_ENABLE) &amp;&amp; TCFG_AUDIO_DAC_NOISEGATE_ENABLE)</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">config_audio_dac_noisefloor_optimize_enable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BIT</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">BIT</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span><span class="w"></span>
+<span class="cp">#else</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">config_audio_dac_noisefloor_optimize_enable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="cp">#endif</span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>杰理实验室测试耳机与dongle的LE_AUDIO_JL_UNICAST连接LE_AUDIO播放延时设置最低是支持2.5ms(默认音频流程图+近距离)，如需要拉距离或音频流程图有更多音效等造成播歌卡顿，请按5-10ms的幅度往上进行校准调试。</p>
+</div>
+</section>
+<section id="id12">
+<h3>Dongle工程低延时配置<a class="headerlink" href="#id12" title="Permalink to this headline"></a></h3>
+<blockquote>
+<div><p>Dongle工程低延时配置说明，详细看Dongle的可视化工程帮助文档
+具体请看 <a class="reference download internal" download="" href="../../../../../_downloads/389c7ead81d43134647797e41f780697/Dongle%E4%BD%8E%E5%BB%B6%E6%97%B6%E6%B5%8B%E8%AF%95%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E.pdf"><code class="xref download docutils literal notranslate"><span class="pre">Dongle低延时测试配置说明</span></code></a></p>
+</div></blockquote>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>杰理实验室测试，按照上述低延时配置耳机程序与Dongle程序：从Dongle端开始进行音频数据采样到耳机端输出的总延时约为:16.8ms</p>
+</div>
+</section>
+</section>
+<section id="id13">
+<h2>影响距离与延时的因素<a class="headerlink" href="#id13" title="Permalink to this headline"></a></h2>
+<section id="id14">
+<h3>Dongle端影响距离与延时的因素<a class="headerlink" href="#id14" title="Permalink to this headline"></a></h3>
+<ol class="arabic simple">
+<li><p>帧长，帧长越长说明单次通讯周期越长则延时越大。</p></li>
+<li><p>重发次数，重发次数越多延时越大，距离也越好。</p></li>
+<li><p>音频流节点中的同步延时，数值越大延时越大，也可以增加距离。</p></li>
+<li><p>Dongle音频流的复杂度，音效节点越多延时越大。</p></li>
+<li><p>常见帧长与重发次数的搭配推荐，一般有头戴式耳机：Dongle配置帧长5ms+重发4-5次；TWS耳机：Dongle配置帧长10ms+重发3次。</p></li>
+<li><p>降低码率，可以增加距离</p></li>
+<li><p>其他，芯片性能（需要进行DUT、CI测试）、样机（硬件检查，软件需要进行暗室测试等）、蓝牙库（跳频）策略等。部分蓝牙测试可以参考：性能指标进阶-&gt;蓝牙性能分析和调试。</p></li>
+</ol>
+</section>
+<section id="earphone">
+<h3>Earphone端影响距离与延时的因素<a class="headerlink" href="#earphone" title="Permalink to this headline"></a></h3>
+<p>1、 通过蓝牙传输策略优化距离</p>
+<ul class="simple">
+<li><p>开启afh跳频配置，BLE特征开启LL_FEAT_CHANNEL_CLASSIFICATION，同时开启频道监测</p></li>
+<li><p>具体请看 <a class="reference download internal" download="" href="../../../../../_downloads/ec5590f6f10b75a57039b806f7366c48/CIS%20%E6%B7%BB%E5%8A%A0%E8%B7%B3%E9%A2%91%E9%AA%8C%E8%AF%81%E8%AF%B4%E6%98%8E_v1.pdf"><code class="xref download docutils literal notranslate"><span class="pre">JL_Unicast跳频说明文档</span></code></a></p></li>
+</ul>
+<figure class="align-default">
+<img alt="../../../../../_images/Dongle端影响距离与延时的因素1.png" src="../../../../../_images/Dongle端影响距离与延时的因素1.png" />
+</figure>
+<p>2、 通过音频算法修复优化距离</p>
+<ul class="simple">
+<li><p>若蓝牙确实由于空中环境的干扰导致丢包，或者距离已经足够远实在是收不到包，可通过音频算法的丢包修复（PLC）功能，模拟丢包数据，达到听感上数据的连贯。</p></li>
+<li><p>丢包修复一定是在“接收端”进行处理的，播歌的丢包修复在接收端（耳机）进行处理，通话下行在接收端（如耳机）进行处理，通话上行（即mic录音数据）在接收端（dongle）进行处理。</p></li>
+<li><p>目前耳机端PLC模式有多种，默认没有启用效果更好的ADVANCE模式和JL_ADVANCE模式:</p></li>
+</ul>
+<figure class="align-default">
+<img alt="../../../../../_images/plc选择.png" src="../../../../../_images/plc选择.png" />
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>注意的是开启JL_UNICAST模式，PLC ADVANCE模式和JL_ADVANCE模式需要耳机和dongle同时开效果最好，具体PLC模式效果和资源占用见（音频配置-&gt;音频算法配置-&gt;专用PLC类型配置）。</p>
+</div>
+<p>3、可视化工具界面上配置的LE_AUDIO播放延时配置，数值越大延时越大、距离越大。（蓝牙接收、解码、同步、DAC输出等音频流相关的流程皆一并包含在里面）</p>
+<figure class="align-default">
+<img alt="../../../../../_images/耳机低延时.png" src="../../../../../_images/耳机低延时.png" />
+</figure>
+<p>4、其他影响因素还有:芯片性能（需要进行DUT、CI测试）、样机（硬件检查，软件需要进行暗室测试等）。部分蓝牙测试可以参考：性能指标进阶-&gt;蓝牙性能分析和调试。</p>
+</section>
+</section>
+<section id="acl-cis">
+<h2>断连（ACL断连）、无声（CIS断连）问题的分析帮助<a class="headerlink" href="#acl-cis" title="Permalink to this headline"></a></h2>
+<p>一般需要结合dongle日志一起分析，大部分断开是Dongle设备（如播放器关闭音乐）与蓝牙底层发起的。</p>
+<p>1、CIS音频链路断开了，0x16指是本地发起的，一般是蓝牙底层发起的。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">error</span><span class="o">&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">LL_CIS</span><span class="p">]</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">LL_CIS_MSG_DISCONNECT</span><span class="w"> </span><span class="mh">0x60</span><span class="p">,</span><span class="w"> </span><span class="mh">0x16</span><span class="w"></span>
+</pre></div>
+</div>
+<p>2、CIS音频链路断开了，0x13指是对方设备发起的，需要检查Dongle日志（如播放器关闭音乐，USB驱动收到关闭信息会断开CIS）。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">error</span><span class="o">&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">LL_CIS</span><span class="p">]</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">LL_CIS_MSG_DISCONNECT</span><span class="w"> </span><span class="mh">0x60</span><span class="p">,</span><span class="w"> </span><span class="mh">0x13</span><span class="w"></span>
+</pre></div>
+</div>
+<p>3、CIS音频链路断开了，断开原因是0x8，蓝牙底层通讯超时导致。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">error</span><span class="o">&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">LL_E</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">CONNECTION_TIMEOUT</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">error</span><span class="o">&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">LL_CIS</span><span class="p">]</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">LL_CIS_MSG_DISCONNECT</span><span class="w"> </span><span class="mh">0x60</span><span class="p">,</span><span class="w"> </span><span class="mh">0x8</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">error</span><span class="o">&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">LL_E</span><span class="p">]</span><span class="n">LL</span><span class="w"> </span><span class="n">HCI_EVENT_DISCONNECTION_COMPLETE</span><span class="o">:</span><span class="w"> </span><span class="mh">0x8</span><span class="w"></span>
+</pre></div>
+</div>
+<p>4、ACL链路断开，这时候耳机与Dongle之间的通讯会完全断开。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">APP</span><span class="p">]</span><span class="n">E</span><span class="o">&lt;-</span><span class="w"> </span><span class="n">ACL</span><span class="w"> </span><span class="n">disconnect</span><span class="p">,</span><span class="w"> </span><span class="n">hdl</span><span class="o">:</span><span class="mh">0x50</span><span class="w"></span>
+</pre></div>
+</div>
+<p>5、其余断开原因：0x3e，信号不好</p>
+<p>6、应用层断开接口，参考耳机代码</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm">* @brief 断开ACL handle的cis链路（即关闭音频通道）</span>
+<span class="cm">*</span>
+<span class="cm">* @param handle acl句柄</span>
+<span class="cm">* @param reason 断连原因。0x13：指因为对端设备业务的原因，0x16：指因为本设备业务的原因</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">ll_hci_disconnect</span><span class="p">(</span><span class="n">u16</span><span class="w"> </span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="n">u8</span><span class="w"> </span><span class="n">reason</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">// 参考耳机应用层代码应用</span>
+<span class="n">ll_hci_disconnect</span><span class="p">(</span><span class="n">acl_handle_for_disconnect_cis</span><span class="p">,</span><span class="w"> </span><span class="mh">0x13</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="le-audio-jl-unicast">
+<h2>LE_AUDIO_JL_UNICAST播歌无声卡顿问题的分析帮助<a class="headerlink" href="#le-audio-jl-unicast" title="Permalink to this headline"></a></h2>
+<p>1、检查是否创建了CIS链路</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">LE_CONNECTED</span><span class="p">]</span><span class="n">connected_perip_event_callback</span><span class="p">,</span><span class="w"> </span><span class="n">CIG_EVENT_CIS_CONNECT</span><span class="w"></span>
+
+<span class="n">connected_perip_connect_deal</span><span class="w"></span>
+</pre></div>
+</div>
+<p>2、音频流有无正常创建，查看log：[JLSTREAM]create_stream</p>
+<p>3、音频流有无正常释放：检索”create_stream”、”free_stream”是否成对出现。常见于客户改了UI流程。</p>
+<p>4、”SE”说明收到空包（一般是发送端发的数据包是空包需要检查发送端的原因，也可能这个现象是正常的）；</p>
+<p>5、”SL”说明没有收到包（可能被干扰了，可以使用蓝牙分析仪捉包检查一下）；</p>
+<p>6、相关打印：uuu，UUU，dac will empty，DA : （dac播空就会有这个打印）
+怀疑：（时钟、LE_AUDIO播放延时不够等等）</p>
+<p>7、其他杂音原因如：硬件、音频流算法节点等</p>
+</section>
+<section id="id15">
+<h2>其余问题汇总<a class="headerlink" href="#id15" title="Permalink to this headline"></a></h2>
+<section id="id16">
+<h3>LE_AUDIO_JL_UNICAST常见异常打印<a class="headerlink" href="#id16" title="Permalink to this headline"></a></h3>
+<blockquote>
+<div><p>常见异常打印汇总如下
+具体请看 <a class="reference download internal" download="" href="../../../../../_downloads/f1fda490edc18ed8421f4e681daadbd6/%E5%B8%B8%E8%A7%81log%E6%89%93%E5%8D%B0%E5%AD%97%E7%AC%A6%E5%90%AB%E4%B9%89%E8%A7%A3%E6%9E%90_20251113.pdf"><code class="xref download docutils literal notranslate"><span class="pre">LE_AUDIO_JL_UNICAS常见异常打印</span></code></a></p>
+</div></blockquote>
+</section>
+<section id="id17">
+<h3>运行时钟与低延时配置的关系是怎么样的？<a class="headerlink" href="#id17" title="Permalink to this headline"></a></h3>
+<blockquote>
+<div><p>LE_AUDIO_JL_UNICAST播歌通话默认固定使用了芯片的最高时钟，确保低延时配置不会有播歌通话音频流卡顿的问题（耳机无法知道dongle那边配置了低延时配置）。
+如果Dongle工程不是使用低延时配置而是采用默认配置，则下述截图代码clock_alloc(“le_audio”, clk_get_max_frequency());可以考虑屏蔽达到降低功耗的需求。</p>
+<figure class="align-default">
+<img alt="../../../../../_images/le_audio_jl_unicast_clock.png" src="../../../../../_images/le_audio_jl_unicast_clock.png" />
+</figure>
+</div></blockquote>
+</section>
+<section id="ll-hci-vendor-send-priv-cmddongle-lea">
+<h3>耳机调用ll_hci_vendor_send_priv_cmd发送自定义数据给dongle，出现lea断链：<a class="headerlink" href="#ll-hci-vendor-send-priv-cmddongle-lea" title="Permalink to this headline"></a></h3>
+<ol class="arabic simple">
+<li><p>最大发送数据长度过长，会出现lea断连或断言的现象:</p></li>
+</ol>
+<blockquote>
+<div><p>将耳机和dongle的aclMaxPduCToP和aclMaxPduPToC都改为 16（改大到同一数值）</p>
+<figure class="align-default">
+<img alt="../../../../../_images/dongle耳机断连1.png" src="../../../../../_images/dongle耳机断连1.png" />
+</figure>
+<p>将耳机和dongle的aclMaxPduPToC和aclMaxPduCToP都改为 36（改大到同一数值）</p>
+<figure class="align-default">
+<img alt="../../../../../_images/dongle耳机断连2.png" src="../../../../../_images/dongle耳机断连2.png" />
+</figure>
+</div></blockquote>
+<p>2.改小重发次数</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/dongle耳机断连3.png" src="../../../../../_images/dongle耳机断连3.png" />
+</figure>
+</div></blockquote>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

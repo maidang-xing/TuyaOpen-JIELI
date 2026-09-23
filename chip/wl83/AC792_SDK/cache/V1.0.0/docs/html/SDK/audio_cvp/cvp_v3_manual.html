@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>5.7. 三代通话算法调试指引 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../_static/js/custom.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.8. 单麦AEC(FullBand)算法调试指引" href="AEC%28FullBand%29.html" />
+    <link rel="prev" title="5.6. 3-mic通话调试指引" href="cvp_3mic_manual.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">5. 通话清晰语音</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="cvp_algorithm_list.html">5.1. 清晰语音算法列表</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfg_index.html">5.2. 常用配置说明</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cvp_1mic_manual.html">5.3. <strong>1-mic</strong>通话调试指引</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cvp_2mic_manual.html">5.4. <strong>2-mic</strong>通话调试指引</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cvp_2mic_hybrid_manual.html">5.5. <strong>2-mic hybrid</strong>通话调试指引</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cvp_3mic_manual.html">5.6. <strong>3-mic</strong>通话调试指引</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">5.7. <strong>三代通话算法</strong>调试指引</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">5.7.1. 算法模式</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mic">5.7.2. MIC通道配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aec">5.7.3. AEC回采配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">5.7.4. AEC回音消除配置</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id4">5.7.4.1. 功能说明</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">5.7.4.2. 参数说明</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#nlp">5.7.5. NLP非线性回音压制</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id6">5.7.5.1. 功能说明</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id7">5.7.5.2. 参数说明</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#dns">5.7.6. DNS神经网络降噪配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beamformingenc">5.7.7. Beamforming配置ENC</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id8">5.7.7.1. 调试指引</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#drc">5.7.8. 动态增益控制DRC</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id9">5.7.8.1. 功能说明</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id10">5.7.8.2. 参数说明</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#wnc">5.7.9. WNC风噪检测模块</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id11">5.7.9.1. 参数说明</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#mfdt">5.7.10. MFDT麦克风故障检测模块</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id12">5.7.10.1. 功能介绍</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id13">5.7.10.2. 参数说明</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id14">5.7.11. 流程参数模块</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id15">5.7.11.1. 功能介绍</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id16">5.7.11.2. 参数说明</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id17">5.7.12. 配置文件生成</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id18">5.7.13. 在线调试</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id19">5.7.14. 数据导出指引</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id20">5.7.15. 常用接口</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="AEC%28FullBand%29.html">5.8. <strong>单麦AEC(FullBand)算法</strong>调试指引</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cvp_third_party_manual.html">5.9. <strong>第三方通话算法</strong>通话调试指引</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html"><span class="section-number">5. </span>通话清晰语音</a> &raquo;</li>
+      <li><span class="section-number">5.7. </span><strong>三代通话算法</strong>调试指引</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="id1">
+<h1><span class="section-number">5.7. </span><strong>三代通话算法</strong>调试指引<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h1>
+<p><strong>三代通话算法</strong>（CVP-V3）集成了1mic/2mic/3mic等算法，即一个模块通过参数配置，可以兼容不同的算法类型。</p>
+<section id="id2">
+<h2><span class="section-number">5.7.1. </span>算法模式<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<hr class="docutils" />
+<p>更多算法类型说明，请跳转查阅：<a class="reference internal" href="cvp_algorithm_list.html"><span class="doc std std-doc">🔗点击跳转</span></a></p>
+<ul>
+<li><p><strong>通话算法</strong>：根据实际方案需求，选择对应的算法类型</p>
+<ul class="simple">
+<li><p><strong>1-Mic</strong>：单麦通话算法</p></li>
+<li><p><strong>1-Mic-AECNLP</strong>：单麦通话算法（仅回音消除AEC和NLP，无降噪NS）</p></li>
+<li><p><strong>2-Mic-Beamforming</strong>：双麦算法（Beamforming）</p></li>
+<li><p><strong>2-Mic-Flexible</strong>：双麦话务算法 （Flexible）</p></li>
+<li><p><strong>2-Mic-Hybrid</strong>：双麦混合算法（Talk Mic + FB Mic）</p></li>
+<li><p><strong>2-Mic-AWN</strong>：双麦抗风噪算法（TALK Mic + FF Mic，其中FF Mic设计上要有声学抗风噪处理）</p></li>
+<li><p><strong>3Mic</strong>：三麦算法</p></li>
+</ul>
+</li>
+<li><p><strong>资源统计</strong>：算法资源消耗统计（统计包含所有的算法模块）</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-center head"><p>算法类型</p></th>
+<th class="text-right head"><p>Code (k)</p></th>
+<th class="text-right head"><p>RAM (k)</p></th>
+<th class="text-right head"><p>MIPS (MHz)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p>1-Mic</p></td>
+<td class="text-right"><p>106</p></td>
+<td class="text-right"><p>51</p></td>
+<td class="text-right"><p>88</p></td>
+</tr>
+<tr class="row-odd"><td class="text-center"><p>2-Mic-Beamforming</p></td>
+<td class="text-right"><p>112</p></td>
+<td class="text-right"><p>72</p></td>
+<td class="text-right"><p>101</p></td>
+</tr>
+<tr class="row-even"><td class="text-center"><p>2-Mic-Flexible(Type=1)</p></td>
+<td class="text-right"><p>120</p></td>
+<td class="text-right"><p>84</p></td>
+<td class="text-right"><p>105</p></td>
+</tr>
+<tr class="row-odd"><td class="text-center"><p>2-Mic-Flexible(Type=0)</p></td>
+<td class="text-right"><p>120</p></td>
+<td class="text-right"><p>75</p></td>
+<td class="text-right"><p>96</p></td>
+</tr>
+<tr class="row-even"><td class="text-center"><p>3-Mic</p></td>
+<td class="text-right"><p>119</p></td>
+<td class="text-right"><p>82</p></td>
+<td class="text-right"><p>114</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2-Mic-Flexible中Type=1鲁棒性更强但ram消耗多9k左右；Type=0鲁棒性相较于Type=1较差
+</pre></div>
+</div>
+</section>
+<section id="mic">
+<h2><span class="section-number">5.7.2. </span>MIC通道配置<a class="headerlink" href="#mic" title="Permalink to this headline"></a></h2>
+</section>
+<hr class="docutils" />
+<section id="aec">
+<h2><span class="section-number">5.7.3. </span>AEC回采配置<a class="headerlink" href="#aec" title="Permalink to this headline"></a></h2>
+</section>
+<hr class="docutils" />
+<section id="id3">
+<h2><span class="section-number">5.7.4. </span>AEC回音消除配置<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<hr class="docutils" />
+<section id="id4">
+<h3><span class="section-number">5.7.4.1. </span>功能说明<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h3>
+</section>
+<section id="id5">
+<h3><span class="section-number">5.7.4.2. </span>参数说明<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p><strong>AEC_EN</strong> : 是否使能回音消除模块</br></p></li>
+<li><p><strong>AEC_Process_MaxFrequency</strong> : 回音消除处理频率最大值</br></p></li>
+<li><p><strong>AEC_Process_MinFrequency</strong> : 回音消除处理频率最小值</br></p></li>
+</ul>
+</section>
+</section>
+<section id="nlp">
+<h2><span class="section-number">5.7.5. </span>NLP非线性回音压制<a class="headerlink" href="#nlp" title="Permalink to this headline"></a></h2>
+<hr class="docutils" />
+<section id="id6">
+<h3><span class="section-number">5.7.5.1. </span>功能说明<a class="headerlink" href="#id6" title="Permalink to this headline"></a></h3>
+</section>
+<section id="id7">
+<h3><span class="section-number">5.7.5.2. </span>参数说明<a class="headerlink" href="#id7" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p><strong>NLP_Process_MaxFrequency</strong> : 非线性回音压制最大频率。<br></p></li>
+<li><p><strong>NLP_Process_MinFrequency</strong> ：非线性回音压制最小频率。</br></p></li>
+<li><p><strong>OverDrive</strong> : 影响回声压制系数计算，数值越大压制则越强，当值为0的时候则无任何回声压制作用。</br></p></li>
+</ul>
+</section>
+</section>
+<section id="dns">
+<h2><span class="section-number">5.7.6. </span>DNS神经网络降噪配置<a class="headerlink" href="#dns" title="Permalink to this headline"></a></h2>
+<hr class="docutils" />
+<ul class="simple">
+<li><p><strong>OverDrive</strong> : 降噪强度控制，DNS_OverDrive=1为降噪中间值，即算法评估出来的降噪强度。大于1的时候，即为加强降噪强度，小于1的时候，即为降低降噪强度，建议调节范围：0.2 ~ 3 。</p></li>
+<li><p><strong>GainFloor</strong> : 增益平滑系数，该系数主要用于控制降噪增益最小值。如果降噪后底噪较大，可以适当减小该值；如果出现吃音问题，可以适当提高该值，建议设定范围：0.05 ~ 0.3。</p></li>
+</ul>
+<p><img alt="" src="../../_images/cvp_sms_dns_1.png" /></p>
+</section>
+<section id="beamformingenc">
+<h2><span class="section-number">5.7.7. </span>Beamforming配置ENC<a class="headerlink" href="#beamformingenc" title="Permalink to this headline"></a></h2>
+<hr class="docutils" />
+<ul class="simple">
+<li><p><strong>ENC_Process_MaxFreq</strong> : ENC处理的频率上限</br></p></li>
+<li><p><strong>ENC_Process_MinFreq</strong> : ENC处理的频率下限</br>
+  理论上讲，线性情况下，ENC可以处理全频带的语音宽带信号（16k）。但是如果出现信号失真情况，会影响ENC的处理结果，严重情况下，会导致消除失真的语音信号。所以，比如5k以上信号出现失真情况，则把ENC_Process_MaxFreq设置成5000，超出部分不做ENC处理。当然，为了达到最佳效果，我们建议还是要保证待处理信号的保真性。</br></p></li>
+<li><p><strong>SIR_MaxFreq</strong> : ENC参考数据频段</br></p></li>
+<li><p><strong>Mic_Distance</strong> : 两个mic 拾音孔之间的物理距离，单位是mm</br>
+  该值要求尽量精确，需要借助测量工具进行科学测量。</br></p></li>
+<li><p><strong>Mic RMS diff（Target_Signal_Degradation）</strong> : 目标信号到达主麦克风与副麦克风之间的幅度差异补偿。</br>
+  该参数与两个mic之间的距离以及声学设计有关，影响ENC对噪声的抑制，以及对目标信号的保留。正常情况下，主mic信号大于等于参考mic信号。所以调试方法是，当主mic和参考mic的信号差异很小时，该值配1.0,当主mic信号大于参考mic时，则调小该值，即实现以下平衡：</br></p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">主mic信号</span> <span class="o">*</span> <span class="n">Target_Signal_Degradation</span> <span class="o">=</span> <span class="n">参考mic信号</span>
+</pre></div>
+</div>
+<p>  可以使用以下方法确定最佳参数：</br></p>
+<ul class="simple">
+<li><p>1、在安静，低混响环境中(如消音室，室外空旷安静场地)，使用人工嘴正对主mic，播放扫频或白噪信号，分别采集主mic或副mic信号。分析幅度差异。</p></li>
+<li><p>2、在安静，低混响环境中(如消音室，室外空旷安静场地)，并且打开ENC，使用人工嘴1正对主mic，使用人工嘴2正对副mic，分别在人工嘴2播放白噪，人工嘴1播放扫频，计算得到两次测试的频响FR1,FR2（FR1对应人工嘴1）,计算降噪增益频响 FR_ENC = FR1-FR2。迭代调整Target_Signal_Degradation，使FR_ENC最大。</br>
+  注意：早期配置工具，Target_Signal_Degradation是需要手动计算的，新的工具，已经可以通过填写主副mic采集信号的rms幅值差，工具自动生成。</p></li>
+<li><p><strong>ENC_Aggressfactor</strong> : 动态侵略系数，越大压制越强</br></p></li>
+<li><p><strong>ENC_Minsuppress</strong> : 静态压制最小值，越大压制越小</br></p></li>
+</ul>
+<section id="id8">
+<h3><span class="section-number">5.7.7.1. </span>调试指引<a class="headerlink" href="#id8" title="Permalink to this headline"></a></h3>
+<ol class="arabic">
+<li><p>配套工具<br>
+（1）安卓手机apk：audio_tools(“AudioTools使用手册/记录”章节) <br>
+（2）PC音频录制工具（内置于“杰理SDK工具”，工具有帮助文档）</p></li>
+<li><p>SDK配置<br>
+打开数据导出宏定义 <br>
+<img alt="" src="../../_images/export_mic_spp.png" /> <br>
+通过工具连接DUT样机，按照正常使用方式佩戴金机，然后开始录制音频数据。该操作，目的是为了录制通话人声（目标人声）到达两个mic的差异性。录制环境请遵循以下原则：</br>
+（1）空旷无混响环境</br>
+（2）安静无吵杂环境</br>
+（3）说话声音正常音量</br></p></li>
+<li><p>数据分析<br>
+将通过spp导出到手机/电脑的主副mic的数据，用音频分析软件检查频响和幅度差异，为参数调节提供理论支持。<br>
+（1）幅度方式示例如下： <br>
+<img alt="" src="../../_images/enc_data_11.png" /></p>
+<p>主mic的幅值：-35.65dB
+副mic的幅值：-37.20dB
+差值：-1.55dB（即Mic RMS diff）
+根据公式：
+主mic信号 * Target_Signal_Degradation = 参考mic信号
+Target_Signal_Degradation = 10 ^ (-1.55 / 20)
+= 0.8366
+故配置参数Target_Signal_Degradation填0.83
+  【注】后续版本支持直接填写两个mic的幅度差，由工具自己计算Target_Signal_Degradation。
+python计算如下： <br>
+<img alt="" src="../../_images/enc_data_12.png" /> <br>
+windows自带计算器计算如下：<br>
+<img alt="" src="../../_images/enc_data_13.png" /> <br>
+（2）频响分析示例 <br>
+<img alt="" src="../../_images/enc_data_14.png" /> <br>
+<img alt="" src="../../_images/enc_data_15.png" /> <br></p>
+</li>
+</ol>
+<p>  如果两个mic的频响曲线通过平移，3000Hz以内有较好的重合，表示频响正常。当然，如果全带宽频响一致，那是最好的了。如果出现频响严重不一致的问题，就需要检查电路或者mic的工艺一致性了。</p>
+</section>
+</section>
+<section id="drc">
+<h2><span class="section-number">5.7.8. </span>动态增益控制DRC<a class="headerlink" href="#drc" title="Permalink to this headline"></a></h2>
+<hr class="docutils" />
+<section id="id9">
+<h3><span class="section-number">5.7.8.1. </span>功能说明<a class="headerlink" href="#id9" title="Permalink to this headline"></a></h3>
+<p>DRC是对是对输入信号进行动态范围控制的模块，支持3段，可以通过输入输出幅度曲线设置为限幅器，压缩器，扩展器等多种类型</p>
+</section>
+<section id="id10">
+<h3><span class="section-number">5.7.8.2. </span>参数说明<a class="headerlink" href="#id10" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p><strong>NoiseGate Threshold</strong> : 噪声门门限，音频的声音强度低于此门限时，音频信号当作噪声处理，会被mute。</p></li>
+<li><p><strong>MakeUp Gain</strong>： 补偿NoiseGate Threshold与Kneeth之间的语音</p></li>
+<li><p><strong>Kneeth</strong>： 音频信号超过阈值后，压缩语音信号</p></li>
+</ul>
+<p>  基本原理：算法会对语音进行动态增益调整，调整的过程如果语音小于NoiseGate Threshold时，则将语音压制 ，如果语音大于Kneeth时，则将语音压制到Kneeth大小；MakeUp Gain是对两者之间语音进行额外的增益补偿。</br></p>
+</section>
+</section>
+<section id="wnc">
+<h2><span class="section-number">5.7.9. </span>WNC风噪检测模块<a class="headerlink" href="#wnc" title="Permalink to this headline"></a></h2>
+<hr class="docutils" />
+<section id="id11">
+<h3><span class="section-number">5.7.9.1. </span>参数说明<a class="headerlink" href="#id11" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p><strong>WindProbHighTh</strong>: 有风状态的概率阈值，越大越难判断为有风状态;</br></p></li>
+<li><p><strong>WindProbLowTh</strong>：无风状态的概率阈值，越小越难判断为无风状态；</br>
+  确定方法如下：如果需要在大于3m/s风速下做降风噪，需要用样机在3m/s的实际环境下测试，使用</br>
+<code class="docutils literal notranslate"><span class="pre">注意：有无风是由wn_msc_th和ms_th两个参数共同决定的。</span></code></br>
+<strong>WindEngDbTh</strong>：风强(dB)</br></p></li>
+</ul>
+<p>在audio_cvp_v3.c打开 WIND_DETECT_INFO_SPP_DEBUG_ENABLE可在通话是通过蓝牙spp工具查看看风噪值或者调用int audio_cvp_v3_get_wind_detect_info(int *wd_flag, float *wd_val)**接口实时获取当前的风噪强度wd_va，,填入WindEngDbTh。</br>
+<img alt="" src="../../_images/cvp_v3_wnc1.png" /> </br></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>WindEngDbTh 是判断是否有风的前提，只有风噪声强度大于此阈值时，才会进入风噪检测。
+WindProbHighTh 是在一定时间内，风噪声能量值大于WindEngDbTh的概率。两者共同作用来判断是否存在风噪。如果风噪声低于阈值，则判定为无风。
+</pre></div>
+</div>
+</section>
+</section>
+<section id="mfdt">
+<h2><span class="section-number">5.7.10. </span>MFDT麦克风故障检测模块<a class="headerlink" href="#mfdt" title="Permalink to this headline"></a></h2>
+<hr class="docutils" />
+<section id="id12">
+<h3><span class="section-number">5.7.10.1. </span>功能介绍<a class="headerlink" href="#id12" title="Permalink to this headline"></a></h3>
+<p>使用双麦时，检测到其中一个麦克风异常（比如麦克风堵塞、麦克风坏了等），主动切换成单麦模式使用另一个正常的麦克风，保证通话能正常使用。</p>
+</section>
+<section id="id13">
+<h3><span class="section-number">5.7.10.2. </span>参数说明<a class="headerlink" href="#id13" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p><strong>Detection Time</strong>：检测时间，单位：秒</p></li>
+<li><p><strong>Input Diff Threshold</strong>：麦克风能量差值，两个mic能量差异持续大于此阈值超过检测时间则会检测为故障，设置范围：0~90dB</p></li>
+<li><p><strong>Input Lower Bound</strong>：检测阈值，当有麦克风能量低于此值时，才可是做检测</p></li>
+<li><p><strong>MalfuncDet_MaxFrequency</strong>：检测频率上限</p></li>
+<li><p><strong>MalfuncDet_MinFrequency</strong>：检测频率下限</p></li>
+<li><p><strong>OnlyDetect</strong>：是否只做检测不做单麦切换</p>
+<ul>
+<li><p>0：检测到故障时自动切换到单mic模式</p></li>
+<li><p>1：只检测故障不自动切换</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id14">
+<h2><span class="section-number">5.7.11. </span>流程参数模块<a class="headerlink" href="#id14" title="Permalink to this headline"></a></h2>
+<hr class="docutils" />
+<section id="id15">
+<h3><span class="section-number">5.7.11.1. </span>功能介绍<a class="headerlink" href="#id15" title="Permalink to this headline"></a></h3>
+</section>
+<section id="id16">
+<h3><span class="section-number">5.7.11.2. </span>参数说明<a class="headerlink" href="#id16" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p><strong>PreGain</strong>：算法前预处理增益补偿。</p></li>
+<li><p><strong>Compensation Gain</strong>：降噪模块前数据的补偿增益。此值会影响降噪效果。如果降噪效果不理想，参考三代算法流程框图，关闭DNS以及DNS后的算法模块写卡，查看算法那一路的数据。如果数据幅度太小，则需要适当增大补偿增益；如果数据幅度接近爆满，则需要降低补偿增益值。</p></li>
+</ul>
+</section>
+</section>
+<section id="id17">
+<h2><span class="section-number">5.7.12. </span>配置文件生成<a class="headerlink" href="#id17" title="Permalink to this headline"></a></h2>
+<hr class="docutils" />
+<p>三代算法相较于一代二代算法，内部需要传入对应的bin文件，步骤如下；</br></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>特别注意：以下出现的 CVP_V3_CFG.bin 文件命名在调试的时候需要一致，不能做任何修改
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li><p>对于1-Mic、2-Mic-xx和3-Mic算法，需要传入bin文件；</p></li>
+<li><p>对于1-Mic-AECNLP算法，无需传入bin文件；</p></li>
+<li><p>对于双麦和三麦额外多一条相位补偿曲线，默认传NULL，后续项目需要，需在原厂指导下导出。</p></li>
+</ol>
+</section>
+<section id="id18">
+<h2><span class="section-number">5.7.13. </span>在线调试<a class="headerlink" href="#id18" title="Permalink to this headline"></a></h2>
+<hr class="docutils" />
+<p>在线调试ENC参数，感受实时效果。使能SDK板级配置喜爱的FW配置、在线调音，选择合适的通信方式即可。<br>
+<img alt="" src="../../_images/cvp_v3_update.png" /> <br>
+与一代、二代算法相比，三代算法除了支持算法节点的在线调试，还支持使用<strong>Hybrid Analysis</strong>工具进行EQ在线调试和在线试听效果。该工具能够动态检测当前通话的带宽类型（宽带或窄带），并通过拖动绿色曲线实时调整对应带宽的EQ。<br>
+<img alt="" src="../../_images/cvp_v3_update1.png" /></p>
+</section>
+<section id="id19">
+<h2><span class="section-number">5.7.14. </span>数据导出指引<a class="headerlink" href="#id19" title="Permalink to this headline"></a></h2>
+<hr class="docutils" />
+<ol class="arabic">
+<li><p>在可视化工具的调音选项下，点击“Hybrid Analysis”工具按钮以打开分析工具，界面如下：
+<img alt="" src="../../_images/cvp_v3_update26.png" /><br>
+<img alt="Hybrid分析工具界面" src="../../_images/cvp_v3_update3.png" />
+<strong>注意：导出工具的算法类型需要和三代算法节点中的通话算法一致</strong>
+<img alt="" src="../../_images/cvp_v3_update2.png" /><br>
+<strong>工具参数说明：</strong></p>
+<ul class="simple">
+<li><p><strong>增益范围、频率范围、Hp、Lp</strong>：和EQ节点的调试一致。</p></li>
+<li><p><strong>算法类型</strong>：根据当前CVP_V3节点的选择的通话算法选择，其中需要注意的是，对于通话算法3-Mic调试界面对应的有带ANC和不带ANC两类。根据实际项目是否有ANC功能进行选择。
+<img alt="" src="../../_images/cvp_v3_update4.png" /></p></li>
+<li><p><strong>Talk麦信号</strong>：主麦的声音信号，要求佩戴真实人耳，正常说话时，Talk麦和FB麦同时录制的声音。</p></li>
+<li><p><strong>FB麦信号</strong>：FB麦的声音信号，同样要求佩戴真实人耳，正常说话时，Talk麦和FB麦同时录制的声音。</p></li>
+<li><p><strong>FFT点数</strong>：固定为512点。</p></li>
+<li><p><strong>采样率（单位：Hz）</strong>：固定为16000Hz。</p></li>
+<li><p><strong>总增益（单位：dB）</strong>：作用于宽带EQ曲线和窄带EQ曲线，对曲线的总增益进行调整。(注意：适用于所有<strong>CVP-V3-xx算法中的宽带EQ曲线和窄带EQ曲线</strong>)。</p></li>
+<li><p><strong>补偿增益（单位：dB）</strong>：如果主副麦数据在输入算法前进行了数字放大，则需填写放大的dB值，默认值为0dB(注意：适用于算法类型是2MIC和3MIC)。</p></li>
+<li><p><strong>开始时间（单位：s）</strong>：需要分析数据的起始时间，默认为0秒。</p></li>
+<li><p><strong>结束时间（单位：s）</strong>：需要分析数据的结束时间，默认为10秒。</p></li>
+</ul>
+</li>
+<li><p>离线导出步骤</p>
+<ol class="arabic simple">
+<li><p>对于<strong>1-Mic、2-Mic和不带ANC的3-Mic</strong>算法模式</p></li>
+</ol>
+<ul class="simple">
+<li><p>步骤一：在工具上选择对应的算法类型。不需要导入Talk MIC和FB MIC数据。 以1-Mic对应的CVP-V3-1MIC为例，工具算法类型确定之后，目标曲线会显示对应算法需要的曲线类型。</br>
+<img alt="" src="../../_images/cvp_v3_update5.png" /><img alt="" src="../../_images/cvp_v3_update6.png" /></br></p></li>
+<li><p>步骤二：<strong>当前曲线</strong>选择<strong>宽带EQ曲线</strong>，根据实际项目拖动左框中EQ曲线，<strong>曲线的总增益可以在界面的总增益上进行适当调整</strong>；同理调整窄带EQ将<strong>当前曲线</strong>切换到窄带EQ曲线。</br>
+<img alt="" src="../../_images/cvp_v3_update7.png" /></br>
+<img alt="" src="../../_images/cvp_v3_update8.png" /></br></p></li>
+<li><p>步骤三：宽带EQ曲线和窄带EQ曲线配置完，工具点击<strong>导出</strong>并命名为<strong>CVP_V3_CFG.bin</strong>到当前SDK的download目录下。</br>
+<img alt="" src="../../_images/cvp_v3_update9.png" /></br></p></li>
+</ul>
+<ol class="arabic simple">
+<li><p>对于<strong>2-Mic-Hybrid</strong>算法模式</p></li>
+</ol>
+<ul class="simple">
+<li><p>步骤一：在工具上选择对应的算法类型。需要导入<strong>Talk MIC</strong>和<strong>FB MIC</strong>数据。工具选择算法类型，<strong>当前曲线</strong>上，相较于<strong>1</strong>只有宽带和窄带EQ曲线，但<strong>2</strong>的目标数据相较于<strong>1-Mic、2-Mic和不带ANC的3-Mic</strong>多了<strong>宽带EQ参考线</strong>和<strong>窄带EQ参考线</strong>，意味着在bin文件需要生成宽窄带对应的参考线。</br>
+<img alt="" src="../../_images/cvp_v3_update10.png" /></br>
+<img alt="" src="../../_images/cvp_v3_update11.png" /></br></p></li>
+<li><p>步骤二：分别导出宽带和窄带下<strong>TALK MIC</strong>和<strong>FB MIC</strong>的数据。当前数据选择<strong>宽带EQ曲线</strong>，在对应的Talk MIC和FB MIC选择宽带通话下对应的文件。导入成功，绿色为拉动的宽带EQ曲线，灰色为对应的TALK MIC和FB MIC的映射曲线，<strong>曲线的总增益可以在界面的总增益上进行适当调整</strong>。同理，当前曲线切换到窄带EQ曲线，导出对应的窄带EQ和窄带EQ参考线。</br>
+<img alt="" src="../../_images/cvp_v3_update12.png" /></br>
+<img alt="" src="../../_images/cvp_v3_update13.png" /></br></p></li>
+<li><p>步骤三：工具点击<strong>导出</strong>并命名为<strong>CVP_V3_CFG.bin</strong>到当前SDK的download目录下。</p></li>
+</ul>
+<ol class="arabic simple">
+<li><p>对于<strong>3-Mic带ANC功能</strong>算法模式</p></li>
+</ol>
+<ul class="simple">
+<li><p>步骤一：相较于之前的数据，从当前曲线和目标数据可以看出<strong>3-Mic带ANC功能</strong>曲线增加了不同ANC模式下数的EQ曲线数据和参考线数据。</br>
+<img alt="" src="../../_images/cvp_v3_update14.png" /> <img alt="" src="../../_images/cvp_v3_update15.png" /></br>
+对于宽带EQ曲线和窄带EQ曲线方法和<strong>1</strong>一样，不需要导入Talk MIC和FB MIC文件，直接拖动左框中绿色曲线即可，<strong>曲线的总增益可以在界面的总增益上进行适当调整</strong>。同理，将当前曲线切换到窄带EQ曲线拖动框线即可。</br>
+<img alt="" src="../../_images/cvp_v3_update16.png" /></br>
+<img alt="" src="../../_images/cvp_v3_update17.png" /></br></p></li>
+<li><p>步骤二：对于ANC三种模式下的曲线生成则需要导入对应模式下的Talk MIC和FB MIC数据。如ANC ON模式下，当前曲线选择ANC ON EQ曲线，导入对应的Talk MIC和FB MIC数据，生成灰色的参考曲线。同理，对于ANC OFF和通透模式下的曲线生成步骤一致。</br>
+<img alt="" src="../../_images/cvp_v3_update18.png" /></br></p></li>
+</ul>
+</li>
+</ol>
+<blockquote>
+<div><p><strong>注意</strong>:</p>
+<ol class="arabic simple">
+<li><p>对于ANC模式下的EQ曲线：</p>
+<ul class="simple">
+<li><p>ANC ON EQ曲线</p></li>
+<li><p>ANC OFF EQ曲线</p></li>
+<li><p>通透模式EQ曲线</p></li>
+</ul>
+</li>
+<li><p>对于ANC模式下的参考线：</p>
+<ul class="simple">
+<li><p>ANC ON EQ参考线</p></li>
+<li><p>ANC OFF EQ参考线</p></li>
+<li><p>通透模式EQ参考线</p></li>
+</ul>
+</li>
+</ol>
+<p>算法默认使用的Talk MIC和FB MIC映射生成的参考线。由于参考线不支持在线修改，因此：</p>
+<ul class="simple">
+<li><p>如果需要修改ANC模式下的效果，且是离线传入bin文件的方式，需要手动调整对应模式下的绿色曲线。</p></li>
+<li><p>比如，若在ANC ON模式下觉得工具生成的ANC ON EQ参考线效果不好，可以选择当前曲线为ANC ON EQ曲线，依据灰色曲线拖动大致曲线，然后微调直到满意效果。</br></p></li>
+<li><p>同理，ANC OFF和通透模式也可以按照类似方法进行调整。
+<img alt="" src="../../_images/cvp_v3_update19.png" /></br>
+在代码层面，对应模式的参考曲线改为对应的EQ曲线配置即可</br>
+<img alt="" src="../../_images/cvp_v3_update20.png" /></br></p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>步骤三：工具点击<strong>导出</strong>并命名为<strong>CVP_V3_CFG.bin</strong>到当前SDK的download目录下。</p></li>
+</ul>
+<ol class="arabic simple">
+<li><p>在线读取bin文件和下载bin文件
+工具新增在线读取三代算法的bin文件，读取成功后，项目的SDK中三代调音工具的算法类型不支持修改。</br>
+<img alt="" src="../../_images/cvp_v3_update21.png" /></br></p></li>
+<li><p>在线调试</p></li>
+</ol>
+<blockquote>
+<div><p><strong>注意</strong>:</p>
+<ul class="simple">
+<li><p>三代算法调音工具新增了<strong>效果试听功能</strong>。</p></li>
+<li><p>该功能支持<strong>在线切换不同的EQ曲线</strong>，并可实时试听效果。</p></li>
+<li><p>工具上<strong>仅支持EQ曲线在线调试</strong>，不支持参考线在线调试。</p></li>
+<li><p>但是，可以使用试听功能<strong>在线试听参考线曲线效果</strong>。</br>
+<img alt="" src="../../_images/cvp_v3_update22.png" /></br></p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>步骤一：开启在线调音功能，连接上样机，如图所示</br>
+<img alt="" src="../../_images/cvp_v3_update23.png" /></br></p></li>
+<li><p>步骤二：当前曲线切换到想要调试的曲线，比如宽带EQ曲线，拖动左框中的曲线，实时调试。当前曲线为宽带EQ曲线和窄带EQ曲线时候，<strong>曲线的总增益可以在界面的总增益上进行适当调整</strong></br>
+<img alt="" src="../../_images/cvp_v3_update24.png" /></br></p></li>
+<li><p>步骤三：效果试听的方式更加直接
+相较于当前曲线拖动EQ的方式，效果试听的方式更加直接。如下图所示，图中的EQ曲线，可以在效果试听选项中切换不同的选项，体验这条曲线传给不同的曲线类型的效果。</br>
+<img alt="" src="../../_images/cvp_v3_update25.png" /></br></p></li>
+</ul>
+</section>
+<section id="id20">
+<h2><span class="section-number">5.7.15. </span>常用接口<a class="headerlink" href="#id20" title="Permalink to this headline"></a></h2>
+<hr class="docutils" />
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> * 麦克风状态定义：</span>
+<span class="cm"> * 0: 正常使用双麦做Beamforming</span>
+<span class="cm"> * 1: 正常工作（Talk 模式）</span>
+<span class="cm"> * 2: 前馈麦克风工作（FF 模式）</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="n">audio_cvp_v3_get_mic_state_info</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">mic_state</span><span class="p">)</span><span class="w"></span>
+
+<span class="cm">/*</span>
+<span class="cm"> * 获取宽带窄带信息</span>
+<span class="cm"> * is_wb_state: 0 窄带 1 宽带</span>
+<span class="cm"> * */</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="n">audio_cvp_v3_get_bandwidth_info</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">is_wb_state</span><span class="p">)</span><span class="w"></span>
+
+<span class="cm">/*</span>
+<span class="cm"> * 获取风噪检测信息</span>
+<span class="cm"> * wd_flag: 0 没有风噪，1 有风噪</span>
+<span class="cm"> * 风噪强度(dB)</span>
+<span class="cm"> * */</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="n">audio_cvp_v3_get_wind_detect_info</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">wd_flag</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="o">*</span><span class="n">wd_val</span><span class="p">)</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="cvp_3mic_manual.html" class="btn btn-neutral float-left" title="5.6. 3-mic通话调试指引" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="AEC%28FullBand%29.html" class="btn btn-neutral float-right" title="5.8. 单麦AEC(FullBand)算法调试指引" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

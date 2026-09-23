@@ -1,0 +1,79 @@
+{
+  "fields": [
+    {
+      "__config__": {
+        "layout": "rowFormItem",
+        "tag": "group",
+        "tagIcon": "row",
+        "layoutTree": true,
+        "componentName": "TDM发送节点参数配置",
+        "enableUuid": "",
+        "showComponentName": true,
+        "dataType": [],
+        "template": "",
+        "span": 24,
+        "formId": 104,
+        "renderKey": "1041677138688471",
+        "children": [
+          {
+            "__config__": {
+              "label": "tdm延时保护时间（ms）",
+              "showLabel": true,
+              "changeTag": true,
+              "labelWidth": 200,
+              "tag": "el-input-number",
+              "tagIcon": "number",
+              "defaultValue": 8,
+              "span": 24,
+              "layout": "colFormItem",
+              "required": false,
+              "regList": [],
+              "dataType": [
+                "1",
+                "16"
+              ],
+              "formId": 108,
+              "renderKey": "1081677144866466",
+              "eventField": [],
+              "saveWay": "bin",
+              "emptyValue": "",
+              "originValue": 8,
+              "formItemWidth": "90%",
+              "tip": ""
+            },
+            "placeholder": "tdm延时保护时间（ms）",
+            "step": 1,
+            "step-strictly": false,
+            "controls-position": "",
+            "disabled": false,
+            "id": "id_1677642343355_1",
+            "__vModel__": "field108",
+            "min": 1,
+            "max": 1000
+          }
+        ],
+        "eventField": [],
+        "saveWay": "bin"
+      },
+      "type": "default",
+      "justify": "start",
+      "align": "top",
+      "style": {
+        "height": "100px",
+        "paddingLeft": "0px"
+      },
+      "id": "id_1678246329785_2"
+    }
+  ],
+  "formName": "选项卡名称",
+  "formRef": "elForm",
+  "formModel": "formData",
+  "size": "small",
+  "labelPosition": "right",
+  "labelWidth": 100,
+  "formRules": "rules",
+  "gutter": 15,
+  "disabled": false,
+  "span": 24,
+  "formBtns": false
+}

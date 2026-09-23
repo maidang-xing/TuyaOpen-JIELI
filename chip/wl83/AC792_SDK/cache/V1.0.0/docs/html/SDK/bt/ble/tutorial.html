@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BLE开发简介 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../_static/js/custom.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>BLE开发简介</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ble">
+<h1>BLE开发简介<a class="headerlink" href="#ble" title="Permalink to this headline"></a></h1>
+<section id="id1">
+<h2>核心特点：与经典蓝牙的区别<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<p>BLE的设计初衷与经典蓝牙（如连接耳机、音箱的传统蓝牙）不同，其核心区别如下：</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 43%" />
+<col style="width: 42%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>特性</p></td>
+<td><p>蓝牙低功耗</p></td>
+<td><p>经典蓝牙</p></td>
+</tr>
+<tr class="row-even"><td><p>目标</p></td>
+<td><p>间歇性传输少量数据</p></td>
+<td><p>持续传输大量数据（音频、文件）</p></td>
+</tr>
+<tr class="row-odd"><td><p>功耗</p></td>
+<td><p>极低，一颗纽扣电池可运行数月甚至数年</p></td>
+<td><p>较高，需要频繁充电</p></td>
+</tr>
+<tr class="row-even"><td><p>延迟</p></td>
+<td><p>非常短（仅需几毫秒即可建立连接）</p></td>
+<td><p>相对较长</p></td>
+</tr>
+<tr class="row-odd"><td><p>数据吞吐量</p></td>
+<td><p>较低（适合传感器读数、指令等小数据包）</p></td>
+<td><p>较高（适合音频流、大数据传输）</p></td>
+</tr>
+<tr class="row-even"><td><p>典型应用</p></td>
+<td><p>智能手表、健康手环、 Beacon、智能家居传感器</p></td>
+<td><p>无线耳机、音箱、车载电话、文件传输</p></td>
+</tr>
+</tbody>
+</table>
+<p>简单来说：</p>
+<ol class="arabic simple">
+<li><p>经典蓝牙 像是一根持续流水的大水管，适合传输大量数据，但耗电。</p></li>
+<li><p>BLE 像是一个滴水的水龙头，只在需要时滴几滴，极其省电。</p></li>
+</ol>
+</section>
+<section id="id2">
+<h2>BLE角色<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<p>BLE设备通常采用客户端-服务器架构，在 BLE 术语中称为：</p>
+<section id="id3">
+<h3>外围设备：也称为 从设备<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h3>
+<ol class="arabic simple">
+<li><p>它是数据的提供者（服务器）。</p></li>
+<li><p>通常是传感器或小设备，如耳机、音箱、手表。</p></li>
+<li><p>它广播自身的存在和一些基本信息。</p></li>
+<li><p>功耗极低。</p></li>
+</ol>
+</section>
+<section id="id4">
+<h3>中央设备：也称为 主设备<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h3>
+<ol class="arabic simple">
+<li><p>它是数据的消费者（客户端）。</p></li>
+<li><p>通常是功能更强大的设备，如智能手机APP、手表。</p></li>
+<li><p>它扫描周围正在广播的外围设备，发现后可以发起连接并读取或接收数据。</p></li>
+</ol>
+</section>
+</section>
+<section id="id5">
+<h2>BLE广播<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h2>
+<p>外围设备在不建立连接的情况下，周期性地发送小数据包（内容：LTV格式，最多31字节），让周围的中央设备能发现它。</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 8%" />
+<col style="width: 35%" />
+<col style="width: 56%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>特性</p></td>
+<td><p>Adv广播</p></td>
+<td><p>Rsp广播（扫描响应）</p></td>
+</tr>
+<tr class="row-even"><td><p>发起方</p></td>
+<td><p>外围设备</p></td>
+<td><p>外围设备（但由中央设备的扫描请求触发）</p></td>
+</tr>
+<tr class="row-odd"><td><p>目的</p></td>
+<td><p>宣告自身存在，提供最基本的信息</p></td>
+<td><p>提供附加信息，回应中央设备的查询</p></td>
+</tr>
+<tr class="row-even"><td><p>必要性</p></td>
+<td><p>必须存在，否则无法被发现</p></td>
+<td><p>可选，设备可以不支持此功能</p></td>
+</tr>
+<tr class="row-odd"><td><p>数据容量</p></td>
+<td><p>31字节</p></td>
+<td><p>31字节</p></td>
+</tr>
+<tr class="row-even"><td><p>工作模式</p></td>
+<td><p>单向，像无线电广播</p></td>
+<td><p>双向交互，一问一答</p></td>
+</tr>
+<tr class="row-odd"><td><p>功耗考量</p></td>
+<td><p>发送频率决定主要功耗</p></td>
+<td><p>仅在收到请求时回复，增加功耗极微</p></td>
+</tr>
+<tr class="row-even"><td><p>典型内容</p></td>
+<td><p>设备地址、发射功率、短名称、核心服务UUID</p></td>
+<td><p>完整设备名称、更多服务UUID、厂商自定义数据</p></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// 设置ble广播包写法如下：</span>
+
+<span class="c1">// 1、有第三方协议中间层写法，参考rcsp：</span>
+<span class="c1">// adv包</span>
+<span class="n">app_ble_adv_data_set</span><span class="p">(</span><span class="n">rcsp_server_ble_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">31</span><span class="p">);</span><span class="w"></span>
+<span class="c1">// rsp包</span>
+<span class="n">app_ble_rsp_data_set</span><span class="p">(</span><span class="n">rcsp_server_ble_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">31</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">// 2、无第三方协议中间层写法，参考rcsp：</span>
+<span class="c1">// adv包</span>
+<span class="n">ble_op_set_adv_data</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">);</span><span class="w"></span>
+<span class="c1">// rsp包</span>
+<span class="n">ble_op_set_rsp_data</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">// 开启、关闭ble广播：</span>
+<span class="c1">// 1、有第三方协议中间层写法，参考rcsp：</span>
+<span class="n">app_ble_adv_enable</span><span class="p">(</span><span class="n">rcsp_server_ble_hdl</span><span class="p">,</span><span class="w"> </span><span class="n">en</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">// 2、无第三方协议中间层写法，参考rcsp：</span>
+<span class="n">ble_user_cmd_prepare</span><span class="p">(</span><span class="n">BLE_CMD_ADV_ENABLE</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">en</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>BLE广播开关时机：需要被中央设备（手机APP）搜索并连接的时候开启BLE广播，已经被中央设备（手机APP）连上后关闭广播则不会再被其他设备搜索到。</p>
+</div>
+<section id="id6">
+<h3>实际应用中的策略，为什么要把广播分成两种？<a class="headerlink" href="#id6" title="Permalink to this headline"></a></h3>
+<ol class="arabic simple">
+<li><p>降低功耗：核心的、最重要的信息（比如设备地址）必须每次广播都发送。而次要信息（比如完整名称）只在有设备真正感兴趣并询问时才发送。这避免了每次广播都发送大量数据，显著降低了平均功耗。</p></li>
+<li><p>提高效率：广播信道是所有设备共享的。更短的Adv广播包占空比更小，冲突更少，信道利用率更高。</p></li>
+</ol>
+<p>因此，当你用手机扫描BLE设备时，看到的完整设备名和所有服务信息，通常是手机在收到Adv广播后，发送扫描请求，并收到扫描响应之后才组合显示出来的。</p>
+</section>
+</section>
+<section id="id7">
+<h2>BLE服务与特征<a class="headerlink" href="#id7" title="Permalink to this headline"></a></h2>
+<section id="id8">
+<h3>BLE服务<a class="headerlink" href="#id8" title="Permalink to this headline"></a></h3>
+<p>服务是一个数据的容器，用于实现设备的一个特定功能或一组相关数据。它本身不做什么，而是将相关的数据（特征）组织在一起。</p>
+<p>如rcsp服务。</p>
+</section>
+<section id="id9">
+<h3>BLE特征<a class="headerlink" href="#id9" title="Permalink to this headline"></a></h3>
+<p>特征是服务内部的实际数据值和操作对象。它是客户端（如手机）与服务器（如耳机、音箱、手表）进行读写交互的真正实体。</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 24%" />
+<col style="width: 11%" />
+<col style="width: 65%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>属性</p></td>
+<td><p>说明</p></td>
+<td><p>类比</p></td>
+</tr>
+<tr class="row-even"><td><p>Read</p></td>
+<td><p>读取</p></td>
+<td><p>医生查看你的化验报告（从设备读数据）</p></td>
+</tr>
+<tr class="row-odd"><td><p>Write</p></td>
+<td><p>写入</p></td>
+<td><p>医生开具处方单（向设备发送指令）</p></td>
+</tr>
+<tr class="row-even"><td><p>Notify</p></td>
+<td><p>通知</p></td>
+<td><p>医院主动打电话告诉你报告出来了（设备主动向手机推送数据，最省电）</p></td>
+</tr>
+<tr class="row-odd"><td><p>Indicate</p></td>
+<td><p>指示</p></td>
+<td><p>Notify类似，但需要客户端回复确认，更可靠</p></td>
+</tr>
+<tr class="row-even"><td><p>Write without response</p></td>
+<td><p>无响应写入</p></td>
+<td><p>把信扔进邮筒，不关心是否收到（发送指令，不等待回复，速度快）</p></td>
+</tr>
+</tbody>
+</table>
+<p>如rcsp服务的写特征和通知特征。</p>
+</section>
+<section id="id10">
+<h3>结构关系图<a class="headerlink" href="#id10" title="Permalink to this headline"></a></h3>
+<p>以rcsp为例：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span>设备 (Device)
+|
+└─── 服务 (Service) [rcsp服务 (0xae00)]
+|
+├─── 特征 (Characteristic) [中央设备发送数据  (0xae01)]
+|    └───  属性: WRITE_WITHOUT_RESPONSE
+|
+└─── 特征 (Characteristic) [中央设备接收数据 (0xae02)]
+      └─── 属性: NOTIFY
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>以上服务特征值（0xae00、0xae01、0xae02），是固件设备开发人员与手机APP开发人员协商使用什么值的。</p>
+</div>
+<ul class="simple">
+<li><p>服务特征开发说明详细见：</p>
+<ul>
+<li><p>make_gatt_services-v1.2.1.rar <a class="reference download internal" download="" href="../../../_downloads/fb55ef34a7f22cd9a257457a4111e511/make_gatt_services-v1.2.1.rar"><code class="xref download docutils literal notranslate"><span class="pre">点击下载</span></code></a></p></li>
+<li><p>rcsp_profile.rar <a class="reference download internal" download="" href="../../../_downloads/2616bc1ae4e0b2faffec63953223bb37/rcsp_profile.rar"><code class="xref download docutils literal notranslate"><span class="pre">点击下载</span></code></a></p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

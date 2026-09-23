@@ -1,0 +1,16 @@
+
+主要功能介绍
+===================
+
+   TWS 1拖2 SDK支持一对TWS耳机同时连接2部手机，音频播放支持抢占方式和非抢占方式
+
+.. toctree::
+   :maxdepth: 2
+   
+   系统结构介绍/index.rst
+   mode/bt/index.rst
+   mode/earphone_le_audio/index.rst
+   mode/linein/index.rst
+   mode/music/index.rst
+   mode/local_tws/index.rst
+   

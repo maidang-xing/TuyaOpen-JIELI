@@ -1,0 +1,106 @@
+LE_AUDIO_AURACAST_SINK开发说明
+############
+
+开发说明
+=============
+
+#. Auracast让蓝牙设备实现 “广播式” 音频传输，一人分享、多人收听，无需配对，这里的杰理耳机主要作为SINK接收端，接受来自Auracast源的广播音频。
+
+#. 杰理Auracast助手手机APP主要是用来配置耳机开关Auracast功能、用来选择接收哪个Auracast源头音频，详情请看杰理Auracast助手介绍。
+
+工程配置
+=============
+
+#. 开启ble和第三方协议配置
+
+    .. figure:: imgs/Auracast工程配置1.png
+
+#. 开启le_audio配置中的LE_AUDIO_AURACAST_SINK_EN
+
+    .. figure:: imgs/Auracast工程配置2.png
+
+#. 把媒体和蓝牙通话流程改为le_audio的流程
+
+    .. figure:: imgs/Auracast工程配置3.png
+
+#. 开启le_audio_sink流程
+
+    .. figure:: imgs/Auracast工程配置4.png
+
+流程说明
+=============
+
+    .. figure:: imgs/auracast_流程说明.png
+
+接口说明
+=============
+
+auracast功能初始化
+
+ .. figure:: imgs/app_auracast_sink_init.png
+.. code-block:: c
+
+  /**
+   * @brief 获取auracast状态
+   */
+  BROADCAST_STATUS le_auracast_status_get();
+
+  /**
+   * @brief 关闭auracast功能（音频、扫描）
+   */
+  void le_auracast_stop(void);
+
+  /**
+   * @brief 手机选中广播设备开始播歌
+   *
+   * @param param 要监听的广播设备
+   */
+  int app_auracast_sink_big_sync_create(auracast_sink_source_info_t *param);
+
+  /**
+   * @brief 关闭所有正在监听播歌的广播设备
+   */
+  int app_auracast_sink_big_sync_terminate(void);
+
+  /**
+   * @brief 手机通知设备开始搜索auracast广播
+   */
+  int app_auracast_sink_scan_start(void);
+
+  /**
+   * @brief 手机通知设备关闭搜索auracast广播
+   */
+  int app_auracast_sink_scan_stop(void);
+
+  /**
+   * @brief 接收端接收事件回调
+   */
+  static void auracast_sink_event_callback(uint16_t event, uint8_t *packet, uint16_t length)
+
+  /**
+   * @brief 设备收到广播设备信息汇报给手机APP
+   */
+  void auracast_sink_source_info_report_event_deal(uint8_t *packet, uint16_t length)
+
+  /**
+   * @brief 打开设备的音频流
+   */
+  static void le_auracast_audio_open(uint8_t *packet, uint16_t length)
+
+.. tip::
+
+	注：其余更多接口使用说明，详细见app_le_auracast.h/.c
+     
+参数规格
+=============
+LE_AUDIO_AURACAST资源统计如下：
+
+Bluetooth: 支持蓝牙bis+ACL 双工传输
+
+代码量：264kb (对比前后开关ble+Auracast宏编译后的app.app大小)
+
+问题汇总
+=============
+
+.. tip::
+

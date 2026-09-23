@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ANC防破音配置 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../_static/js/custom.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>ANC防破音配置</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="anc">
+<h1>ANC防破音配置<a class="headerlink" href="#anc" title="Permalink to this headline"></a></h1>
+<p><img alt="ANC防破音配置" src="../../../_images/ANC-NCN-cfg.jpg" /><br></p>
+<section id="id1">
+<h2>需求简介<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>需求场景：
+    1） 正常佩戴，播歌最大音量+ANC模式 破音问题；
+    2）挤压/摘下耳机，或者佩戴位置不同，造成耳机次级通路SZ的变化，导致音乐补偿错误，引发破音，其中头戴式耳机较为明显。
+关键词：(问题)音乐大音量破音、（输出）牺牲音乐输出 or 牺牲ANC性能
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>CPU差异： 仅 <code class="docutils literal notranslate"><span class="pre">AC700N</span></code>、<code class="docutils literal notranslate"><span class="pre">JL701N</span></code> 系列需要此功能，后续芯片不需要。</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>配置说明<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p><strong>防破音模式</strong>：</p>
+<ul>
+<li><p>关闭：不启动防破音；</p></li>
+<li><p>音乐固定限幅：牺牲音乐，限制音乐最大输出：
++ <strong>音乐固定限幅-幅值(dB)</strong> : DAC限幅幅值，软件全程有效；</p></li>
+<li><p>ANC动态增益：牺牲ANC性能：</p>
+<ul>
+<li><p><strong>ANC动态增益-触发阈值(dB)</strong> : 阈值越小，对ANC性能影响越大；</p></li>
+<li><p><strong>ANC动态增益-类型</strong>：</p>
+<ul>
+<li><p>Total Gain 对降噪影响大，触发快，无杂音;</p></li>
+<li><p>FB Gain对降噪影响小，触发慢，可能有杂音；</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="id3">
+<h2>ANC动态增益调试说明<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<section id="id4">
+<h3>调试配置项<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>打开功率打印：</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* 文件位置：./audio/common/amplitude_statistic.c */</span><span class="w"></span>
+<span class="cp">#if 1       </span><span class="c1">// ANC动态增益调试 需 打开此打印使能</span>
+<span class="cp">#define amplitude_log	printf</span>
+<span class="cp">#else</span>
+<span class="cp">#define amplitude_log(...)</span>
+<span class="cp">#endif</span><span class="cm">/*log_en*/</span><span class="cp"></span>
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h3>调试步骤<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>调试前提：用SZ的参考方式调试音乐补偿的性能，且音乐补偿的性能可靠，具体可参考（ANC调试手册 第三章节 3.4 音乐补偿）&lt;br&gt;
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Step</span> <span class="pre">1</span></code>. 将 <strong>ANC动态增益-触发阈值(dB)</strong> 配置为 <code class="docutils literal notranslate"><span class="pre">0</span></code>；<br>
+<code class="docutils literal notranslate"><span class="pre">Step</span> <span class="pre">2</span></code>. 耳机播放低频丰富的歌曲，如DJ或低音试音碟；<br>
+<code class="docutils literal notranslate"><span class="pre">Step</span> <span class="pre">3</span></code>. 摘下耳机（或其他会造成耳机破音的场景），在ANC_ON/ANC_OFF情况下对比歌曲的音质变化，不断减低音量，直到ANC_ON/ANC_OFF 歌曲音质区别不明显，即在ANC_ON情况下，音乐不失真。（建议用windows的音量调节，音量刻度有100级）；<br>
+<img alt="ANC-防破音-调试音量" src="../../../_images/ANC-NCN-vol.jpg" /><br>
+<code class="docutils literal notranslate"><span class="pre">Step</span> <span class="pre">4</span></code>. 打印下当前的音乐信号peak值，将该peak值设置的触发阈值，如某款耳机peak值为-12dB时，不失真,则设置**ANC动态增益-触发阈值(dB)**为 <code class="docutils literal notranslate"><span class="pre">-12</span></code>。<br>
+<img alt="ANC-防破音-调试打印" src="../../../_images/ANC-NCN-printf.jpg" /><br></p>
+<ul class="simple">
+<li><p>注意事项：</p>
+<ul>
+<li><p>无打印线的整机，可执行到 <code class="docutils literal notranslate"><span class="pre">Step</span> <span class="pre">3</span></code> 时，记录下不破音的音量以及歌曲播放时间位置，用相同软件烧录到带打印线的裸板或者开发板中，查看当前音乐响度对应的peak值，执行 <code class="docutils literal notranslate"><span class="pre">Step</span> <span class="pre">4</span></code>；</p></li>
+<li><p>如果没有打印环境，只能盲调减小 <strong>ANC动态增益-触发阈值(dB)</strong> 直到不破音, 或者将功率通过蓝牙SPP打印出来。</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

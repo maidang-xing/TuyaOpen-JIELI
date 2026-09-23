@@ -1,0 +1,7 @@
+固件升级
+##############
+
+.. toctree::
+   :maxdepth: 1
+
+   compress_update.rst

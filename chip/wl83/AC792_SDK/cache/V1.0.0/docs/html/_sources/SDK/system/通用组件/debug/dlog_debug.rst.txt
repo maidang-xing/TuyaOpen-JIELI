@@ -1,0 +1,577 @@
+dlog调试
+##############
+
+dlog是一种将格式化字符串的解析转移到主机端，其本身仅输出参数值的功能，最终效果跟串口log类似。该功能通过提取格式化字符串并从程序中分离，达到减少格式化字符串对.rodata段的占用（即减少flash的使用）
+
+dlog的特性
+------------
+
+    1. 不保存格式化字符串，仅输出参数的值，大大减少了格式化字符串对flash的占用
+    2. 最大支持14个可变参数，最大支持65536句打印（可完全满足项目需求）
+    3. 由于仅输出参数值，所以具有更快的输出速度
+    4. 需要使用特定上位机解析log数据
+    5. 使能dlog输出到flash保存时，需要额外的外置flash和占用更多的RAM缓存
+    6. 与串口调试方式兼容，通过printf、puts、put_buf、putchar、log_xxx类接口输出打印信息
+
+.. _dlog的参数配置:
+dlog的参数配置
+----------------
+
+    1. 相关的宏配置，dlog跟串口log功能互斥，文件位置 :file:`apps/xxx/include/app_config.h`，只能二选一,如下列举了配置频率较高的宏
+
+    .. code-block:: c
+        :linenos:
+
+        //*********************************************************************************//
+        //                    异常记录/dlog配置                                      //
+        //*********************************************************************************//
+        #if !TCFG_DEBUG_UART_ENABLE
+        #define TCFG_DEBUG_DLOG_ENABLE             1              // dlog功能使能
+        #define TCFG_DEBUG_DLOG_FLASH_SEL          1              // 选择log保存到内置flash还是外置flash; 0:内置flash; 1:外置flash(推荐)
+        #define TCFG_DLOG_FLASH_START_ADDR         (0x00)         // 配置外置flash用于存储dlog和异常数据的区域起始地址
+        #define TCFG_DLOG_FLASH_REGION_SIZE        (512 * 1024)   // 配置外置flash用于存储dlog和异常数据的区域大小
+
+        #define TCFG_NORFLASH_START_ADDR           (0x00)         // 配置外置flash起始地址
+        #define TCFG_NORFLASH_SIZE                 (512 * 1024)   // 配置外置flash大小
+        #define TCFG_DEBUG_DLOG_AUTO_FLUSH_TIMEOUT (30)           // 主动刷新的超时时间(当指定时间没有刷新过缓存数据到flash, 则主动刷新)(单位秒)
+        #define TCFG_DEBUG_DLOG_UART_TX_PIN        IO_PORT_DP    // dlog串口打印的引脚
+        #endif
+
+    .. note::
+
+        1. 注意 TCFG_DLOG_FLASH_START_ADDR 和 TCFG_NORFLASH_START_ADDR 区别
+        #. TCFG_DEBUG_DLOG_UART_TX_PIN 可以配置为任意引脚
+        #. 不建议使用内置flash保存dlog数据
+
+    2. 相关的常量配置，文件位置 :file:`apps/xxx/log_config/lib_system_config.c`，如下列举了配置频率较高的常量
+
+    .. code-block:: c
+        :linenos:
+
+        const int config_dlog_cache_buf_num = 3;   // 配置dlog缓存的个数(4K一个), 仅 config_dlog_flash_enable 使能时生效
+        const int config_dlog_flash_enable = 1;    // 使能dlog输出到flash
+        const int config_dlog_uart_enable = 1;     // 使能dlog输出到uart
+
+dlog使用步骤
+-----------
+
+    1. 关闭TCFG_DEBUG_UART_ENABLE并使能TCFG_DEBUG_DLOG_ENABLE即可打开dlog功能
+    2. 跟据实际情况进行 :ref:`dlog的参数配置`
+    3. 编译下载程序到样机中，并接上串口线
+    4. 打开命令行执行dlog.exe工具命令，通常位于 :file:`cpu/xxx/tools/dlog.exe`，具体见 :ref:`dlog工具的使用`
+    5. 样机上电即可观察到log输出到终端显示。 :ref:`log示例`
+
+    .. note:: 
+
+        1. 上述步骤主要列举了实时dlog的使用步骤，如果是离线dlog，只需要解析导出的flash_log.bin即可
+        2. 使用过程中有遇到问题请查阅 :ref:`常见问题` 、:ref:`注意事项`
+
+dlog数据的导出
+-------------
+    
+    对于存储在外置flash中的dlog数据，目前SDK未实现默认的dlog数据导出功能，需要由 **应用层自行开发**，可以通过蓝牙、串口等方式导出dlog数据。使用 dlog_read_log_data 接口可以读取dlog数据（可参考 :ref:`代码Demo`）
+
+dlog数据的解析
+-------------
+    
+    dlog数据需要使用dlog.exe上位机并配合dlog.bin进行解析，dlog.exe解析的数据来源有两种
+
+        1. :ref:`离线log数据解析`：dlog数据可以保存到flash中，然后导出并保存为flash_log.bin文件，再使用dlog.exe工具解析
+        2. :ref:`实时log数据解析`：dlog数据可以通过串口实时传输到电脑，并由dlog.exe工具实时解析输出到终端显示（类似于串口log）
+
+    .. warning::
+        
+        dlog.bin 由SDK编译生成，与sdk.elf类似，每次编译都会生成不同的dlog.bin，dlog.bin必须与样机内部的程序一致，否则无法正确解析dlog数据
+        dlog.bin 文件在SDK的位置 :file:`cpu/xxx/tools/dlog.bin`
+
+.. _dlog工具的使用:
+dlog工具的使用
+~~~~~~~~~~~~~
+
+    导出的dlog数据已经过编码，非明文log，需要通过dlog.exe工具解析后才能生成明文log，以下是dlog.exe工具的参数
+    
+    .. code-block:: text
+
+        -v 输出该工具的软件版本号
+        -p 指定串口号（仅用于串口实时log解析）
+        -b 指定串口波特率（仅用于串口实时log解析）
+        -d 指定串口的数据位（默认 8bit）（仅用于串口实时log解析）
+        -r 指定串口的校验位（默认 None）（仅用于串口实时log解析）
+        -s 指定串口的停止位（默认 1bit）（仅用于串口实时log解析）
+        -f 是否启用串口流控（默认 None）（仅用于串口实时log解析）
+        -i 指定dlog.bin文件的路径及文件名
+        -o 将解析的log输出到指定的文件
+        --flash   指定flash_log.bin文件（从样机导出的dlog数据）
+        --verbose 输出该工具的调试信息
+        --local_time 是否显示本地电脑的时间戳（仅用于串口实时log解析）
+
+    **举例：**
+        
+        .. code-block:: shell
+
+            # 1. 使用 COM5 和 2Mb 波特率来接收串口 dlog 数据，并通过 dlog.bin 解析
+                .\dlog.exe -p COM5 -b 2000000 -i dlog.bin
+
+            # 2. 在例 1 的基础上加上了本地电脑的时间戳输出
+                .\dlog.exe -p COM5 -b 2000000 -i dlog.bin --local_time
+
+            # 3. 在例 2 的基础上加上了将 log 保存到指定文件
+                .\dlog.exe -p COM5 -b 2000000 -i dlog.bin -o output_log.txt --local_time
+
+            # 4. 解析指定的 flash_log.bin，并将 log 输出到终端
+                .\dlog.exe --flash flash_log.bin -i dlog.bin
+
+            # 5. 解析指定的 flash_log.bin，并将 log 输出到指定的文件
+                .\dlog.exe --flash flash_log.bin -i dlog.bin -o output_log.txt
+
+        将上述举例中的命令放在任意终端中执行即可，如CMD、PowerShell等。也可以通过将命令放到 bat 脚本，后续双击脚本运行
+
+.. _离线log数据解析:
+离线log数据解析
+~~~~~~~~~~~~~~
+
+    假设从flash中导出的dlog数据保存为flash_log.bin文件，那么在dlog.exe工具目录执行如下命令即可解析并保存明文log打印到output_log.txt文件中
+
+    .. code-block:: shell
+        
+        .\dlog.exe --flash xxx\xxx\flash_log.bin -i xxx\xxx\dlog.bin -o output_log.txt
+
+.. _实时log数据解析:
+实时log数据解析
+~~~~~~~~~~~~~~
+
+    假设串口号为 COM5，波特率为 2M，其它参数默认，那么在dlog.exe工具目录执行如下命令即可实现解析显示明文log打印，同时保存log到output_log.txt文件中
+
+    .. code-block:: shell
+        
+        .\dlog.exe -p COM5 -b 2000000 -i xxx\xxx\dlog.bin -o output_log.txt --local_time
+    
+    .. warning:: 
+
+        由于每次编译都会生成新的dlog.bin，所以每次编译下载新程序后，需要重新打开dlog工具，已更新dlog.bin来解析新的串口打印数据
+
+代码Demo及log示例
+----------------
+
+.. _代码Demo:
+代码Demo
+~~~~~~~
+
+    代码Demo位于文件 :file:`apps/common/debug/dlog_config.c`
+
+    .. code-block:: c
+        :linenos:
+
+        // 以下是部分离线log接口的使用示例
+        void dlog_demo(void)
+        {
+            int ret;
+            // 1,刷新将离线log数据从ram保存到flash
+            // 仅仅只发送一个刷新消息后退出, 可以用于中断和任务
+            ret = dlog_flush2flash(0);
+            // 一直等待刷新成功, 若返回成功, 从函数返回后已经刷新到flash, 仅可用于任务
+            ret = dlog_flush2flash(-1);
+            // 等待1000ms, 若返回成功, 从函数返回后已经刷新到flash, 仅可用于任务
+            ret = dlog_flush2flash(100);
+
+
+            // 2,设置log的等级, 主要用于 log_xxx 类接口
+            // 设置为 info 等级, 更多等级见 debug.h
+            dlog_level_set(LOG_INFO);
+
+            
+            // 3,设置log输出的方式
+            // 设置为仅串口输出离线log
+            if(dlog_output_type_get() & DLOG_OUTPUT_2_FLASH){
+                // 如果之前有使能flash输出, 那么关闭flash输出前需要刷新ram的log到flash
+                ret = dlog_flush2flash(100);
+            }
+            dlog_output_type_set(DLOG_OUTPUT_2_UART);
+            // 离线log输出加上flash输出(如原本是仅输出到串口,设置后log同时输出到串口和flash)
+            dlog_output_type_set(dlog_output_type_get() | DLOG_OUTPUT_2_FLASH);
+
+
+            // 4,离线log的时间、日期、序号进行同步(当收到手机下发的日期、时间后需要同步一次, 以校准离线log时间)
+            dlog_info_sync();
+
+
+            // 5,读取离线log数据
+        #define TMP_BUF_SIZE         501
+            u8 *tmp_buf = malloc(TMP_BUF_SIZE);
+            u32 offset = 0;
+            int ret;
+            u8 flash_log_en = (dlog_output_type_get() & DLOG_OUTPUT_2_FLASH);  // 获取是否有使能log输出到flash
+            if(flash_log_en){
+                dlog_output_type_set(dlog_output_type_get() & (~DLOG_OUTPUT_2_FLASH));  // 禁止log输出到flash
+            }
+            while (1) {
+                // 建议使用dlog_read_log_data接口, 而不是dlog_read_from_flash接口
+                ret = dlog_read_log_data(tmp_buf, TMP_BUF_SIZE, offset);  // 读取flash中的log, 返回0表示已读取完flash的全部log
+                if (0 == ret) {
+                    // 已经全部读取
+                    break;
+                }
+                offset += ret;
+                put_buf(tmp_buf, ret > 16 ? 16 : ret);  // 将读取的log数据前16Byte打印出来
+            }
+            if(flash_log_en){
+                dlog_output_type_set(dlog_output_type_get() | DLOG_OUTPUT_2_FLASH);  // 恢复log输出到flash
+            }
+            free(tmp_buf);
+        }
+
+        // 重写弱函数的实现示例
+        _WEAK_ int dlog_get_rtc_time(struct sys_time *time)
+        {
+            // 仅需返回年月日
+            u32 year  = get_sys_year();  // get_sys_year函数需要自行实现,此处仅示例
+            u32 month = get_sys_month(); // get_sys_month函数需要自行实现,此处仅示例
+            u32 day   = get_sys_day();   // get_sys_day函数需要自行实现,此处仅示例
+            time->year = year;
+            time->month = month;
+            time->day = day;
+
+            return 0;  // 返回大于等于0表示成功
+        }
+
+        // 重写弱函数的实现示例
+        _WEAK_ u32 dlog_get_rtc_time_ms(void)
+        {
+            // dlog会多次调用这个接口获取系统时间戳, 需要应用层维护一个全局时间戳, 要处理好网络时间和本地时间的同步
+            // 返回的时间单位是毫秒, 24小时制
+            //如当前时间为 20:13:30.100, 则返回 ((21 * 60 + 13) * 60) + 30) * 1000 + 100 = 76410100毫秒
+            u32 time_ms = get_sys_time_ms();  // get_sys_time_ms函数需要自行实现, 此处仅示例
+            return time_ms;
+        }
+
+.. _log示例:
+log示例
+~~~~~~
+
+    dlog实时log界面如下图所示
+
+        .. image:: image/dlog实时log界面示例.png
+            :alt: dlog实时log界面
+            :width: 6.625in
+            :height: 3.97847in
+
+
+    dlog生成的明文log如下图所示，图中从左到右红框依次表示：log序号、手机/电脑时间戳、日期、耳机本地时间戳、log等级
+
+        .. image:: image/dlog实时log示例.png
+            :alt: dlog实时log
+            :width: 6.625in
+            :height: 2.37847in
+
+
+    .. note:: 
+
+        1. log序号表示耳机开机到输出当前log时，一共输出了多少条log
+        2. 日期为全0是由于日期需要耳机实现 dlog_get_rtc_time 接口，默认没有实现
+        3. 如果是离线log，还需要实现 dlog_get_rtc_time_ms 接口，否则手机/电脑时间戳栏也为耳机本地时间戳
+
+    log 等级定义如下：
+        +--------+--------------------------+
+        | 等级   | 接口                     |
+        +========+==========================+
+        | VERB   | log_v、log_verb          |
+        +--------+--------------------------+
+        | DEBUG  | log_d、log_debug         |
+        +--------+--------------------------+
+        | INFO   | log_i、log_info          |
+        +--------+--------------------------+
+        | WARN   | log_w、log_warn          |
+        +--------+--------------------------+
+        | ERROR  | log_e、log_error         |
+        +--------+--------------------------+
+        | CHAR   | log_c、log_char          |
+        +--------+--------------------------+
+        | UNKNOW | printf、put_buf、puts    |
+        +--------+--------------------------+
+
+
+自定义log保存方式
+---------------
+
+    SDK默认已经支持log保存到内置、外置flash，代码位于 :file:`apps/common/debug/dlog_config.c` ，如果应用层需要实现更多的log保存方式，可参考并实现如下接口
+
+    .. code-block:: c
+        :linenos:
+
+        /*----------------------------------------------------------------------------*/
+        /**@brief 获取保存dlog数据的flash起始地址和大小
+        @param  addr: 返回起始地址
+        @param  len: 返回长度
+        @param  offset: 数据需要写入的flash地址
+        @return 等于0表示成功; 小于0表示失败
+        @note   起始地址和长度必需 4K 对齐
+        */
+        /*----------------------------------------------------------------------------*/
+        static int dlog_get_xxx_zone(u32 *addr, u32 *len)
+
+        /*----------------------------------------------------------------------------*/
+        /**@brief 将flash的指定扇区擦除
+        @param  erase_sector: 要擦除的扇区偏移(偏移是相对于保存dlog数据的flash区域起始地址)
+        @param  sector_num: 要擦除的扇区个数
+        @param  offset: 数据需要写入的flash地址
+        @return 等于0表示成功; 小于0表示失败
+        @note
+        */
+        /*----------------------------------------------------------------------------*/
+        static int dlog_xxx_zone_erase(u16 erase_sector, u16 sector_num)
+
+        /*----------------------------------------------------------------------------*/
+        /**@brief 将dlog数据写入flash
+        @param  buf: 要写入的数据
+        @param  len: 要写入的数据长度
+        @param  offset: 数据需要写入的flash地址
+        @return 返回写入的长度,返回值小于0表示写入失败
+        @note
+        */
+        /*----------------------------------------------------------------------------*/
+        static int dlog_xxx_write(void *buf, u16 len, u32 offset)
+
+        /*----------------------------------------------------------------------------*/
+        /**@brief 从flash中读dlog数据
+        @param  buf: 返回要读取的数据
+        @param  len: 需要读取的数据长度
+        @param  offset: 需要读取的flash地址
+        @return 返回写入的长度,返回值小于0表示写入失败
+        @note
+        */
+        /*----------------------------------------------------------------------------*/
+        static int dlog_xxx_read(void *buf, u16 len, u32 offset)
+
+        // 返回 0 表示初始化成功
+        static int dlog_xxx_init(void)
+
+        // 实现的接口需要通过如下方式注册给dlog模块使用
+        REGISTER_DLOG_OPS(xxx_op, 1) = {
+            .dlog_output_init       = dlog_xxx_init,
+            .dlog_output_get_zone   = dlog_get_xxx_zone,
+            .dlog_output_zone_erase = dlog_xxx_zone_erase,
+            .dlog_output_write      = dlog_xxx_write,
+            .dlog_output_read       = dlog_xxx_read,
+            .dlog_output_direct     = dlog_output_direct,     // 这个接口不需要实现，可直接引用
+        };
+
+.. _常见问题:
+常见问题
+-------
+
+命令行乱码
+~~~~~~~~~
+
+    当文件路径存在中文时，如果命令行出现中文乱码问题，可以先执行下面命令，再执行dlog命令
+
+    .. code-block:: powershell
+        
+        chcp 65001
+
+生成的log文件大小为0
+~~~~~~~~~~~~~~~~~~
+
+    在使用dlog工具解析离线log时，生成的log文件大小为通常是由于样机的程序与dlog.bin不匹配，通过下图打印的hash可以确认
+
+        .. image:: image/dlog的hash不匹配示例.png
+            :alt: dlog的hash不匹配
+            :width: 2.625in
+            :height: 2.67847in
+
+无法打开串口
+~~~~~~~~~~~
+
+    dlog工具报 “[ERROR] Serial port open fail.”， 检查串口号是否被其它软件占用
+
+无法打开文件
+~~~~~~~~~~~
+
+    dlog工具报 “[ERROR] The dlog file open fail.”，请检查文件路径和文件名是否正确，是否存在中文乱码
+
+出现log丢失
+~~~~~~~~~~
+
+    该问题主要出现在离线的log中，通常出现这种问题原因有以下几点：
+
+        1. 打印太多的log，由于flash写入速度较慢，导出缓存写满，而丢失最新打印
+        2. 系统过于繁忙，无法及时将缓存的log刷新到flash中
+    
+    解决方法：
+        1. 优化log，如提高log等级，减少不必要的打印
+        2. 加大缓存，通过配置 config_dlog_cache_buf_num 参数加大缓存
+
+实时log出现部分打印解析出错
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    检查dlog.bin与下载到样机的程序是否匹配，检查重新下载程序后有没有重新打开dlog工具
+
+.. _注意事项:
+注意事项
+-------
+
+    1. dlog工具无法识别实时串口log数据与dlog.bin是否匹配，需要用户确认，否则输出的log会有误（离线log数据解析无此问题）
+    2. 打印接口最大仅支持14个可变的参数，如果参数个数超过14个，可以分成2次进行打印
+
+dlog的flash消耗对比
+------------------
+
+    dlog 不需要保存格式化字符串到.rodata段，因此可以减少对flash的使用，对比结果如下表格所示：
+
+        +-----------------+----------+------------------+--------------+------------------------+
+        | ...             | 使能dlog | 使能普通串口打印 | 完全关闭打印 | 使能dlog并关掉断言打印 |
+        +=================+==========+==================+==============+========================+
+        | 打印使用的flash | 96KB     | 160KB            | 0KB          | 55KB                   |
+        +-----------------+----------+------------------+--------------+------------------------+
+
+    .. note:: 
+
+        1. 主要是指减少用于保存程序的内置flash消耗，用于保存dlog数据的外置flash不在讨论范围，即使没有外置flash也能通过串口输出实时的dlog打印
+        2. 该参考数据基于可视化耳机SDK测试得到
+        3. 目前断言打印占用了较多的flash空间，flash较少的项目可以关闭断言（config_asser 设置为0）
+
+dlog接口使用说明
+---------------
+
+    dlog.h文件有详细接口说明，此处列举常用接口。文件位置 :file:`interface/utils/generic/dlog.h`
+
+    .. code-block:: c
+        :linenos:
+
+        /*----------------------------------------------------------------------------*/
+        /**@brief dlog功能的临时使能/失能
+        @param  en
+                    0 : 禁止打印数据输出(禁止输出到缓冲区)
+                    1 : 使能打印数据输出(使能输出到缓冲区)
+        @return void
+        @note   只是临时开关打印数据输出, 不刷新缓冲区数据到flash,(可自行调用flush接口)
+        */
+        /*----------------------------------------------------------------------------*/
+        void dlog_enable(u8 en);
+
+        /*----------------------------------------------------------------------------*/
+        /**@brief 更新 ram 的数据到 flash 中
+        @param  timeout 刷新等待时间
+                    0 : 不等待, 只发送消息给任务刷新dlog, 不管是否刷新成功, 都马上退出
+                    -1: 一直等待, 直到刷新成功才退出该函数
+                    xx: 刷新成功则马上退出, 否则等待 xx * 10ms的超时时间, 直到刷新成功
+        @return 成功返回 0, 失败返回非 0
+        @note   不可在中断/关中断传入非 0 参数值
+        */
+        /*----------------------------------------------------------------------------*/
+        int dlog_flush2flash(u32 timeout);
+
+        /*----------------------------------------------------------------------------*/
+        /**@brief 读取flash中的dlog信息
+        @param  buf    : 返回读取的数据
+        @param  len    : 需要读取的数据长度
+        @param  offset : 读取数据的偏移(偏移是相对于flash区域起始地址)
+        @return 返回读取到的数据长度,0表示已读取完数据
+        @note
+        */
+        /*----------------------------------------------------------------------------*/
+        u16 dlog_read_from_flash(u8 *buf, u16 len, u32 offset);
+
+        /*----------------------------------------------------------------------------*/
+        /**@brief 读取flash中的dlog和异常数据
+        @param  buf    : 返回读取的数据
+        @param  len    : 需要读取的数据长度
+        @param  offset : 读取数据的偏移(偏移是相对于flash区域起始地址)
+        @return 返回读取到的数据长度,0表示已读取完数据
+        @note
+        */
+        /*----------------------------------------------------------------------------*/
+        u16 dlog_read_log_data(u8 *buf, u16 len, u32 offset);
+
+        /*----------------------------------------------------------------------------*/
+        /**@brief 设置dlog等级
+        @param  level  : 等级, 如下宏定义所示
+                                __LOG_VERB      0
+                                __LOG_DEBUG     1
+                                __LOG_INFO      2
+                                __LOG_WARN      3
+                                __LOG_ERROR     4
+                                __LOG_CHAR      5
+        @return void
+        @note
+        */
+        /*----------------------------------------------------------------------------*/
+        void dlog_level_set(int level);
+
+        /*----------------------------------------------------------------------------*/
+        /**@brief 获取dlog等级
+        @param  void
+        @return level  : 等级, 如下宏定义所示
+                                __LOG_VERB      0
+                                __LOG_DEBUG     1
+                                __LOG_INFO      2
+                                __LOG_WARN      3
+                                __LOG_ERROR     4
+                                __LOG_CHAR      5
+        @note
+        */
+        /*----------------------------------------------------------------------------*/
+        int dlog_level_get(void);
+
+        /*----------------------------------------------------------------------------*/
+        /**@brief 设置dlog的输出类型
+        @param  type     :
+                        DLOG_OUTPUT_2_NONE: 既不输出到串口也不输出到flash,仅输出到缓存
+                        DLOG_OUTPUT_2_FLASH: 仅输出到flash
+                        DLOG_OUTPUT_2_UART: 仅输出到串口
+        @return : 如果返回值不为0, 则表示缓存数据没有刷新到flash(非丢数据)
+        @note 需要同时输出到串口和flash可用位或(DLOG_OUTPUT_2_UART | DLOG_OUTPUT_2_FLASH)
+        */
+        /*----------------------------------------------------------------------------*/
+        int dlog_output_type_set(enum DLOG_OUTPUT_TYPE type);
+
+        /*----------------------------------------------------------------------------*/
+        /**@brief 获取dlog的输出类型
+        @param  void
+        @return : enum DLOG_OUTPUT_TYPE
+        @note
+        */
+        /*----------------------------------------------------------------------------*/
+        enum DLOG_OUTPUT_TYPE dlog_output_type_get(void);
+
+        /*----------------------------------------------------------------------------*/
+        /**@brief 输出dlog的同步信息
+        @param  void
+        @return : 大于等于0表示执行成功
+        @note 由于时间戳和序号采用增量形式,所以通过该接口可以输出一个绝对值进行同步
+        */
+        /*----------------------------------------------------------------------------*/
+        int dlog_info_sync(void);
+
+        /*----------------------------------------------------------------------------*/
+        /**@brief dlog用于获取rtc时间的年月日,需要外部重写实现,若不支持rtc时间可忽略
+        @param  time : 用于保存返回的年月日
+        @return : 大于等于0表示成功获取
+        @note 
+        */
+        /*----------------------------------------------------------------------------*/
+        _WEAK_ int dlog_get_rtc_time(struct sys_time *time);
+
+        /*----------------------------------------------------------------------------*/
+        /**@brief dlog用于获取rtc时间的时分秒毫秒,需要外部重写实现,若不支持rtc时间可忽略
+        @param  void
+        @return : 返回时分秒毫秒组成的一个整数值,24小时制
+        @note  如当前时间为 21:13:30.100, 则返回 ((21 * 60 + 13) * 60) + 30) * 1000 + 100 = 76410100
+        */
+        /*----------------------------------------------------------------------------*/
+        _WEAK_ u32 dlog_get_rtc_time_ms(void);
+
+    .. note::
+
+        1. 如果需要支持rtc日期时间输出，需要用户实现 dlog_get_rtc_time 和 dlog_get_rtc_time_ms 接口（可参考 :ref:`代码Demo`）
+        #. 推荐使用 dlog_read_log_data 读取dlog的log数据
+
+
+
+
+
+
+
+
+
+
+

@@ -8,6 +8,7 @@ Select the target with the JIELI_CHIP environment variable (default: wl82).
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -20,16 +21,28 @@ MODULE_ROOT = Path(__file__).resolve().parent
 class JielichipConfig:
     """Per-chip layout of a vendor SDK checkout plus the build entry points."""
 
-    def __init__(self, name: str, cpu: str, sdk_dir: str, probe: Path,
-                 board_build_relative: Path, elf_relative: Path, tools_relative: Path,
-                 legacy_sdk_dirs=()):
+    def __init__(
+        self,
+        name: str,
+        cpu: str,
+        sdk_dir: str,
+        probe: Path,
+        sdk_source_relative: Path,
+        board_build_relative: Path,
+        elf_relative: Path,
+        tools_relative: Path,
+        raw_app_sections: tuple[str, ...],
+        legacy_sdk_dirs=(),
+    ):
         self.name = name
         self.cpu = cpu
         self.sdk_dir = sdk_dir
         self.probe = probe
+        self.sdk_source_relative = sdk_source_relative
         self.board_build_relative = board_build_relative
         self.elf_relative = elf_relative
         self.tools_relative = tools_relative
+        self.raw_app_sections = raw_app_sections
         self.legacy_sdk_dirs = tuple(legacy_sdk_dirs)
 
 
@@ -42,22 +55,24 @@ JIELI_CHIPS = {
         # module root and existing checkouts may still have it there.
         legacy_sdk_dirs=("AC79_AIoT_SDK",),
         probe=Path("apps/demo/demo_hello/board/wl82/Makefile"),
+        sdk_source_relative=Path("."),
         board_build_relative=Path("apps/demo/demo_hello/board/wl82"),
         elf_relative=Path("cpu/wl82/tools/sdk.elf"),
         tools_relative=Path("cpu/wl82/tools"),
+        raw_app_sections=(".text", ".data", ".ram0_data", ".cache_ram_data", ".dynamic_data"),
     ),
-    # wl83 (AC792N) bring-up placeholder. The layout entries follow the
-    # fw-AC792_SDK tree but have NOT been validated by a build yet; pin them
-    # when the port starts (see chip/wl83/README.md).
     "wl83": JielichipConfig(
         name="wl83",
         cpu="wl83",
         sdk_dir="chip/wl83/AC792_SDK",
         legacy_sdk_dirs=(),
-        probe=Path("sdk/Makefile"),
-        board_build_relative=Path("sdk/apps/demo"),
-        elf_relative=Path("sdk/cpu/wl83/tools/sdk.elf"),
-        tools_relative=Path("sdk/cpu/wl83/tools"),
+        probe=Path("sdk/apps/demo/demo_hello/board/wl83/Makefile"),
+        sdk_source_relative=Path("sdk"),
+        board_build_relative=Path("apps/demo/demo_hello/board/wl83"),
+        elf_relative=Path("cpu/wl83/tools/sdk.elf"),
+        tools_relative=Path("cpu/wl83/tools"),
+        # Match AC792 SDK's Windows download.c section concatenation order.
+        raw_app_sections=(".text", ".data", ".dcache_ram_data", ".video_ram_data", ".ram0_data"),
     ),
 }
 
@@ -128,8 +143,80 @@ def link_directory(link: Path, target: Path) -> None:
         raise OSError(result.returncode, f"cannot link {link} to {target}: {detail}")
 
 
-def configure_reference_log_uart(board_file: Path) -> None:
-    """Match the reference IPC_AC7916A UART2 logging configuration."""
+def configure_ac79_log_uart(board_file: Path, uart_port: int, baudrate: int) -> None:
+    """Match the official AC79 DevKitBoard UART1/PB3 logging configuration."""
+    if uart_port != 1:
+        raise BuildError("AC79_DevKitBoard logging uses SDK UART1 (PB3)")
+    if not board_file.is_file():
+        return
+
+    content = board_file.read_text(encoding="utf-8")
+    marker = "UART1_PLATFORM_DATA_BEGIN(uart1_data)"
+    end = "UART1_PLATFORM_DATA_END();"
+    start = content.find(marker)
+    if start < 0:
+        uart2_marker = "UART2_PLATFORM_DATA_BEGIN(uart2_data)"
+        insertion = content.find(uart2_marker)
+        if insertion < 0:
+            raise BuildError(f"Jieli board file has no UART2 insertion point: {board_file}")
+        uart_block = (
+            "UART1_PLATFORM_DATA_BEGIN(uart1_data)\n"
+            f"    .baudrate = {baudrate},\n"
+            "    .port = PORT_REMAP,\n"
+            "    .output_channel = OUTPUT_CHANNEL0,\n"
+            "    .tx_pin = IO_PORTB_03,\n"
+            "    .rx_pin = -1,\n"
+            "    .max_continue_recv_cnt = 1024,\n"
+            "    .idle_sys_clk_cnt = 500000,\n"
+            "    .clk_src = PLL_48M,\n"
+            "    .flags = UART_DEBUG,\n"
+            "UART1_PLATFORM_DATA_END();\n\n"
+        )
+        content = content[:insertion] + uart_block + content[insertion:]
+    else:
+        finish = content.find(end, start)
+        if finish < 0:
+            raise BuildError(f"Jieli board file has an incomplete UART1 block: {board_file}")
+        finish += len(end)
+        uart_block = content[start:finish]
+        replacements = (
+            (r"\.baudrate\s*=\s*\d+\s*,", f".baudrate = {baudrate},"),
+            (r"\.port\s*=\s*[^,]+,", ".port = PORT_REMAP,"),
+            (r"\.output_channel\s*=\s*[^,]+,", ".output_channel = OUTPUT_CHANNEL0,"),
+            (r"\.tx_pin\s*=\s*[^,]+,", ".tx_pin = IO_PORTB_03,"),
+            (r"\.rx_pin\s*=\s*[^,]+,", ".rx_pin = -1,"),
+        )
+        for pattern, replacement in replacements:
+            uart_block, count = re.subn(pattern, replacement, uart_block, count=1)
+            if count != 1:
+                raise BuildError(f"AC79 UART1 log setting was not found in {board_file}")
+        content = content[:start] + uart_block + content[finish:]
+
+    init_marker = "uart_init(&uart2_data);"
+    content, count = content.replace(init_marker, "uart_init(&uart1_data);", 1), content.count(init_marker)
+    if count != 1:
+        raise BuildError(f"AC79 debug_uart_init does not initialize UART2 in {board_file}")
+    board_file.write_text(content, encoding="utf-8")
+
+
+def configure_ac792_log_uart(board_header: Path, uart_port: int, baudrate: int) -> None:
+    """Set AC792N's documented UART0 log baud in the staged board profile."""
+    if uart_port != 0:
+        raise BuildError("AC792N_Develop_Board logging uses SDK UART0 (PD1)")
+    content = board_header.read_text(encoding="utf-8")
+    content, count = re.subn(
+        r"(#define\s+TCFG_UART0_BAUDRATE\s+)\d+",
+        rf"\g<1>{baudrate}",
+        content,
+        count=1,
+    )
+    if count != 1:
+        raise BuildError(f"AC792 UART0 baudrate was not found in {board_header}")
+    board_header.write_text(content, encoding="utf-8")
+
+
+def configure_service_uart(board_file: Path) -> None:
+    """Move Tuya logical UART0/CLI to UART2, separate from UART1/PB3 logs."""
     if not board_file.is_file():
         return
 
@@ -137,59 +224,32 @@ def configure_reference_log_uart(board_file: Path) -> None:
     begin = "UART2_PLATFORM_DATA_BEGIN(uart2_data)"
     end = "UART2_PLATFORM_DATA_END();"
     start = content.find(begin)
-    if start < 0:
-        raise BuildError(f"Jieli board file has no UART2 block: {board_file}")
-    finish = content.find(end, start)
-    if finish < 0:
-        raise BuildError(f"Jieli board file has an incomplete UART2 block: {board_file}")
+    finish = content.find(end, start) if start >= 0 else -1
+    if start < 0 or finish < 0:
+        raise BuildError(f"Jieli board file has no complete UART2 service block: {board_file}")
     finish += len(end)
-
     uart_block = content[start:finish]
-    for old, new in (
-        (".baudrate = 1000000,", ".baudrate = 115200,"),
-        (".port = PORT_REMAP,", ".port = PORTB_6_7,"),
-        (".tx_pin = IO_PORTB_03,", ".tx_pin = IO_PORTB_06,"),
-    ):
-        uart_block = uart_block.replace(old, new, 1)
-    board_file.write_text(content[:start] + uart_block + content[finish:], encoding="utf-8")
+    replacements = (
+        (r"\.baudrate\s*=\s*\d+\s*,", ".baudrate = 115200,"),
+        (r"\.port\s*=\s*[^,]+,", ".port = PORTB_6_7,"),
+        (r"\.tx_pin\s*=\s*[^,]+,", ".tx_pin = IO_PORTB_06,"),
+        (r"\.rx_pin\s*=\s*[^,]+,", ".rx_pin = IO_PORTB_07,"),
+        (r"\.flags\s*=\s*[^,]+,", ".flags = 0,"),
+    )
+    for pattern, replacement in replacements:
+        uart_block, count = re.subn(pattern, replacement, uart_block, count=1)
+        if count != 1:
+            raise BuildError(f"AC79 UART2 service setting was not found in {board_file}")
+    content = content[:start] + uart_block + content[finish:]
 
-
-def configure_service_uart(board_file: Path) -> None:
-    """Add the separate Jieli UART used by Tuya logical UART0/CLI."""
-    if not board_file.is_file():
-        return
-
-    content = board_file.read_text(encoding="utf-8")
-    if "UART1_PLATFORM_DATA_BEGIN(uart1_data)" not in content:
-        marker = "UART2_PLATFORM_DATA_BEGIN(uart2_data)"
-        uart_block = (
-            "UART1_PLATFORM_DATA_BEGIN(uart1_data)\n"
-            "    .baudrate = 115200,\n"
-            "    .port = PORTB_3_4,\n"
-            "    .tx_pin = IO_PORTB_03,\n"
-            "    .rx_pin = IO_PORTB_04,\n"
-            "    .max_continue_recv_cnt = 1024,\n"
-            "    .idle_sys_clk_cnt = 500000,\n"
-            "    .clk_src = PLL_48M,\n"
-            "    .flags = UART_DEBUG,\n"
-            "UART1_PLATFORM_DATA_END();\n\n"
-        )
-        if marker not in content:
-            raise BuildError(f"Jieli board file has no UART2 block: {board_file}")
-        content = content.replace(marker, uart_block + marker, 1)
-
-    device_marker = '{"uart2", &uart_dev_ops, (void *)&uart2_data },'
-    device_entry = '\t{"uart1", &uart_dev_ops, (void *)&uart1_data },\n'
-    if '{"uart1", &uart_dev_ops, (void *)&uart1_data },' not in content:
-        if device_marker not in content:
-            raise BuildError(f"Jieli board file has no uart2 device entry: {board_file}")
-        content = content.replace(device_marker, device_entry + device_marker, 1)
+    if '{"uart2", &uart_dev_ops, (void *)&uart2_data },' not in content:
+        raise BuildError(f"Jieli board file has no uart2 service device entry: {board_file}")
 
     board_file.write_text(content, encoding="utf-8")
 
 
-def configure_full_stack_wifi(board_file: Path) -> None:
-    """Add the AC7916A RF calibration required by the WiFi SDK libraries."""
+def configure_full_stack_wifi(board_file: Path, reference_board_file: Optional[Path] = None) -> None:
+    """Add the chip-specific RF calibration required by the WiFi SDK libraries."""
     if not board_file.is_file():
         return
 
@@ -198,22 +258,38 @@ def configure_full_stack_wifi(board_file: Path) -> None:
         return
 
     marker = "/**************************  POWER config ****************************/"
+    calibration_block = None
+    if reference_board_file is not None and reference_board_file.is_file():
+        reference = reference_board_file.read_text(encoding="utf-8")
+        start = reference.find("const struct wifi_calibration_param wifi_calibration_param = {")
+        finish = reference.find("};", start) if start >= 0 else -1
+        if start >= 0 and finish >= 0:
+            calibration_block = reference[start : finish + 2]
+    if calibration_block is None:
+        calibration_block = (
+            "const struct wifi_calibration_param wifi_calibration_param = {\n"
+            "    .xosc_l = 0xb,\n"
+            "    .xosc_r = 0xb,\n"
+            "    .pa_trim_data = {1, 7, 4, 7, 11, 1, 7},\n"
+            "    .mcs_dgain = {45, 45, 45, 42, 60, 60, 75, 70,\n"
+            "                   62, 52, 50, 38, 62, 80, 70, 62,\n"
+            "                   50, 48, 40, 36},\n"
+            "};"
+        )
     calibration = (
         "#if defined CONFIG_BT_ENABLE || defined CONFIG_WIFI_ENABLE\n"
         "#include \"wifi/wifi_connect.h\"\n"
-        "const struct wifi_calibration_param wifi_calibration_param = {\n"
-        "    .xosc_l = 0xb,\n"
-        "    .xosc_r = 0xb,\n"
-        "    .pa_trim_data = {1, 7, 4, 7, 11, 1, 7},\n"
-        "    .mcs_dgain = {45, 45, 45, 42, 60, 60, 75, 70,\n"
-        "                   62, 52, 50, 38, 62, 80, 70, 62,\n"
-        "                   50, 48, 40, 36},\n"
-        "};\n"
+        f"{calibration_block}\n"
         "#endif\n\n"
     )
-    if marker not in content:
-        raise BuildError(f"Jieli board file has no power config marker: {board_file}")
-    board_file.write_text(content.replace(marker, calibration + marker, 1), encoding="utf-8")
+    if marker in content:
+        content = content.replace(marker, calibration + marker, 1)
+    else:
+        board_init_marker = "void board_init("
+        if board_init_marker not in content:
+            raise BuildError(f"Jieli board file has no calibration insertion point: {board_file}")
+        content = content.replace(board_init_marker, calibration + board_init_marker, 1)
+    board_file.write_text(content, encoding="utf-8")
 
 
 def configure_full_stack_app_config(app_config_file: Path) -> None:
@@ -231,6 +307,7 @@ def configure_full_stack_app_config(app_config_file: Path) -> None:
 #define CONFIG_WIFI_ENABLE
 
 #ifdef CONFIG_BT_ENABLE
+#define TCFG_BT_MODE                       BT_NORMAL
 #define CONFIG_BT_RX_BUFF_SIZE              0
 #define CONFIG_BT_TX_BUFF_SIZE              0
 #define TCFG_USER_BLE_ENABLE                1
@@ -247,18 +324,179 @@ def configure_full_stack_app_config(app_config_file: Path) -> None:
     app_config_file.write_text(content[:insert_at] + config + content[insert_at:], encoding="utf-8")
 
 
-def configure_full_stack_board(board_file: Path) -> None:
+def configure_ac792_devkit_memory(chip_config_file: Path, board_config_file: Path) -> None:
+    """Use the AC792N development-board reference SKU (AC7926A) memory map."""
+    content = chip_config_file.read_text(encoding="utf-8")
+    content = content.replace("(1 * 1024 * 1024)", "(8 * 1024 * 1024)", 1)
+    content = content.replace("(2 * 1024 * 1024)", "(16 * 1024 * 1024)", 1)
+    chip_config_file.write_text(content, encoding="utf-8")
+
+    content = board_config_file.read_text(encoding="utf-8")
+    content = content.replace("#define CONFIG_NO_SDRAM_ENABLE", "/* External DDR is enabled for AC7926A DevKit. */", 1)
+    board_config_file.write_text(content, encoding="utf-8")
+
+
+def configure_full_stack_board(board_file: Path, reference_board_file: Optional[Path] = None) -> None:
     """Apply the vendor board initialization needed before Tuya starts networking."""
-    configure_full_stack_wifi(board_file)
+    configure_full_stack_wifi(board_file, reference_board_file)
     content = board_file.read_text(encoding="utf-8")
     if "cfg_file_parse();" in content:
         return
 
     marker = "void board_init()\n{\n\tboard_power_init();"
-    replacement = marker + "\n#ifdef CONFIG_BT_ENABLE\n    void cfg_file_parse(void);\n    cfg_file_parse();\n#endif"
-    if marker not in content:
-        raise BuildError(f"Jieli board file has no board_init power init: {board_file}")
-    board_file.write_text(content.replace(marker, replacement, 1), encoding="utf-8")
+    if marker in content:
+        replacement = marker + "\n#ifdef CONFIG_BT_ENABLE\n    void cfg_file_parse(void);\n    cfg_file_parse();\n#endif"
+        content = content.replace(marker, replacement, 1)
+    else:
+        board_init_marker = "void board_init(void)\n{"
+        if board_init_marker not in content:
+            raise BuildError(f"Jieli board file has no board_init function: {board_file}")
+        replacement = board_init_marker + "\n#ifdef CONFIG_BT_ENABLE\n    void cfg_file_parse(void);\n    cfg_file_parse();\n#endif"
+        content = content.replace(board_init_marker, replacement, 1)
+    board_file.write_text(content, encoding="utf-8")
+
+
+def configure_full_stack_audio_board(
+    board_file: Path, audio_config_header: Path, chip_name: str
+) -> None:
+    """Stage the selected board's audio data without editing the vendor SDK."""
+    if chip_name not in ("wl82", "wl83"):
+        raise BuildError(f"audio board configuration is unsupported for chip '{chip_name}'")
+    if not board_file.is_file():
+        raise BuildError(f"Jieli board file is missing for audio staging: {board_file}")
+    if not audio_config_header.is_file():
+        raise BuildError(f"Jieli audio board profile is missing: {audio_config_header}")
+
+    content = board_file.read_text(encoding="utf-8")
+    staged_header = board_file.parent / "audio_config.h"
+    sentinel = "/* TUYAOPEN_JIELI_AUDIO_BOARD_CONFIG */"
+    if sentinel in content:
+        if '#include "server/audio_dev.h"' not in content:
+            audio_include = '#include "audio_config.h"'
+            if audio_include not in content:
+                raise BuildError(f"Jieli audio board file has no audio config include: {board_file}")
+            content = content.replace(
+                audio_include,
+                audio_include + '\n#include "server/audio_dev.h"',
+                1,
+            )
+            board_file.write_text(content, encoding="utf-8")
+        staged_header.write_bytes(audio_config_header.read_bytes())
+        return
+
+    include_marker = '#include "asm/includes.h"'
+    if include_marker not in content:
+        raise BuildError(f"Jieli board file has no audio include insertion point: {board_file}")
+    content = content.replace(
+        include_marker,
+        include_marker + '\n#include "audio_config.h"\n#include "server/audio_dev.h"',
+        1,
+    )
+
+    table_marker = "REGISTER_DEVICES(device_table) = {"
+    table_start = content.find(table_marker)
+    if table_start < 0:
+        raise BuildError(f"Jieli board file has no device table: {board_file}")
+    if re.search(r'\{\s*"audio"\s*,\s*&audio_dev_ops', content):
+        raise BuildError(f"Jieli board file already registers an audio device: {board_file}")
+
+    if chip_name == "wl82":
+        declarations = r'''
+/* TUYAOPEN_JIELI_AUDIO_BOARD_CONFIG */
+static const struct dac_platform_data tuya_audio_dac_data = {
+    .pa_auto_mute = 0,
+    .pa_mute_port = JIELI_AUDIO_PA_MUTE_PORT,
+    .pa_mute_value = JIELI_AUDIO_PA_MUTE_LEVEL,
+    .differ_output = JIELI_AUDIO_DAC_DIFFER_OUTPUT,
+    .hw_channel = JIELI_AUDIO_DAC_HW_CHANNEL,
+    .ch_num = JIELI_AUDIO_DAC_CHANNEL_COUNT,
+    .vcm_init_delay_ms = JIELI_AUDIO_DAC_VCM_INIT_DELAY_MS,
+};
+static const struct adc_platform_data tuya_audio_adc_data = {
+    .mic_channel = JIELI_AUDIO_MIC_CHANNEL,
+    .mic_ch_num = JIELI_AUDIO_MIC_CHANNEL_COUNT,
+    /* MIC bias remains at the vendor default; no board-confirmed override. */
+};
+static const struct audio_pf_data tuya_audio_pf_data = {
+    .adc_pf_data = &tuya_audio_adc_data,
+    .dac_pf_data = &tuya_audio_dac_data,
+};
+static const struct audio_platform_data tuya_audio_data = {
+    .private_data = (void *)&tuya_audio_pf_data,
+};
+'''
+        init_code = (
+            "    gpio_direction_output(JIELI_AUDIO_PA_MUTE_PORT, JIELI_AUDIO_PA_MUTE_LEVEL);\n"
+            "    dac_early_init(0, JIELI_AUDIO_DAC_HW_CHANNEL, JIELI_AUDIO_DAC_VCM_INIT_DELAY_MS);\n"
+        )
+        early_marker = re.search(r"void\s+board_early_init\s*\([^)]*\)\s*\{", content)
+        if early_marker is None:
+            raise BuildError(f"Jieli board file has no board_early_init function: {board_file}")
+        devices_marker = content.find("devices_init();", early_marker.end())
+        if devices_marker < 0:
+            raise BuildError(f"Jieli board early init has no devices_init call: {board_file}")
+        devices_finish = devices_marker + len("devices_init();")
+        content = (
+            content[:devices_marker]
+            + init_code
+            + content[devices_marker:devices_finish]
+            + "\n    msleep(JIELI_AUDIO_PA_RELEASE_DELAY_MS);\n"
+            + "    gpio_direction_output(JIELI_AUDIO_PA_MUTE_PORT, !JIELI_AUDIO_PA_MUTE_LEVEL);"
+            + content[devices_finish:]
+        )
+    else:
+        declarations = r'''
+/* TUYAOPEN_JIELI_AUDIO_BOARD_CONFIG */
+static const struct dac_platform_data tuya_audio_dac_data = {
+    .pa_auto_mute = 0,
+    .pa_mute_port = JIELI_AUDIO_PA_MUTE_PORT,
+    .pa_mute_value = JIELI_AUDIO_PA_MUTE_LEVEL,
+    .differ_output = JIELI_AUDIO_DAC_DIFFER_OUTPUT,
+    .hw_channel = JIELI_AUDIO_DAC_HW_CHANNEL,
+    .ch_num = JIELI_AUDIO_DAC_CHANNEL_COUNT,
+    .vcm_init_delay_ms = 1000,
+};
+static const struct adc_platform_data tuya_audio_adc_data = {
+    .mic_port = JIELI_AUDIO_MIC_PORTS,
+    .mic_ch_num = JIELI_AUDIO_MIC_CHANNEL_COUNT,
+    /* Board routing selects ADC0/PORT0/BIAS0; no second mic is enabled. */
+};
+static const struct audio_pf_data tuya_audio_pf_data = {
+    .adc_pf_data = &tuya_audio_adc_data,
+    .dac_pf_data = &tuya_audio_dac_data,
+};
+static const struct audio_platform_data tuya_audio_data = {
+    .private_data = (void *)&tuya_audio_pf_data,
+};
+'''
+        early_marker = re.search(r"void\s+board_early_init\s*\([^)]*\)\s*\{", content)
+        if early_marker is None:
+            raise BuildError(f"Jieli board file has no board_early_init function: {board_file}")
+        devices_marker = content.find("devices_init();", early_marker.end())
+        if devices_marker < 0:
+            raise BuildError(f"Jieli board early init has no devices_init call: {board_file}")
+        content = content[:devices_marker] + (
+            "    gpio_direction_output(JIELI_AUDIO_PA_MUTE_PORT, JIELI_AUDIO_PA_MUTE_LEVEL);\n"
+        ) + content[devices_marker:]
+        init_marker = re.search(r"void\s+board_init\s*\([^)]*\)\s*\{", content)
+        if init_marker is None:
+            raise BuildError(f"Jieli board file has no board_init function: {board_file}")
+        content = content[:init_marker.end()] + (
+            "\n    dac_early_init(JIELI_AUDIO_DAC_HW_CHANNEL, JIELI_AUDIO_DAC_VCM_CAP_ENABLE);\n"
+            "    msleep(JIELI_AUDIO_PA_RELEASE_DELAY_MS);\n"
+            "    gpio_direction_output(JIELI_AUDIO_PA_MUTE_PORT, !JIELI_AUDIO_PA_MUTE_LEVEL);\n"
+        ) + content[init_marker.end():]
+
+    content = content[:table_start] + declarations + "\n" + content[table_start:]
+    table_start = content.find(table_marker)
+    table_open = content.find("{", table_start + len(table_marker) - 1)
+    if table_open < 0:
+        raise BuildError(f"Jieli device table has no opening brace: {board_file}")
+    content = content[: table_open + 1] + (
+        '\n    {"audio", &audio_dev_ops, (void *)&tuya_audio_data },'
+    ) + content[table_open + 1 :]
+    board_file.write_text(content, encoding="utf-8")
+    staged_header.write_bytes(audio_config_header.read_bytes())
 
 
 def resolve_sdk_root(
@@ -274,16 +512,18 @@ def resolve_sdk_root(
     candidates.append((module_root / chip.sdk_dir).resolve())
     for legacy in chip.legacy_sdk_dirs:
         candidates.append((module_root / legacy).resolve())
-    candidates.append((module_root / "../../../AC79_AIoT_SDK").resolve())
+    if chip.name == "wl82":
+        candidates.append((module_root / "../../../AC79_AIoT_SDK").resolve())
 
     for candidate in candidates:
         if (candidate / chip.probe).is_file():
             return candidate
 
     searched = ", ".join(str(path) for path in candidates)
+    sdk_repo = "fw-AC79_AIoT_SDK" if chip.name == "wl82" else "fw-AC792_SDK"
     raise BuildError(
-        f"AC79 SDK not found for chip '{chip.name}'; set JIELI_SDK_ROOT to a "
-        f"fw-AC79_AIoT_SDK checkout. Searched: {searched}"
+        f"Jieli SDK not found for chip '{chip.name}'; set JIELI_SDK_ROOT to a "
+        f"{sdk_repo} checkout. Searched: {searched}"
     )
 
 
@@ -323,7 +563,7 @@ def build_make_command(sdk_root: Path, tool_dir: Path, jobs: int = 1) -> list[st
     if jobs < 1:
         raise ValueError("jobs must be at least 1")
     chip = resolve_chip()
-    board_dir = sdk_root / chip.board_build_relative
+    board_dir = sdk_root / chip.sdk_source_relative / chip.board_build_relative
     elf_target = "../../../../../" + chip.elf_relative.as_posix()
     command = [
         "make",
@@ -346,53 +586,76 @@ def create_staging_tree(
     header_dir: Optional[Path] = None,
     full_stack: bool = False,
     tuya_lib_dir: Optional[Path] = None,
+    uart_log_port: int = 0,
+    uart_log_baudrate: int = 115200,
 ) -> Path:
     """Create a small overlay tree without modifying the vendor checkout."""
     if staging_root.exists():
         shutil.rmtree(staging_root)
 
     build_root = staging_root / "build"
-    build_root.mkdir(parents=True)
+    chip = resolve_chip()
+    vendor_root = sdk_root / chip.sdk_source_relative
+    source_overlay_root = build_root / chip.sdk_source_relative
+    source_overlay_root.mkdir(parents=True)
     for name in ("cpu", "include_lib", "lib", "tools"):
-        link_directory(build_root / name, sdk_root / name)
+        link_directory(source_overlay_root / name, vendor_root / name)
 
-    apps_root = build_root / "apps"
+    apps_root = source_overlay_root / "apps"
     apps_root.mkdir()
-    link_directory(apps_root / "common", sdk_root / "apps/common")
+    link_directory(apps_root / "common", vendor_root / "apps/common")
     shutil.copytree(
-        sdk_root / "apps/demo/demo_hello",
+        vendor_root / "apps/demo/demo_hello",
         apps_root / "demo/demo_hello",
     )
-    configure_reference_log_uart(apps_root / "demo/demo_hello/board/wl82/board.c")
-    configure_service_uart(apps_root / "demo/demo_hello/board/wl82/board.c")
+    board_file = source_overlay_root / chip.board_build_relative / "board.c"
+    app_config_file = source_overlay_root / "apps/demo/demo_hello/include/app_config.h"
+    if chip.name == "wl82":
+        configure_ac79_log_uart(board_file, uart_log_port, uart_log_baudrate)
+        configure_service_uart(board_file)
+    else:
+        configure_ac792_log_uart(
+            source_overlay_root / "apps/demo/demo_hello/board/wl83/board_demo.h",
+            uart_log_port,
+            uart_log_baudrate,
+        )
     if full_stack:
-        configure_full_stack_board(apps_root / "demo/demo_hello/board/wl82/board.c")
-        configure_full_stack_app_config(apps_root / "demo/demo_hello/include/app_config.h")
+        reference_board_file = (
+            vendor_root / "apps/demo/demo_wifi_ext/board/wl83/board.c"
+            if chip.name == "wl83"
+            else None
+        )
+        configure_full_stack_board(board_file, reference_board_file)
+        if chip.name == "wl82":
+            configure_full_stack_audio_board(
+                board_file,
+                tuyaopen_root / "boards/JIELI/AC79_DevKitBoard/audio_config.h",
+                chip.name,
+            )
+        configure_full_stack_app_config(app_config_file)
+    if chip.name == "wl83":
+        configure_ac792_devkit_memory(
+            source_overlay_root / "apps/demo/demo_hello/board/wl83/chip_cfg.h",
+            source_overlay_root / "apps/demo/demo_hello/board/wl83/board_demo.h",
+        )
     platform_root = tuyaopen_root / "platform/JIELI"
     entry_source = "tuyaos_switch_app_main.c" if full_stack else "tuyaos_app_main.c"
-    shutil.copy2(platform_root / entry_source, build_root / "tuyaos_app_main.c")
-    if not full_stack:
-        shutil.copy2(
-            tuyaopen_root / "examples/get-started/jieli_uart_hello/src/example_jieli_uart_hello.c",
-            build_root / "tuyaopen_uart_hello.c",
-        )
+    shutil.copy2(platform_root / entry_source, source_overlay_root / "tuyaos_app_main.c")
     shutil.copytree(
         platform_root / "tuyaos/tuyaos_adapter",
-        build_root / "tuyaos_adapter",
+        source_overlay_root / "tuyaos_adapter",
     )
     utilities_root = tuyaopen_root / "tools/porting/adapter/utilities"
     if utilities_root.is_dir():
-        shutil.copytree(utilities_root, build_root / "tuya_utilities")
+        shutil.copytree(utilities_root, source_overlay_root / "tuya_utilities")
 
-    makefile = apps_root / "demo/demo_hello/board/wl82/Makefile"
+    makefile = source_overlay_root / chip.board_build_relative / "Makefile"
     content = makefile.read_text(encoding="utf-8")
     vendor_main = "../../../../../apps/demo/demo_hello/app_main.c"
     if vendor_main not in content:
-        raise BuildError(f"AC79 demo Makefile has no app_main source: {makefile}")
+        raise BuildError(f"Jieli demo Makefile has no app_main source: {makefile}")
     content = content.replace(vendor_main, "../../../../../tuyaos_app_main.c")
     extra_sources = "c_SRC_FILES += \\\n"
-    if not full_stack:
-        extra_sources += "    ../../../../../tuyaopen_uart_hello.c \\\n"
     extra_sources += (
         "    ../../../../../tuyaos_adapter/src/system/tkl_output.c \\\n"
         "    ../../../../../tuyaos_adapter/src/system/tkl_system.c \\\n"
@@ -433,11 +696,9 @@ def create_staging_tree(
     if marker not in content:
         raise BuildError(f"AC79 demo Makefile has no object list marker: {makefile}")
     content = content.replace(marker, extra_sources + "\n" + marker, 1)
-    if full_stack:
-        # The TuyaOpen hello template is a no-SDRAM image by default.  The
-        # AC7916A Wi-Fi/BLE SDK libraries use the SDRAM linker layout (the
-        # vendor demo_wifi image is configured this way as well), so remove
-        # the template-only no-SDRAM define from the staging Makefile.
+    if full_stack and chip.name == "wl82":
+        # The AC791 Wi-Fi/BLE SDK libraries use the SDRAM linker layout, so
+        # remove the minimal hello template's no-SDRAM define in staging.
         content = content.replace("\t-DCONFIG_NO_SDRAM_ENABLE \\\n", "", 1)
     content += "\n"
     content += "INCLUDES += \\\n"
@@ -456,14 +717,14 @@ def create_staging_tree(
     content += "    -I../../../../../include_lib/btstack \\\n"
     content += "    -I../../../../../include_lib/btstack/le \\\n"
     content += "    -I../../../../../include_lib/btctrler \\\n"
-    content += "    -I../../../../../include_lib/btctrler/port/wl82 \\\n"
+    content += f"    -I../../../../../include_lib/btctrler/port/{chip.cpu} \\\n"
     content += f"    -I{tuyaopen_root}/src/common/include\n"
     content += "INCLUDES += \\\n"
     content += "    -I../../../../../tuyaos_adapter/include \\\n"
     content += "    -I../../../../../tuyaos_adapter/include/system \\\n"
     content += "    -I../../../../../tuyaos_adapter/include/driver \\\n"
     content += "    -I../../../../../include_lib/driver/device \\\n"
-    content += "    -I../../../../../include_lib/driver/cpu/wl82 \\\n"
+    content += f"    -I../../../../../include_lib/driver/cpu/{chip.cpu} \\\n"
     content += "    -I../../../../../include_lib/net/lwip_2_2_0 \\\n"
     content += "    -I../../../../../include_lib/net/lwip_2_2_0/lwip/src/include \\\n"
     content += "    -I../../../../../include_lib/net/lwip_2_2_0/lwip/src/include/compat \\\n"
@@ -480,35 +741,34 @@ def create_staging_tree(
     if full_stack:
         content += "DEFINES += -DCONFIG_NET_ENABLE=1 -DCONFIG_BT_ENABLE=1 -DCONFIG_TWS_ENABLE -DCONFIG_BTCTRLER_TASK_DEL_ENABLE -DCONFIG_LMP_CONN_SUSPEND_ENABLE -DCONFIG_LMP_REFRESH_ENCRYPTION_KEY_ENABLE\n"
         if tuya_lib_dir is None:
-            raise BuildError("TuyaOpen library directory is required for the full wl82 image")
+            raise BuildError("TuyaOpen library directory is required for the full Jieli image")
         content += "LFLAGS += \\\n"
         # The vendor LTO used-symbol list does not reference wlc_main when
         # Wi-Fi is entered through the Tuya TKL layer.  Force-retain the
         # vendor entry point so cpu.a[wlc.c.o] is extracted by the linker.
         content += "    -u wlc_main \\\n"
         content += f"    --start-group {tuya_lib_dir}/libtuyaapp.a {tuya_lib_dir}/libtuyaos.a \\\n"
-        # The vendor base Makefile links cpu.a/system.a before this Tuya
-        # library group.  BLE/Wi-Fi archives introduce aes/SDRAM allocator
-        # references later, so repeat these provider archives inside the
-        # group to let the linker rescan them and resolve those symbols.
-        content += "    ../../../../../cpu/wl82/liba/cpu.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/system.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/hsm.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/event.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/common_lib.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/wpasupplicant.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/http_cli.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/https_cli.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/json.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/libmbedtls_3_4_0.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/lwip_2_2_0.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/wl_wifi_sta.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/net_server.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/wl_rf_common.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/btctrler.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/btstack.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/crypto_toolbox_Osize.a \\\n"
-        content += "    ../../../../../cpu/wl82/liba/lib_ccm_aes.a \\\n"
+        # AC791's vendor Makefile links cpu.a/system.a before this Tuya
+        # library group. BLE/Wi-Fi archives introduce provider references
+        # later, so repeat those archives inside the group for a rescan.
+        liba = f"../../../../../cpu/{chip.cpu}/liba"
+        libraries = (
+            "cpu.a", "system.a", "hsm.a", "event.a", "common_lib.a",
+            "wpasupplicant.a", "http_cli.a", "https_cli.a", "json.a",
+            "libmbedtls_3_4_0.a", "lwip_2_2_0.a", "wl_wifi_sta.a",
+            "net_server.a", "wl_rf_common.a", "btctrler.a", "btstack.a",
+            "crypto_toolbox_Osize.a", "lib_ccm_aes.a",
+        )
+        if chip.name == "wl82":
+            # The AC79 full-stack board overlay registers audio_dev_ops.
+            libraries += ("audio_server.a",)
+        if chip.name == "wl83":
+            # AC792's WPA/SAE archives delegate crypto primitives to this
+            # provider; AC791's equivalent implementation is bundled in its
+            # wpasupplicant archive.
+            libraries += ("libcrypto_mbedtls.a",)
+        for library in libraries:
+            content += f"    {liba}/{library} \\\n"
         content += "    --end-group\n"
     if header_dir is not None:
         content += f"INCLUDES += -I{header_dir}\n"

@@ -1,0 +1,306 @@
+# **三代通话算法**调试指引
+
+**三代通话算法**（CVP-V3）集成了1mic/2mic/3mic等算法，即一个模块通过参数配置，可以兼容不同的算法类型。
+
+## 算法模式
+---
+更多算法类型说明，请跳转查阅：[🔗点击跳转](./cvp_algorithm_list.md)
+
+- **通话算法**：根据实际方案需求，选择对应的算法类型
+  - **1-Mic**：单麦通话算法
+  - **1-Mic-AECNLP**：单麦通话算法（仅回音消除AEC和NLP，无降噪NS）
+  - **2-Mic-Beamforming**：双麦算法（Beamforming）
+  - **2-Mic-Flexible**：双麦话务算法 （Flexible）
+  - **2-Mic-Hybrid**：双麦混合算法（Talk Mic + FB Mic）
+  - **2-Mic-AWN**：双麦抗风噪算法（TALK Mic + FF Mic，其中FF Mic设计上要有声学抗风噪处理）
+  - **3Mic**：三麦算法
+- **资源统计**：算法资源消耗统计（统计包含所有的算法模块）
+  | 算法类型 | Code (k) | RAM (k) | MIPS (MHz) |
+  |:-----------:|----------:|--------:|------------:|
+  | 1-Mic | 106 | 51 | 88 |
+  | 2-Mic-Beamforming | 112 | 72 | 101 |
+  | 2-Mic-Flexible(Type=1) | 120 | 84 |  105|
+  | 2-Mic-Flexible(Type=0) | 120 | 75 |  96|
+  | 3-Mic | 119 | 82 | 114 |
+```
+2-Mic-Flexible中Type=1鲁棒性更强但ram消耗多9k左右；Type=0鲁棒性相较于Type=1较差
+```
+
+
+## MIC通道配置
+---
+
+## AEC回采配置
+---
+
+## AEC回音消除配置
+---
+### 功能说明
+### 参数说明
+- **AEC_EN** : 是否使能回音消除模块</br>
+- **AEC_Process_MaxFrequency** : 回音消除处理频率最大值</br>
+- **AEC_Process_MinFrequency** : 回音消除处理频率最小值</br>
+
+## NLP非线性回音压制
+---
+### 功能说明
+### 参数说明
+- **NLP_Process_MaxFrequency** : 非线性回音压制最大频率。<br>
+- **NLP_Process_MinFrequency** ：非线性回音压制最小频率。</br>
+- **OverDrive** : 影响回声压制系数计算，数值越大压制则越强，当值为0的时候则无任何回声压制作用。</br>
+
+## DNS神经网络降噪配置
+---
+- **OverDrive** : 降噪强度控制，DNS_OverDrive=1为降噪中间值，即算法评估出来的降噪强度。大于1的时候，即为加强降噪强度，小于1的时候，即为降低降噪强度，建议调节范围：0.2 ~ 3 。
+- **GainFloor** : 增益平滑系数，该系数主要用于控制降噪增益最小值。如果降噪后底噪较大，可以适当减小该值；如果出现吃音问题，可以适当提高该值，建议设定范围：0.05 ~ 0.3。
+
+![](./assets/cvp_sms_dns_1.png) 
+
+## Beamforming配置ENC
+---
+- **ENC_Process_MaxFreq** : ENC处理的频率上限</br>
+- **ENC_Process_MinFreq** : ENC处理的频率下限</br>
+&emsp;&emsp;理论上讲，线性情况下，ENC可以处理全频带的语音宽带信号（16k）。但是如果出现信号失真情况，会影响ENC的处理结果，严重情况下，会导致消除失真的语音信号。所以，比如5k以上信号出现失真情况，则把ENC_Process_MaxFreq设置成5000，超出部分不做ENC处理。当然，为了达到最佳效果，我们建议还是要保证待处理信号的保真性。</br>
+- **SIR_MaxFreq** : ENC参考数据频段</br>
+- **Mic_Distance** : 两个mic 拾音孔之间的物理距离，单位是mm</br>
+&emsp;&emsp;该值要求尽量精确，需要借助测量工具进行科学测量。</br>
+- **Mic RMS diff（Target_Signal_Degradation）** : 目标信号到达主麦克风与副麦克风之间的幅度差异补偿。</br>
+&emsp;&emsp;该参数与两个mic之间的距离以及声学设计有关，影响ENC对噪声的抑制，以及对目标信号的保留。正常情况下，主mic信号大于等于参考mic信号。所以调试方法是，当主mic和参考mic的信号差异很小时，该值配1.0,当主mic信号大于参考mic时，则调小该值，即实现以下平衡：</br>
+```
+主mic信号 * Target_Signal_Degradation = 参考mic信号
+```
+
+&emsp;&emsp;可以使用以下方法确定最佳参数：</br>
+- 1、在安静，低混响环境中(如消音室，室外空旷安静场地)，使用人工嘴正对主mic，播放扫频或白噪信号，分别采集主mic或副mic信号。分析幅度差异。
+- 2、在安静，低混响环境中(如消音室，室外空旷安静场地)，并且打开ENC，使用人工嘴1正对主mic，使用人工嘴2正对副mic，分别在人工嘴2播放白噪，人工嘴1播放扫频，计算得到两次测试的频响FR1,FR2（FR1对应人工嘴1）,计算降噪增益频响 FR_ENC = FR1-FR2。迭代调整Target_Signal_Degradation，使FR_ENC最大。</br>
+&emsp;&emsp;注意：早期配置工具，Target_Signal_Degradation是需要手动计算的，新的工具，已经可以通过填写主副mic采集信号的rms幅值差，工具自动生成。
+
+- **ENC_Aggressfactor** : 动态侵略系数，越大压制越强</br>
+- **ENC_Minsuppress** : 静态压制最小值，越大压制越小</br>
+
+##### 调试指引
+1. 配套工具<br>
+（1）安卓手机apk：audio_tools(“AudioTools使用手册/记录”章节) <br>
+（2）PC音频录制工具（内置于“杰理SDK工具”，工具有帮助文档）
+2. SDK配置<br>
+打开数据导出宏定义 <br>
+![](./assets/cvp_dms/export_mic_spp.png) <br>
+通过工具连接DUT样机，按照正常使用方式佩戴金机，然后开始录制音频数据。该操作，目的是为了录制通话人声（目标人声）到达两个mic的差异性。录制环境请遵循以下原则：</br>
+（1）空旷无混响环境</br>
+（2）安静无吵杂环境</br>
+（3）说话声音正常音量</br>
+3. 数据分析<br>
+将通过spp导出到手机/电脑的主副mic的数据，用音频分析软件检查频响和幅度差异，为参数调节提供理论支持。<br>
+（1）幅度方式示例如下： <br>
+![](./assets/cvp_dms/enc_data_11.png) 
+
+    主mic的幅值：-35.65dB
+    副mic的幅值：-37.20dB
+    差值：-1.55dB（即Mic RMS diff）
+    根据公式：
+    主mic信号 * Target_Signal_Degradation = 参考mic信号
+    Target_Signal_Degradation = 10 ^ (-1.55 / 20)
+        = 0.8366
+    故配置参数Target_Signal_Degradation填0.83
+&emsp;&emsp;【注】后续版本支持直接填写两个mic的幅度差，由工具自己计算Target_Signal_Degradation。
+python计算如下： <br>
+![](./assets/cvp_dms/enc_data_12.png) <br>
+windows自带计算器计算如下：<br> 
+![](./assets/cvp_dms/enc_data_13.png) <br>
+（2）频响分析示例 <br>
+![](./assets/cvp_dms/enc_data_14.png) <br>
+![](./assets/cvp_dms/enc_data_15.png) <br>
+
+&emsp;&emsp;如果两个mic的频响曲线通过平移，3000Hz以内有较好的重合，表示频响正常。当然，如果全带宽频响一致，那是最好的了。如果出现频响严重不一致的问题，就需要检查电路或者mic的工艺一致性了。
+
+## 动态增益控制DRC
+---
+### 功能说明
+DRC是对是对输入信号进行动态范围控制的模块，支持3段，可以通过输入输出幅度曲线设置为限幅器，压缩器，扩展器等多种类型
+### 参数说明
+- **NoiseGate Threshold** : 噪声门门限，音频的声音强度低于此门限时，音频信号当作噪声处理，会被mute。
+- **MakeUp Gain**： 补偿NoiseGate Threshold与Kneeth之间的语音
+- **Kneeth**： 音频信号超过阈值后，压缩语音信号
+
+&emsp;&emsp;基本原理：算法会对语音进行动态增益调整，调整的过程如果语音小于NoiseGate Threshold时，则将语音压制 ，如果语音大于Kneeth时，则将语音压制到Kneeth大小；MakeUp Gain是对两者之间语音进行额外的增益补偿。</br>
+
+
+## WNC风噪检测模块
+---
+### 参数说明
+- **WindProbHighTh**: 有风状态的概率阈值，越大越难判断为有风状态;</br>
+- **WindProbLowTh**：无风状态的概率阈值，越小越难判断为无风状态；</br>
+&emsp;&emsp;确定方法如下：如果需要在大于3m/s风速下做降风噪，需要用样机在3m/s的实际环境下测试，使用</br>
+`注意：有无风是由wn_msc_th和ms_th两个参数共同决定的。`</br>
+**WindEngDbTh**：风强(dB)</br>
+
+在audio_cvp_v3.c打开 WIND_DETECT_INFO_SPP_DEBUG_ENABLE可在通话是通过蓝牙spp工具查看看风噪值或者调用int audio_cvp_v3_get_wind_detect_info(int *wd_flag, float *wd_val)**接口实时获取当前的风噪强度wd_va，,填入WindEngDbTh。</br>
+![](./assets/cvp_v3/cvp_v3_wnc1.png) </br>
+
+```
+WindEngDbTh 是判断是否有风的前提，只有风噪声强度大于此阈值时，才会进入风噪检测。
+WindProbHighTh 是在一定时间内，风噪声能量值大于WindEngDbTh的概率。两者共同作用来判断是否存在风噪。如果风噪声低于阈值，则判定为无风。
+```
+
+## MFDT麦克风故障检测模块
+---
+### 功能介绍
+使用双麦时，检测到其中一个麦克风异常（比如麦克风堵塞、麦克风坏了等），主动切换成单麦模式使用另一个正常的麦克风，保证通话能正常使用。
+
+### 参数说明
+- **Detection Time**：检测时间，单位：秒
+- **Input Diff Threshold**：麦克风能量差值，两个mic能量差异持续大于此阈值超过检测时间则会检测为故障，设置范围：0~90dB
+- **Input Lower Bound**：检测阈值，当有麦克风能量低于此值时，才可是做检测
+- **MalfuncDet_MaxFrequency**：检测频率上限
+- **MalfuncDet_MinFrequency**：检测频率下限
+- **OnlyDetect**：是否只做检测不做单麦切换
+  - 0：检测到故障时自动切换到单mic模式
+  - 1：只检测故障不自动切换
+
+## 流程参数模块
+---
+
+### 功能介绍
+### 参数说明
+- **PreGain**：算法前预处理增益补偿。
+- **Compensation Gain**：降噪模块前数据的补偿增益。此值会影响降噪效果。如果降噪效果不理想，参考三代算法流程框图，关闭DNS以及DNS后的算法模块写卡，查看算法那一路的数据。如果数据幅度太小，则需要适当增大补偿增益；如果数据幅度接近爆满，则需要降低补偿增益值。
+
+
+## 配置文件生成
+---
+
+三代算法相较于一代二代算法，内部需要传入对应的bin文件，步骤如下；</br>
+```
+特别注意：以下出现的 CVP_V3_CFG.bin 文件命名在调试的时候需要一致，不能做任何修改
+```
+1. 对于1-Mic、2-Mic-xx和3-Mic算法，需要传入bin文件；
+2. 对于1-Mic-AECNLP算法，无需传入bin文件；
+3. 对于双麦和三麦额外多一条相位补偿曲线，默认传NULL，后续项目需要，需在原厂指导下导出。
+
+## 在线调试
+---
+
+在线调试ENC参数，感受实时效果。使能SDK板级配置喜爱的FW配置、在线调音，选择合适的通信方式即可。<br>
+![](./assets/cvp_v3/cvp_v3_update.png) <br>
+与一代、二代算法相比，三代算法除了支持算法节点的在线调试，还支持使用**Hybrid Analysis**工具进行EQ在线调试和在线试听效果。该工具能够动态检测当前通话的带宽类型（宽带或窄带），并通过拖动绿色曲线实时调整对应带宽的EQ。<br>
+![](./assets/cvp_v3/cvp_v3_update1.png) 
+
+## 数据导出指引
+---
+
+1. 在可视化工具的调音选项下，点击“Hybrid Analysis”工具按钮以打开分析工具，界面如下：
+    ![](./assets/cvp_v3/cvp_v3_update26.png)<br>
+     ![Hybrid分析工具界面](./assets/cvp_v3/cvp_v3_update3.png)
+   **注意：导出工具的算法类型需要和三代算法节点中的通话算法一致**
+   ![](./assets/cvp_v3/cvp_v3_update2.png)<br>
+   **工具参数说明：**
+   -  **增益范围、频率范围、Hp、Lp**：和EQ节点的调试一致。
+   -  **算法类型**：根据当前CVP_V3节点的选择的通话算法选择，其中需要注意的是，对于通话算法3-Mic调试界面对应的有带ANC和不带ANC两类。根据实际项目是否有ANC功能进行选择。
+   ![](./assets/cvp_v3/cvp_v3_update4.png)
+   - **Talk麦信号**：主麦的声音信号，要求佩戴真实人耳，正常说话时，Talk麦和FB麦同时录制的声音。
+   - **FB麦信号**：FB麦的声音信号，同样要求佩戴真实人耳，正常说话时，Talk麦和FB麦同时录制的声音。
+   - **FFT点数**：固定为512点。
+   - **采样率（单位：Hz）**：固定为16000Hz。
+   - **总增益（单位：dB）**：作用于宽带EQ曲线和窄带EQ曲线，对曲线的总增益进行调整。(注意：适用于所有**CVP-V3-xx算法中的宽带EQ曲线和窄带EQ曲线**)。
+   - **补偿增益（单位：dB）**：如果主副麦数据在输入算法前进行了数字放大，则需填写放大的dB值，默认值为0dB(注意：适用于算法类型是2MIC和3MIC)。
+   - **开始时间（单位：s）**：需要分析数据的起始时间，默认为0秒。
+   - **结束时间（单位：s）**：需要分析数据的结束时间，默认为10秒。
+
+
+
+2. 离线导出步骤
+   1. 对于**1-Mic、2-Mic和不带ANC的3-Mic**算法模式
+   - 步骤一：在工具上选择对应的算法类型。不需要导入Talk MIC和FB MIC数据。 以1-Mic对应的CVP-V3-1MIC为例，工具算法类型确定之后，目标曲线会显示对应算法需要的曲线类型。</br>
+   ![](./assets/cvp_v3/cvp_v3_update5.png )![](./assets/cvp_v3/cvp_v3_update6.png)</br>
+  
+   - 步骤二：**当前曲线**选择**宽带EQ曲线**，根据实际项目拖动左框中EQ曲线，**曲线的总增益可以在界面的总增益上进行适当调整**；同理调整窄带EQ将**当前曲线**切换到窄带EQ曲线。</br>
+   ![](./assets/cvp_v3/cvp_v3_update7.png)</br>
+   ![](./assets/cvp_v3/cvp_v3_update8.png)</br>
+   - 步骤三：宽带EQ曲线和窄带EQ曲线配置完，工具点击**导出**并命名为**CVP_V3_CFG.bin**到当前SDK的download目录下。</br>
+   ![](./assets/cvp_v3/cvp_v3_update9.png)</br>
+   1. 对于**2-Mic-Hybrid**算法模式
+   - 步骤一：在工具上选择对应的算法类型。需要导入**Talk MIC**和**FB MIC**数据。工具选择算法类型，**当前曲线**上，相较于**1**只有宽带和窄带EQ曲线，但**2**的目标数据相较于**1-Mic、2-Mic和不带ANC的3-Mic**多了**宽带EQ参考线**和**窄带EQ参考线**，意味着在bin文件需要生成宽窄带对应的参考线。</br>
+   ![](./assets/cvp_v3/cvp_v3_update10.png)</br>
+   ![](./assets/cvp_v3/cvp_v3_update11.png)</br>
+   - 步骤二：分别导出宽带和窄带下**TALK MIC**和**FB MIC**的数据。当前数据选择**宽带EQ曲线**，在对应的Talk MIC和FB MIC选择宽带通话下对应的文件。导入成功，绿色为拉动的宽带EQ曲线，灰色为对应的TALK MIC和FB MIC的映射曲线，**曲线的总增益可以在界面的总增益上进行适当调整**。同理，当前曲线切换到窄带EQ曲线，导出对应的窄带EQ和窄带EQ参考线。</br>
+   ![](./assets/cvp_v3/cvp_v3_update12.png)</br>
+   ![](./assets/cvp_v3/cvp_v3_update13.png)</br>
+
+   - 步骤三：工具点击**导出**并命名为**CVP_V3_CFG.bin**到当前SDK的download目录下。
+   1. 对于**3-Mic带ANC功能**算法模式
+   - 步骤一：相较于之前的数据，从当前曲线和目标数据可以看出**3-Mic带ANC功能**曲线增加了不同ANC模式下数的EQ曲线数据和参考线数据。</br>
+   ![](./assets/cvp_v3/cvp_v3_update14.png) ![](./assets/cvp_v3/cvp_v3_update15.png)</br>
+   对于宽带EQ曲线和窄带EQ曲线方法和**1**一样，不需要导入Talk MIC和FB MIC文件，直接拖动左框中绿色曲线即可，**曲线的总增益可以在界面的总增益上进行适当调整**。同理，将当前曲线切换到窄带EQ曲线拖动框线即可。</br>
+   ![](./assets/cvp_v3/cvp_v3_update16.png)</br>
+   ![](./assets/cvp_v3/cvp_v3_update17.png)</br>
+   - 步骤二：对于ANC三种模式下的曲线生成则需要导入对应模式下的Talk MIC和FB MIC数据。如ANC ON模式下，当前曲线选择ANC ON EQ曲线，导入对应的Talk MIC和FB MIC数据，生成灰色的参考曲线。同理，对于ANC OFF和通透模式下的曲线生成步骤一致。</br>
+   ![](./assets/cvp_v3/cvp_v3_update18.png)</br>
+   
+> **注意**:
+> 1. 对于ANC模式下的EQ曲线：
+>    - ANC ON EQ曲线
+>    - ANC OFF EQ曲线
+>    - 通透模式EQ曲线
+> 
+> 2. 对于ANC模式下的参考线：
+>    - ANC ON EQ参考线
+>    - ANC OFF EQ参考线
+>    - 通透模式EQ参考线
+> 
+> 算法默认使用的Talk MIC和FB MIC映射生成的参考线。由于参考线不支持在线修改，因此：
+> - 如果需要修改ANC模式下的效果，且是离线传入bin文件的方式，需要手动调整对应模式下的绿色曲线。
+> - 比如，若在ANC ON模式下觉得工具生成的ANC ON EQ参考线效果不好，可以选择当前曲线为ANC ON EQ曲线，依据灰色曲线拖动大致曲线，然后微调直到满意效果。</br>
+> - 同理，ANC OFF和通透模式也可以按照类似方法进行调整。
+![](./assets/cvp_v3/cvp_v3_update19.png)</br>
+>在代码层面，对应模式的参考曲线改为对应的EQ曲线配置即可</br>
+![](./assets/cvp_v3/cvp_v3_update20.png)</br>
+
+- 步骤三：工具点击**导出**并命名为**CVP_V3_CFG.bin**到当前SDK的download目录下。
+
+3. 在线读取bin文件和下载bin文件
+工具新增在线读取三代算法的bin文件，读取成功后，项目的SDK中三代调音工具的算法类型不支持修改。</br>
+![](./assets/cvp_v3/cvp_v3_update21.png)</br>
+   
+4. 在线调试   
+> **注意**:
+> - 三代算法调音工具新增了**效果试听功能**。
+> - 该功能支持**在线切换不同的EQ曲线**，并可实时试听效果。
+> - 工具上**仅支持EQ曲线在线调试**，不支持参考线在线调试。
+> - 但是，可以使用试听功能**在线试听参考线曲线效果**。</br>
+![](./assets/cvp_v3/cvp_v3_update22.png)</br>
+- 步骤一：开启在线调音功能，连接上样机，如图所示</br>
+![](./assets/cvp_v3/cvp_v3_update23.png)</br>
+- 步骤二：当前曲线切换到想要调试的曲线，比如宽带EQ曲线，拖动左框中的曲线，实时调试。当前曲线为宽带EQ曲线和窄带EQ曲线时候，**曲线的总增益可以在界面的总增益上进行适当调整**</br>
+![](./assets/cvp_v3/cvp_v3_update24.png)</br>
+- 步骤三：效果试听的方式更加直接
+相较于当前曲线拖动EQ的方式，效果试听的方式更加直接。如下图所示，图中的EQ曲线，可以在效果试听选项中切换不同的选项，体验这条曲线传给不同的曲线类型的效果。</br>
+![](./assets/cvp_v3/cvp_v3_update25.png)</br>
+
+## 常用接口
+---
+
+```C
+/*
+ * 麦克风状态定义：
+ * 0: 正常使用双麦做Beamforming
+ * 1: 正常工作（Talk 模式）
+ * 2: 前馈麦克风工作（FF 模式）
+ */
+int audio_cvp_v3_get_mic_state_info(int mic_state)
+
+/*
+ * 获取宽带窄带信息
+ * is_wb_state: 0 窄带 1 宽带
+ * */
+int audio_cvp_v3_get_bandwidth_info(int is_wb_state)
+
+/*
+ * 获取风噪检测信息
+ * wd_flag: 0 没有风噪，1 有风噪
+ * 风噪强度(dB)
+ * */
+int audio_cvp_v3_get_wind_detect_info(int *wd_flag, float *wd_val)
+```
+
+
+

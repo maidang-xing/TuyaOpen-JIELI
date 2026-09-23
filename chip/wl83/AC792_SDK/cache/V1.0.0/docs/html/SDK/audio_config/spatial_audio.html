@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>空间音效 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../_static/js/custom.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>空间音效</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="id1">
+<h1>空间音效<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h1>
+<section id="id2">
+<h2>功能介绍<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p><strong>固定头部模式</strong>：即仅仅有空间感的音效，不会跟踪头部动态。</p></li>
+<li><p><strong>头部跟踪模式</strong>：头部跟踪是在空间音频的基础上，增加了动态头部追踪技术。通过跟踪头部动作，音效也随之对应变化，使得空间音频的体验更加丰富。</p></li>
+</ul>
+</section>
+<section id="id3">
+<h2>配置说明<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<section id="id4">
+<h3>固定头部模式<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h3>
+<p>只需要空间音频，不需要头部跟踪的情况下，不需要开传感器</p>
+<ul class="simple">
+<li><p><strong>1. 选择传感器选择：<code class="docutils literal notranslate"><span class="pre">没有传感器</span></code></strong></br>
+<img alt="" src="../../_images/spatial_effects_1.png" /></br></p></li>
+<li><p><strong>2. 在蓝牙音乐流程图选择空间音效数据流</strong></br>
+<img alt="" src="../../_images/spatial_effects_2.png" /></br></p></li>
+</ul>
+</section>
+<section id="id5">
+<h3>固定头部+头部跟踪模式<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h3>
+<p>头部跟踪模式需要陀螺仪传感器的配合，所有需要在固定头部模式配置的情况下，打开传感器配置</br></p>
+<ul>
+<li><p><strong>1. 传感器选择配置</strong></br></p>
+<ul class="simple">
+<li><p>TWS耳机的时候，头部跟踪只需要用一个耳机陀螺仪的数据，所有需要选择使用左耳的传感器还是右耳的传感器</br></p></li>
+<li><p>头戴式立体声选择<strong>传感器在左耳</strong>和<strong>传感器在右耳</strong>都可以，但是不能选择<strong>没有传感器</strong></br></p></li>
+</ul>
+<p><img alt="" src="../../_images/spatial_effects_3.png" /></br></p>
+</li>
+<li><p><strong>2. 配置IIC引脚</strong></br>
+程序支持使用软件IIC接口读取传感器，在board_ac701n_demo_cfg.h文件配置引脚</br>
+<img alt="" src="../../_images/spatial_effects_4.png" /></br></p></li>
+</ul>
+</section>
+</section>
+<section id="id6">
+<h2>陀螺仪选型<a class="headerlink" href="#id6" title="Permalink to this headline"></a></h2>
+<ul>
+<li><p><strong>1.  选择传感器型号</strong></br>
+<mark>目前支持的陀螺仪传感器型号有：<strong>MPU6887P</strong>、<strong>ICM42670P</strong>、<strong>LSM6DSL</strong></mark></br></p>
+<ul class="simple">
+<li><p>a、使能传感器TCFG_IMUSENSOR_ENABLE</p></li>
+<li><p>b、使能对应的传感器，只能使能一个传感器，不可以同时使能多个传感器</p></li>
+<li><p>c、配置AD0_SELETE_IO引脚，没有时配置NO_CONFIG_PORT</p></li>
+<li><p>d、配置TCFG_IMU_SENSOR_PWR_PORT传感器供电引脚，没有时配置NO_CONFIG_PORT</p></li>
+</ul>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="c1">//*********************************************************************************//</span>
+<span class="c1">//                                  imu-sensor配置                                   //</span>
+<span class="c1">//*********************************************************************************//</span>
+<span class="cp">#define TCFG_IMUSENSOR_ENABLE                	1    </span><span class="c1">//imu Sensor使能</span>
+<span class="c1">//mpu6887 cfg</span>
+<span class="cp">#define TCFG_MPU6887P_ENABLE                  	0</span>
+<span class="cp">#define TCFG_MPU6887P_INTERFACE_TYPE          	0 </span><span class="c1">//0:iic, 1:spi</span>
+<span class="cp">#define TCFG_MPU6887P_USER_IIC_TYPE           	0 </span><span class="c1">//iic有效:1:硬件iic, 0:软件iic</span>
+<span class="cp">#define TCFG_MPU6887P_USER_IIC_INDEX          	0 </span><span class="c1">//IIC 序号</span>
+<span class="cp">#define TCFG_MPU6887P_DETECT_IO               	(-1) </span><span class="c1">//传感器中断io</span>
+<span class="cp">#define TCFG_MPU6887P_AD0_SELETE_IO             IO_PORTC_03 </span><span class="c1">//iic地址选择io</span>
+<span class="c1">//icm42607p cfg</span>
+<span class="cp">#define TCFG_ICM42670P_ENABLE                  	0</span>
+<span class="cp">#define TCFG_ICM42670P_INTERFACE_TYPE          	0 </span><span class="c1">//0:iic, 1:spi</span>
+<span class="cp">#define TCFG_ICM42670P_USER_IIC_TYPE           	0 </span><span class="c1">//iic有效:1:硬件iic, 0:软件iic</span>
+<span class="cp">#define TCFG_ICM42670P_USER_IIC_INDEX          	0 </span><span class="c1">//IIC 序号</span>
+<span class="cp">#define TCFG_ICM42670P_DETECT_IO               	(-1) </span><span class="c1">//传感器中断io</span>
+<span class="cp">#define TCFG_ICM42670P_AD0_SELETE_IO            (-1) </span><span class="c1">//iic地址选择io</span>
+<span class="c1">//lsm6dsl cfg</span>
+<span class="cp">#define TCFG_LSM6DSL_ENABLE                     1</span>
+<span class="cp">#define TCFG_LSM6DSL_INTERFACE_TYPE             0 </span><span class="c1">//0:iic, 1:spi</span>
+<span class="cp">#define TCFG_LSM6DSL_USER_IIC_TYPE              0 </span><span class="c1">//1:硬件iic, 0:软件iic</span>
+<span class="cp">#define TCFG_LSM6DSL_USER_IIC_INDEX          	0 </span><span class="c1">//IIC 序号</span>
+<span class="cp">#define TCFG_LSM6DSL_DETECT_IO               	(-1) </span><span class="c1">//传感器中断io</span>
+<span class="cp">#define TCFG_LSM6DSL_AD0_SELETE_IO              (-1) </span><span class="c1">//iic地址选择io</span>
+
+<span class="cm">/*</span>
+<span class="cm"> *imu-sensor power manager</span>
+<span class="cm"> *不用独立IO供电，则配置 NO_CONFIG_PORT</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="cp">#define TCFG_IMU_SENSOR_PWR_PORT				IO_PORTD_05</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>2. 确认传感器位置</strong></br>
+确认耳机佩戴时传感器相对于人头部的位置的方位参数，然后填到spatial_effects.c文件的space_motion_param_init函数里面的tranval参数里面</br>
+<img alt="" src="../../_images/spatial_effects_8.png" /></br></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>确认方法：
+根据人头的东、北、天坐标和传感器x、y、z坐标按顺序对比，方向不重合为0，找到重合的组合，方向相同为1，方向相反为-1
+组合顺序：
+东 - x
+东 - y
+东 - z
+北 - x
+北 - y
+北 - z
+天 - x
+天 - y
+天 - z
+
+注意：人头部的东北天坐标可以简单理解为，正前方是北，右手边是东，正上方是天
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="id7">
+<h2>参数说明<a class="headerlink" href="#id7" title="Permalink to this headline"></a></h2>
+<p>空间音效参数说明：<a class="reference internal" href="../audio_effects/SpatialEffect.html"><span class="doc std std-doc">🔗点击跳转</span></a></p>
+</section>
+<section id="id8">
+<h2>常用接口<a class="headerlink" href="#id8" title="Permalink to this headline"></a></h2>
+<section id="id9">
+<h3>切模式接口<a class="headerlink" href="#id9" title="Permalink to this headline"></a></h3>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="c1">//1、空间音效模式定义枚举</span>
+<span class="k">enum</span><span class="w"> </span><span class="n">SPATIAL_EFX_MODE</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">SPATIAL_EFX_OFF</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">		</span><span class="c1">//空间音效关闭</span>
+<span class="w">    </span><span class="n">SPATIAL_EFX_FIXED</span><span class="p">,</span><span class="w">	        </span><span class="c1">//固定头部</span>
+<span class="w">    </span><span class="n">SPATIAL_EFX_TRACKED</span><span class="p">,</span><span class="w">	    </span><span class="c1">//头部跟踪</span>
+<span class="p">};</span><span class="w"></span>
+<span class="cm">/*空间音效模式切换接口*/</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="n">audio_spatial_effects_mode_switch</span><span class="p">(</span><span class="k">enum</span><span class="w"> </span><span class="n">SPATIAL_EFX_MODE</span><span class="w"> </span><span class="n">mode</span><span class="p">)</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id10">
+<h3>角度回正接口<a class="headerlink" href="#id10" title="Permalink to this headline"></a></h3>
+<p>在spatial_effect.c文件里面把全局变量angleresetflag设置成1，可使角度回正0度，</br>
+可通过在spatial_effect.c里面定义函数spatial_audio_angle_reset()，并调用实现角度回正</br></p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="cm">/*角度归0回正*/</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">spatial_audio_angle_reset</span><span class="p">()</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">angleresetflag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id11">
+<h3>角度自动回正时间<a class="headerlink" href="#id11" title="Permalink to this headline"></a></h3>
+<p>在spatial_effect.h里面配置宏<strong>ANGLE_RESET_TIME</strong>来设置角度自动回正时间，单位是秒</br></p>
+</section>
+<section id="id12">
+<h3>模式切换方式<a class="headerlink" href="#id12" title="Permalink to this headline"></a></h3>
+<ul>
+<li><p>支持两种模式切换方式：</p>
+<ul class="simple">
+<li><p>无缝切换：开关数据流时，插入/跳过空间音效处理，可以做到平滑过渡。</p></li>
+<li><p>提示音打断切换：切换时播放打断提示音，会根据当前模式选择对应的数据流，数据流需要重开。tws单声道输出时，空间音效关闭的情况下解码器仅需协商单声道，对于资源消耗有优化。</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> * spatial_effects_process.h</span>
+<span class="cm"> * 模式切换是否添加打断提示音，数据流重新开关</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="cp">#define SPATIAL_AUDIO_EFFECT_SW_TONE_PLAY     0</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+</section>
+<section id="id13">
+<h2>校准说明<a class="headerlink" href="#id13" title="Permalink to this headline"></a></h2>
+<p>头部跟踪模式使用到陀螺仪传感器，需要使用测试盒对传感器进行校准</br></p>
+<section id="id14">
+<h3>升级测试盒固件<a class="headerlink" href="#id14" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p><strong>本地升级方式</strong></br>
+<img alt="" src="../../_images/imu_trim_1.png" /></br>
+</br></p></li>
+<li><p><strong>在线升级方式</strong></br>
+<img alt="" src="../../_images/imu_trim_2.png" /></br>
+</br></p></li>
+</ul>
+</section>
+<section id="id15">
+<h3>设置测试盒<a class="headerlink" href="#id15" title="Permalink to this headline"></a></h3>
+<p>设置测试盒校准命令：“DUT命令模式使能”设置成1，“串口命令配置”设为01</br>
+<img alt="" src="../../_images/imu_trim_3.png" /></br>
+</br></p>
+</section>
+<section id="id16">
+<h3>校准传感器<a class="headerlink" href="#id16" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>将含有传感器的耳机保持pcb板子静止在水平面上(<strong>即传感器x轴和y轴在水平面上，z轴垂直于地面</strong>)<br>
+<mark>注意：水平面需要保证平坦，且没有任何的倾斜，校准过程不可以移动，保证能够用夹具固定而不是手拿以确保静止条件</mark><br></p></li>
+<li><p>测试盒串口和耳机充电引脚接在一起，进入传感器校准，校准10s后结束校准</br></p>
+<ul>
+<li><p>开始校准：测试盒“di”一声，显示屏显示“<strong>trim run…</strong>”</p></li>
+<li><p>校准过程：显示屏显示“<strong>trim run…</strong>”</p></li>
+<li><p>校准成功：测试盒“didi”两声，显示屏显示“<strong>trim succ ！</strong>”</p></li>
+<li><p>校准失败：测试盒“dididi”三声，显示屏显示“<strong>trim fail ！</strong>”</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id17">
+<h2>常见问题<a class="headerlink" href="#id17" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p><strong>（1）空间音效跟踪模式没有效果</strong></br>
+  通过开机打印检查传感器初始化是否成功，如果不成功，检查程序传感器iic引脚、iic供电引脚和iic地址选择引脚是否配置正确，检查硬件电路是否正常。</br>
+<img alt="" src="../../_images/spatial_effects_7.png" /></br>
+</br></p></li>
+<li><p><strong>（2）空间音效跟踪模式效果不对</strong></br>
+  耳机陀螺仪传感器是否校准过？重新用测试盒校准一遍，确认校准成功</br></p></li>
+</ul>
+</section>
+<section id="app">
+<h2>手机APP调试说明<a class="headerlink" href="#app" title="Permalink to this headline"></a></h2>
+<section id="id18">
+<h3>传感器角度显示<a class="headerlink" href="#id18" title="Permalink to this headline"></a></h3>
+<p>手机app可以显示播歌时，传感器当前的角度，具体使用步骤如下：</br>
+（1）在可视化工具的音频配置-&gt;空间音频配置打开空间音效在线调试的开关</br>
+<img alt="" src="../../_images/spatial_effects_9.png" /></br></p>
+<p>（2）使用安卓手机Audio Tools工具-&gt;空间音效-&gt;传感器界面点击开始，然后播歌的时候，可以显示传感器当前的角度</br>
+a. 打开杰理包管理器获取Audio Tools工具</br>
+<img alt="" src="../../_images/spatial_tool_0.png" /></br>
+<img alt="" src="../../_images/spatial_tool_1.png" /></br>
+<img alt="" src="../../_images/spatial_tool_2.png" /></br>
+</br>
+b. 播歌时连接工具显示角度
+<img alt="" src="../../_images/spatial_tool_3.jpg" /></br>
+<img alt="" src="../../_images/spatial_tool_4.jpg" /></br>
+<img alt="" src="../../_images/spatial_tool_5.jpg" /></br>
+<img alt="" src="../../_images/spatial_tool_6.jpg" /></br></p>
+</section>
+<section id="id19">
+<h3>传感器校准辅助<a class="headerlink" href="#id19" title="Permalink to this headline"></a></h3>
+<p>Audio Tools上点击校准按钮，可以触发传感校准，传感器校准的时候，传感器要水平放置，并且不能播歌使用传感器，点击校准按钮后，app会立刻显示校准成功，这个并不是校准成功，而是校准命令发送，实际需要等待10s左右的校准时间，通过串口log打印来判断是否校准成功</br>
+<img alt="" src="../../_images/spatial_tool_7.jpg" /></br></p>
+</section>
+<section id="id20">
+<h3>传感器数据抓取<a class="headerlink" href="#id20" title="Permalink to this headline"></a></h3>
+<p>调试传感器角度有时候需要把传感器的6轴数据导出分析，具体操作如下</br>
+（1）在board_jlxxxn_demo_cfg.h里面配置传感器数据SPP导出功能，注意该功能不可以和MIC的SPP导出功能同时使用</br>
+<img alt="" src="../../_images/spatial_tool_12.png" /></br>
+</br>
+（2）在播歌使用传感器的时候打开Audio Tools的记录功能抓取数据</br>
+<img alt="" src="../../_images/spatial_tool_8.jpg" /></br>
+<img alt="" src="../../_images/spatial_tool_9.jpg" /></br>
+<img alt="" src="../../_images/spatial_tool_10.jpg" /></br>
+</br>
+（3）点击停止录制按钮后，传感器的数据会保存到手机的Android/data/com.zhjiele.eq/files路径下面</br>
+<img alt="" src="../../_images/spatial_tool_11.jpg" /></br></p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

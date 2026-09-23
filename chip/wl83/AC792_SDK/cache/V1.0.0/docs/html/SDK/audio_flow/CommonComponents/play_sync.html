@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3.2.2. 播放同步 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../_static/js/custom.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="3.2.3. 蓝牙音频同步" href="bt_play_sync.html" />
+    <link rel="prev" title="3.2.1. 位宽配置说明" href="bit_width.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">3. 音频流程</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../audio_stream_flow_rules.html">3.1. 音频流程规范</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">3.2. 音频流通用配置</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="bit_width.html">3.2.1. 位宽配置说明</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">3.2.2. 播放同步</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">3.2.2.1. 模块功能</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">3.2.2.2. 使用说明</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">3.2.2.3. 参数说明</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bt_play_sync.html">3.2.3. 蓝牙音频同步</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dac.html">3.2.4. DAC节点配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tws.html">3.2.5. TWS音频流配置</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reverse_phase.html">3.2.6. 反相器(Inverter)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../typical_application/index.html">3.3. 典型音频流程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../third_party_algorithm/index.html">3.4. 第三方算法集成</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../system_flow.html">3.5. 系统模式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../media_flow.html">3.6. 媒体</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../bt_call/index.html">3.7. 蓝牙通话</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mic_effects/index.html">3.8. 麦克风音效</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usb_audio/index.html">3.9. USB Audio</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../audio_dut/index.html">3.10. 产测模式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user_defined/index.html">3.11. 自定义</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html"><span class="section-number">3. </span>音频流程</a> &raquo;</li>
+          <li><a href="index.html"><span class="section-number">3.2. </span>音频流通用配置</a> &raquo;</li>
+      <li><span class="section-number">3.2.2. </span>播放同步</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="id1">
+<h1><span class="section-number">3.2.2. </span>播放同步<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h1>
+<section id="id2">
+<h2><span class="section-number">3.2.2.1. </span>模块功能<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<p>​	当两个时钟不同源的设备通过数字信号通信时，就会遇到时钟不同步的现象。例如<code class="docutils literal notranslate"><span class="pre">SPDIF</span></code>、<code class="docutils literal notranslate"><span class="pre">IIS</span></code>、<code class="docutils literal notranslate"><span class="pre">USB</span> <span class="pre">Audio</span></code>
+等数字协议通信时，协议时钟来源于主机，当我们小机作为从机时，就会出现时钟不同的现象。表现为一段时间
+内主机给小机的音频数据量多了或者少了，在没有做同步的情况下，就会出现播放声音卡顿的现象。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>​	例如主机的晶振时钟比从机的晶振时钟快10%，通信协商的音频数据采样率是48kHz，那么在主机时钟的1秒内发了48000个采样点数据给从机，
+从机时钟的一秒内实际上收到了48000 * 110% = 48480个采样点数据。从机把数据按照采样率48kHz去播放，那么每秒就会多出 480个采样点数据堆积
+到缓存中。慢慢的就会导致播放延迟变大，缓存满了就会出现声音卡顿。
+​	如果加入了同步机制，同步模块就会发现主机和从机的速度不相同，计算得出主机和从机的具体速度差异后，就会将变采样模块输入输出采样率
+配置为 48480 -&gt; 48000，这样就完成了主从机的时钟同步。
+​	除了做不同设备之间的时钟速度同步，同步模块还有控制播放通路缓存的功能，用于控制播放延时。
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h2><span class="section-number">3.2.2.2. </span>使用说明<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<p>从可视化配置工具中将<strong>播放同步节点</strong>拖动到需要同步的数据流中，目前<strong>播放同步节点</strong>仅支持接在PCM源节点后面，例如LINEIN、ADC、FM等输出数据为PCM类型的节点。（新版本SDK，不受此限制）</p>
+<p><img alt="image-20230331141226785" src="../../../_images/image-20230331141226785.png" /></p>
+</section>
+<section id="id4">
+<h2><span class="section-number">3.2.2.3. </span>参数说明<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h2>
+<p><img alt="image-20230331142237838" src="../../../_images/image-20230331142237838.png" /></p>
+<ul class="simple">
+<li><p><strong>同步延时</strong></p>
+<ul>
+<li><p>控制从<strong>播放同步节点</strong>到<strong>最终输出节点</strong>间的音频数据缓存时间，这个缓存时间的设定取决于数据源的稳定性和数据流处理的及时性</p></li>
+</ul>
+</li>
+<li><p><strong>计算周期</strong></p>
+<ul>
+<li><p>输入采样率统计周期，低于2000ms,系统内会自动配成2000ms, 一般不用调整。</p></li>
+</ul>
+</li>
+<li><p><strong>对齐模式</strong></p>
+<ul>
+<li><p><strong>快速对齐</strong>：同步调节步进较大，通常默认使用该配置。</p></li>
+<li><p><strong>缓慢对齐</strong>：同步调节步进较小，通常用于起始偏差较大出现打印uuuu的情况。在偏差调整到1个点时，会自动变成快速对齐。</p></li>
+<li><p><strong>变采样bypass</strong>：同步调节不起作用，仅用于控制输出设备的起始延时。</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bit_width.html" class="btn btn-neutral float-left" title="3.2.1. 位宽配置说明" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bt_play_sync.html" class="btn btn-neutral float-right" title="3.2.3. 蓝牙音频同步" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LE_AUDIO_UNICAST_SINK开发说明 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../../../_static/js/custom.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>LE_AUDIO_UNICAST_SINK开发说明</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="le-audio-unicast-sink">
+<h1>LE_AUDIO_UNICAST_SINK开发说明<a class="headerlink" href="#le-audio-unicast-sink" title="Permalink to this headline"></a></h1>
+<section id="id1">
+<h2>开发说明<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<ol class="arabic simple">
+<li><p>LE_AUDIO_UNICAST_SINK，即蓝牙低功耗音频单播，是一种点对点的音频传输方式。在这种模式下，音频源设备与单个音频接收设备之间建立直接连接，信息的发送和接收仅在两个节点之间进行。</p></li>
+<li><p>Unicast模式支持双向通信，允许音频源设备和接收设备之间进行交互。这为用户提供了更多的控制权和反馈机制。</p></li>
+<li><p>产品形态：双模蓝牙耳机，双模蓝牙音箱</p></li>
+</ol>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>开了LE_AUDIO_UNICAST_SINK的工程只支持1拖1，就是耳机连接一个“LE_AUDIO_UNICAST 手机”或“经典蓝牙”后，不能再连接其他设备了。</p>
+</div>
+</section>
+<section id="id2">
+<h2>工程配置<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<ol class="arabic">
+<li><dl>
+<dt>开启BLE相关开关</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/ble开关.png" src="../../../../../_images/ble开关.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>LE_AUDIO配置选择LE_AUDIO_UNICAST_SINK_EN</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/工程配置12.png" src="../../../../../_images/工程配置12.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>“蓝牙音乐”或“媒体”导航栏处的音频流程图选择LE_Audio流程图</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/leaudio音频流程图1.png" src="../../../../../_images/leaudio音频流程图1.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>“蓝牙通话”导航栏处的音频流程图选择LE_Audio流程图</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/leaudio音频流程图2.png" src="../../../../../_images/leaudio音频流程图2.png" />
+</figure>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>“LE_Audio”导航栏处的音频流程图使能，并导出配置</dt><dd><figure class="align-default">
+<img alt="../../../../../_images/leaudio音频流程图3.png" src="../../../../../_images/leaudio音频流程图3.png" />
+</figure>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+<section id="id3">
+<h2>使用说明<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<section id="id4">
+<h3>手机双模连接使用流程说明<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h3>
+<p>手机切换LE音频连接</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/leconn.png" src="../../../../../_images/leconn.png" />
+</figure>
+</div></blockquote>
+<p>手机经典蓝牙连接成功显示：“连接以用于：通话、媒体音频”</p>
+<blockquote>
+<div><figure class="align-default">
+<a class="reference internal image-reference" href="../../../../../_images/phone_edr_display.png"><img alt="../../../../../_images/phone_edr_display.png" src="../../../../../_images/phone_edr_display.png" style="width: 320px; height: 650px;" /></a>
+</figure>
+</div></blockquote>
+<p>手机LE音频连接成功显示：“连接以用于：LE音频、接收共享音频”</p>
+<blockquote>
+<div><figure class="align-default">
+<a class="reference internal image-reference" href="../../../../../_images/phone_leaudio_display.png"><img alt="../../../../../_images/phone_leaudio_display.png" src="../../../../../_images/phone_leaudio_display.png" style="width: 320px; height: 650px;" /></a>
+</figure>
+</div></blockquote>
+<p>经典蓝牙与LE音频连接示意图</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/edr_to_leaudio.png" src="../../../../../_images/edr_to_leaudio.png" />
+</figure>
+</div></blockquote>
+<ol class="arabic simple">
+<li><p>手机切换：如上图，支持LE_Audio的手机连接设备，连接上只有单模连接状态存在：即单次只存在“经典蓝牙”或者“LE_Audio音频”链路，经典蓝牙和LE_Audio通过手机界面进行切换连接。</p></li>
+<li><p>初始化流程：初始化状态开启edr可发现和可连接+ble的广播adv，ble的广播字段带有LE_Audio profile相关信息说明支持LE_Audio连接；手机搜索界面edr和LE_Audio的设备名字会根据切换进行显示。</p></li>
+<li><p>连接流程：切换到LE_Audio开关时，会先断开经典蓝牙，再连接ble acl链路，手机播歌建立单向cis，通话会重新更新新的参数建立双向cis链路。</p></li>
+<li><p>手机APP交互：当手机与耳机建立LE_Audio连接后，耳机会发送不可连接的ble广播通知手机APP当前耳机已经连接LE_Audio，如果手机APP判断到已经连接耳机的LE_Audio，手机APP将通过当前已连接的LE_Audio acl链路进行APP协议通信。更多细节见下面章节：《第三方协议与LE_Audio共用BLE ACL链路》</p></li>
+</ol>
+</section>
+<section id="id5">
+<h3>流程说明<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h3>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/流程说明1.png" src="../../../../../_images/流程说明1.png" />
+</figure>
+</div></blockquote>
+</section>
+</section>
+<section id="id6">
+<h2>参数规格<a class="headerlink" href="#id6" title="Permalink to this headline"></a></h2>
+<p>Bluetooth: 支持蓝牙cis+ACL 双工传输</p>
+<p>代码量：249kb</p>
+<p>Codec: LC3编码器（RAM13.3K）， LC3解码器（RAM13.1K），播歌（48k）；通话：上行（32k（默认）/16k） 、下行（32k（默认）/16k）、上下行码率64kbps</p>
+<p>MIPS：LC3解码：20MHz（64kbps）、40MHz（80kbps），LC3编码：40-50MHz</p>
+<p>Algorithm: 音频同步，变采样</p>
+</section>
+<section id="id7">
+<h2>接口说明<a class="headerlink" href="#id7" title="Permalink to this headline"></a></h2>
+<section id="le-audio">
+<h3>LE_Audio协议栈初始化<a class="headerlink" href="#le-audio" title="Permalink to this headline"></a></h3>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/le_audio_init.png" src="../../../../../_images/le_audio_init.png" />
+</figure>
+</div></blockquote>
+</section>
+<section id="id8">
+<h3>LE_Audio功能总退出<a class="headerlink" href="#id8" title="Permalink to this headline"></a></h3>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/le_audio_profile_exit.png" src="../../../../../_images/le_audio_profile_exit.png" />
+</figure>
+</div></blockquote>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>注：退出LE_Audio功能需要卸载CIG资源</p>
+</div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">CIG_EVENT_PERIP_CONNECT</span><span class="p">,</span><span class="w">                    </span><span class="c1">// 播歌/通话 Receiver connect succ.</span>
+<span class="w">    </span><span class="n">CIG_EVENT_PERIP_DISCONNECT</span><span class="p">,</span><span class="w">                 </span><span class="c1">// 播歌/通话 Receiver disconnect.</span>
+
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">CIG_EVENT_ACL_CONNECT</span><span class="p">,</span><span class="w">                      </span><span class="c1">// 手机ACL链路建立连接</span>
+<span class="w">    </span><span class="n">CIG_EVENT_ACL_DISCONNECT</span><span class="p">,</span><span class="w">                   </span><span class="c1">// 手机ACL链路断开连接</span>
+
+<span class="w">    </span><span class="n">CIG_EVENT_PHONE_CONNECT</span><span class="p">,</span><span class="w">                    </span><span class="c1">// 手机建立连接</span>
+<span class="w">    </span><span class="n">CIG_EVENT_PHONE_DISCONNECT</span><span class="p">,</span><span class="w">                 </span><span class="c1">// 手机断开连接</span>
+<span class="p">}</span><span class="w"> </span><span class="n">CIG_EVENT</span><span class="p">;</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief CIG连接状态事件处理函数</span>
+<span class="cm">*</span>
+<span class="cm">* @param msg:状态事件附带的返回参数CIG_EVENT</span>
+<span class="cm">*</span>
+<span class="cm">* @return</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">app_connected_conn_status_event_handler</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="c1">// 函数实体一般不需要用户修改，仅供了解</span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="le-audiocis">
+<h3>LE_Audio播歌通话cis建立打开解码器编码器以及收数相关接口<a class="headerlink" href="#le-audiocis" title="Permalink to this headline"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// apps/common/le_audio/cig/le_connected.c</span>
+<span class="c1">// 以下函数实体一般不需要客户修改，仅供了解</span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief CIG从机连接成功处理事件</span>
+<span class="cm">*         在这里进行打开解码器等相关流程</span>
+<span class="cm">*</span>
+<span class="cm">* @param priv:连接成功附带的句柄参数</span>
+<span class="cm">*</span>
+<span class="cm">* @return 是否执行成功 -- 0为成功，其他为失败</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">connected_perip_connect_deal</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">priv</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief CIG从机连接断开成功处理接口口</span>
+<span class="cm">*          在这里进行关闭解码器等相关流程</span>
+<span class="cm">*</span>
+<span class="cm">* @param priv:断链成功附带的句柄参数</span>
+<span class="cm">*</span>
+<span class="cm">* @return 是否执行成功 -- 0为成功，其他为失败</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">connected_perip_disconnect_deal</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">priv</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief CIS通道收到数据回连到上层处理</span>
+<span class="cm">*        音频流cis收数接口</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">connected_iso_callback</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">priv</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm">* @brief CIS通道发送数据接口</span>
+<span class="cm">*        音频流cis发数接口</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">connected_tx_align_data_handler</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="n">cig_hdl</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>注：其余更多接口使用说明，详细见app_le_connected.h/.c和le_connected.h/.c</p>
+</div>
+</section>
+</section>
+<section id="id9">
+<h2>延时配置<a class="headerlink" href="#id9" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/leaudio_latency.png" src="../../../../../_images/leaudio_latency.png" />
+</figure>
+</div></blockquote>
+<p>如上图所示，leaudio的延时为30ms。意味着设备从蓝牙收数到DAC放出声音的延时为30ms。</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/edr_latency.png" src="../../../../../_images/edr_latency.png" />
+</figure>
+</div></blockquote>
+<p>对比上图是经典蓝牙播歌的延时。</p>
+</section>
+<section id="le-audioble-acl">
+<h2>第三方协议与LE_Audio共用BLE ACL链路问题<a class="headerlink" href="#le-audioble-acl" title="Permalink to this headline"></a></h2>
+<p>由于某些平台限制，所以第三方协议需要与LE_Audio共用一条BLE ACL链路，下面将以RCSP协议为例介绍第三方协议的开发流程。</p>
+<p>no profile flag的意思就是这个BLE链路允许没有自己单独的GATT服务表。</p>
+<p>当LE_Audio的BLE链路连接上并通信时，RCSP的BLE链路也会收到同样BLE connection handle的连接事件和数据交互。所以需要在LE_Audio的GATT服务表基础上，加上RCSP的ATT HANDLE列表。</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/le_audio_rcsp_profile.png" src="../../../../../_images/le_audio_rcsp_profile.png" />
+</figure>
+</div></blockquote>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>注意：当手机直接通过RCSP的BLE句柄广播连接时，就可以正常访问RCSP BLE句柄通过app_ble_profile_set 函数设置的GATT服务表，也就是说，对于不支持LE audio的手机，RCSP的功能和流程实际是不受影响的。</p>
+</div>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/le_audio_profile.png" src="../../../../../_images/le_audio_profile.png" />
+</figure>
+</div></blockquote>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/ble开关.png" src="../../../../../_images/ble开关.png" />
+</figure>
+</div></blockquote>
+<p>因为RCSP需要和LE_Audio共用一条ACL链路，所以当LE_Audio的BLE链路连接后，RCSP的广播包需要设置为不可连接类型，不能被手机连接。并且RCSP的广播广播包增加一个字段，告知手机APP当前耳机的LE_Audio链路的状态和BLE地址。手机APP如果通过广播包识别到LE_Audio链路已经连接，则需要查询手机是否已经连接对应的BLE链路，如果已连接，则将RCSP的数据交互通过这个已经连接的BLE链路去通信；如果未连接，则按RCSP的默认流程连接通信。</p>
+<p>广播包字段需要增加LE_Audio链路地址，LE_Audio连接状态两个信息。</p>
+<p>如果LE_Audio已经连接，RCSP需要改为不可连接广播</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/rcsp_adv_scan_ind.png" src="../../../../../_images/rcsp_adv_scan_ind.png" />
+</figure>
+</div></blockquote>
+<p>广播字段增加LE_Audio连接状态和LE_Audio连接地址（即经典蓝牙地址）（广播包内容可以用户自定义）</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/rcsp_adv.png" src="../../../../../_images/rcsp_adv.png" />
+</figure>
+</div></blockquote>
+<p>开关广播的时机</p>
+<p>RCSP需要放到手机连接经典蓝牙后，或手机连接LE_Audio后再开广播，由手机用户决定先连哪个链路。</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/le_audio_not_conn_rcsp_adv_not_en.png" src="../../../../../_images/le_audio_not_conn_rcsp_adv_not_en.png" />
+</figure>
+</div></blockquote>
+<p>经典蓝牙连上后再开RCSP广播</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/le_audio_conn_rcsp_adv_en.png" src="../../../../../_images/le_audio_conn_rcsp_adv_en.png" />
+</figure>
+</div></blockquote>
+<p>LE_Audio ACL连上后关闭RCSP广播（因为只能连一条ACL，需要确实是否是LE_Audio协议连接再开RCSP广播），LE_Audio ACL断开后开启RCSP广播</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/le_audio_acl_conn_rcsp_adv.png" src="../../../../../_images/le_audio_acl_conn_rcsp_adv.png" />
+</figure>
+</div></blockquote>
+<p>LE_Audio协议连接后开启RCSP广播（因为只能连一条ACL，确认是LE_Audio协议连接再开RCSP不可连接广播）</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/le_audio_phone_conn_rcsp_adv.png" src="../../../../../_images/le_audio_phone_conn_rcsp_adv.png" />
+</figure>
+</div></blockquote>
+</section>
+<section id="id10">
+<h2>常见客户问题汇总<a class="headerlink" href="#id10" title="Permalink to this headline"></a></h2>
+<section id="id11">
+<h3>LE_AUDIO_UNICAST_SINK手机兼容性问题汇总<a class="headerlink" href="#id11" title="Permalink to this headline"></a></h3>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>1、tws耳机进出仓，谷歌piexl8会偶现不主动回连出仓耳机的情况（这里回连的操作是手机做的，耳机只负责开启ble广播让手机进行回连。如果回连失败，目前的建议是让手机断开leaudio的连接再进行手动连接）；</p>
+<p>2、谷歌piexl8连接上设备不会主动同步音量（但piexl7是可以的，有可能与手机系统相关）；</p>
+<p>3、支持三星S24、S24 ultra的LE_Audio立体声。（仅JL708芯片）</p>
+</div>
+</section>
+<section id="id12">
+<h3>LE_AUDIO_UNICAST_SINK功能的应用效果是怎样的？<a class="headerlink" href="#id12" title="Permalink to this headline"></a></h3>
+<p>是指支持手机与耳机设备之间建立LE_AUDIO_UNICAST连接，其功能等于经典蓝牙连接，能够进行更低延时的蓝牙播歌与蓝牙通话。</p>
+</section>
+<section id="id13">
+<h3>LE_AUDIO_UNICAST_SINK的延时对比经典蓝牙如何？<a class="headerlink" href="#id13" title="Permalink to this headline"></a></h3>
+<p>经典蓝牙的默认SDK配置的蓝牙播歌延时是300ms，低延时sbc可以去到60ms，低延时aac可以去到100ms。
+手机的LE_AUDIO_UNICAST连接的播歌延时是30ms。</p>
+</section>
+<section id="id14">
+<h3>LE_AUDIO_UNICAST_SINK播歌卡顿原因：<a class="headerlink" href="#id14" title="Permalink to this headline"></a></h3>
+<ol class="arabic simple">
+<li><p>播歌卡顿打印”SE”说明收到空包（一般是发送端发的数据包是空包需要检查发送端的原因，也可能这个现象是正常的）；</p></li>
+</ol>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

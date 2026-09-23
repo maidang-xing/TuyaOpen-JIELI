@@ -1,4 +1,9 @@
-message(STATUS "[JIELI] wl82 platform selected (board AC7916A)")
+message(STATUS "[JIELI] platform selected for ${CONFIG_BOARD_CHOICE} (${CONFIG_CHIP_CHOICE})")
+
+if(CONFIG_CHIP_WL83)
+    message(STATUS
+        "[JIELI] using the AC792N SDK and WL83 board profile")
+endif()
 
 if(CONFIG_JIELI_MINIMAL_HELLO STREQUAL "y")
     set(PLATFORM_SKIP_DEFAULT_COMPONENTS ON)
@@ -8,13 +13,22 @@ endif()
 
 if(DEFINED ENV{JIELI_SDK_ROOT})
     set(JIELI_SDK_ROOT "$ENV{JIELI_SDK_ROOT}")
+elseif(CONFIG_CHIP_WL83 AND EXISTS "${PLATFORM_PATH}/chip/wl83/AC792_SDK/sdk/Makefile")
+    set(JIELI_SDK_ROOT "${PLATFORM_PATH}/chip/wl83/AC792_SDK/sdk")
+elseif(EXISTS "${PLATFORM_PATH}/chip/wl82/AC79_AIoT_SDK")
+    set(JIELI_SDK_ROOT "${PLATFORM_PATH}/chip/wl82/AC79_AIoT_SDK")
 elseif(EXISTS "${PLATFORM_PATH}/AC79_AIoT_SDK")
     set(JIELI_SDK_ROOT "${PLATFORM_PATH}/AC79_AIoT_SDK")
 else()
     set(JIELI_SDK_ROOT "${PLATFORM_PATH}/../../../AC79_AIoT_SDK")
 endif()
+if(CONFIG_CHIP_WL83 OR CONFIG_CHIP_CHOICE STREQUAL "wl83")
+    set(JIELI_CPU wl83)
+else()
+    set(JIELI_CPU wl82)
+endif()
 file(TO_CMAKE_PATH "${JIELI_SDK_ROOT}" JIELI_SDK_ROOT)
-set(JIELI_SDK_ROOT "${JIELI_SDK_ROOT}" CACHE PATH "AC79 SDK root")
+set(JIELI_SDK_ROOT "${JIELI_SDK_ROOT}" CACHE PATH "JieLi SDK root" FORCE)
 
 # The legacy Jieli toolchain's lto-ar must create the archive index. A host
 # ranlib cannot index pi32v2 bitcode archives used by the full TuyaOpen image.
@@ -46,7 +60,7 @@ list(APPEND PLATFORM_PUBINC
 
 list(APPEND PLATFORM_PUBINC
     "${JIELI_SDK_ROOT}/include_lib/driver/device"
-    "${JIELI_SDK_ROOT}/include_lib/driver/cpu/wl82"
+    "${JIELI_SDK_ROOT}/include_lib/driver/cpu/${JIELI_CPU}"
     "${JIELI_SDK_ROOT}/include_lib/net/lwip_2_2_0"
     "${JIELI_SDK_ROOT}/include_lib/net/lwip_2_2_0/lwip/src/include"
     "${JIELI_SDK_ROOT}/include_lib/net/lwip_2_2_0/lwip/src/include/compat"
@@ -55,7 +69,7 @@ list(APPEND PLATFORM_PUBINC
     "${JIELI_SDK_ROOT}/include_lib/btstack"
     "${JIELI_SDK_ROOT}/include_lib/btstack/le"
     "${JIELI_SDK_ROOT}/include_lib/btctrler"
-    "${JIELI_SDK_ROOT}/include_lib/btctrler/port/wl82"
+    "${JIELI_SDK_ROOT}/include_lib/btctrler/port/${JIELI_CPU}"
     "${JIELI_SDK_ROOT}/include_lib/net"
     "${JIELI_SDK_ROOT}/include_lib/system"
     "${JIELI_SDK_ROOT}/include_lib/system/generic"

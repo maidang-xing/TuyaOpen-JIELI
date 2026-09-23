@@ -1,0 +1,12 @@
+# 自动哇（AutoWah）
+
+## 功能介绍
+* 实现AutoWah效果
+
+## 参数简述：
+* **Wah Type**：选择wah效果
+* **Mod Rate**：影响wah音的速率
+* **Freq Min**：影响wah音部分的低切频率，范围10~20kHz
+* **Freq Max**：影响wah音部分的高切频率，范围10~20kHz
+* **Wet**：wah音的增益，范围0~200
+* **Dry**：干声的增益，范围0~100
