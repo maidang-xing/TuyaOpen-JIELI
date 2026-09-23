@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>硬件调试 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../_static/js/custom.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>硬件调试</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="id1">
+<h1>硬件调试<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h1>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 34%" />
+<col style="width: 22%" />
+<col style="width: 26%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>Date</strong></p></td>
+<td><p><strong>Version</strong></p></td>
+<td><p><strong>Authors</strong></p></td>
+<td><p><strong>Changes</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>2025/07/08</p></td>
+<td><p>1.0</p></td>
+<td><p>振兵</p></td>
+<td><p>初稿</p></td>
+</tr>
+<tr class="row-odd"><td><p>2025/07/25</p></td>
+<td><p>2.0</p></td>
+<td><p>振兵</p></td>
+<td><p>增加C/I，
+增加私有辐射测试</p></td>
+</tr>
+</tbody>
+</table>
+<section id="cmw270">
+<h2>传导指标要求（以 CMW270 为例）<a class="headerlink" href="#cmw270" title="Permalink to this headline"></a></h2>
+<section id="id2">
+<h3>发射功率<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>RF 引脚端功率 avg 符合芯片规格要求，同时 <cite>max-min &lt; 1dB</cite> ，且频点分布呈抛物线。</p></li>
+</ul>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../../../_images/hw_debug_01.png"><img alt="../../../_images/hw_debug_01.png" src="../../../_images/hw_debug_01.png" style="width: 600px;" /></a>
+</figure>
+<ul class="simple">
+<li><p>若芯片引脚添加带外 Π 网络滤波，则需满足：</p>
+<ol class="arabic simple">
+<li><p>功率下降不超过 1.5dB，<strong>建议控制在 1dB 以内</strong> ；</p></li>
+<li><p>加 Π 网络后，<strong>阻抗仍需控制在 50Ω 附近</strong> ；</p></li>
+</ol>
+</li>
+</ul>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../../../_images/hw_debug_02.png"><img alt="../../../_images/hw_debug_02.png" src="../../../_images/hw_debug_02.png" style="width: 400px;" /></a>
+</figure>
+<blockquote>
+<div><ol class="arabic simple" start="3">
+<li><p><strong>避免以下异常操作</strong> ：从端口1调天线匹配、从端口2测芯片性能，容易引发线性度等问题。</p></li>
+</ol>
+</div></blockquote>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../../../_images/hw_debug_03.png"><img alt="../../../_images/hw_debug_03.png" src="../../../_images/hw_debug_03.png" style="width: 600px;" /></a>
+</figure>
+</section>
+<section id="id3">
+<h3>调制特性<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h3>
+<p>经典蓝牙：</p>
+<ul class="simple">
+<li><p>1M：需满足 Δf1 与 Δf2 要求，并尽量达到：
+- <cite>Δf1max - Δf1min &lt; 30kHz</cite>
+- <cite>Δf2max - Δf2min &lt; 40kHz</cite></p></li>
+<li><p>2M：Δf1/Δf2 要求待定，<strong>DEVM PEAK &lt; 15%</strong>，个别特殊点允许 &lt; 20%。</p></li>
+</ul>
+<p>BLE：</p>
+<ul class="simple">
+<li><p>1M：
+- <cite>Δf1max - Δf1min &lt; 30kHz</cite>
+- <cite>Δf2max - Δf2min &lt; 40kHz</cite></p></li>
+<li><p>2M：
+- <cite>Δf1max - Δf1min &lt; 30kHz</cite>
+- <cite>Δf2max - Δf2min &lt; 60kHz</cite></p></li>
+</ul>
+<p>调制特性与晶振性能密切相关，需避免 RF 干扰晶振，例如：</p>
+<ul class="simple">
+<li><p>晶振外接小电容滤除干扰；</p></li>
+<li><p>晶振远离 RF 区域；</p></li>
+<li><p>尝试将晶振旋转 180°（部分晶振特性相关，非确定性）。</p></li>
+</ul>
+<p>常见优化方式有：
+- 晶振外接小电容滤除干扰。
+- 振远离RF隔离干扰。
+- 晶振旋转180°(原因未知，与晶振特性相关)。</p>
+</section>
+<section id="id4">
+<h3>灵敏度<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>灵敏度需满足 avg 要求，同时关注频点间一致性，避免频段偏差。</p></li>
+<li><p>灵敏度对干扰极为敏感，常见干扰来源包括：</p>
+<ul>
+<li><p><strong>DCDC 干扰</strong> （PGND 分地不良）</p></li>
+<li><p><strong>高速 IO 翻转干扰</strong></p></li>
+<li><p><strong>相邻 IO 走线不均引发天线效应</strong></p></li>
+</ul>
+</li>
+</ul>
+<p>优化建议：</p>
+<ol class="arabic simple">
+<li><p>对比 LDO 与 DCDC 模式灵敏度表现，定位 PGND 问题；</p></li>
+<li><p>RF 区域不宜放高速翻转 IO；</p></li>
+<li><p>相邻 IO 长线应串联电感或并联小电容（如 10pF）；</p></li>
+<li><p>如接收良好但通信距离仍差，建议模拟实际环境测试 OTA 性能。</p></li>
+</ol>
+</section>
+<section id="c-i">
+<h3>C/I<a class="headerlink" href="#c-i" title="Permalink to this headline"></a></h3>
+<p>C/I测试固定灵敏度值，可加载干扰量的最大值。
+加干扰量越大，则代表芯片抗干扰越强。
+该指标用于对应实际干扰环境下，听音的卡顿情况。
+需确保该指标优于对比样机，再进行抗干扰测试。
+若实测不佳再考虑软件方式优化。</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../../../_images/hw_debug_ci.png"><img alt="../../../_images/hw_debug_ci.png" src="../../../_images/hw_debug_ci.png" style="width: 600px;" /></a>
+</figure>
+</section>
+</section>
+<section id="ota">
+<h2>OTA 指标要求<a class="headerlink" href="#ota" title="Permalink to this headline"></a></h2>
+<p>作为金机标准，应满足：</p>
+<ul class="simple">
+<li><p><strong>TRP &gt; -4dBm</strong></p></li>
+<li><p><strong>TIS &lt; -78dBm</strong></p></li>
+</ul>
+<p>能保证较好的极限距离，抗干扰以及主从机的良好通信。
+OTA指标与机型、天线、腔体结构相关，耳机常见如带杆、挂耳、入耳、面条。</p>
+<p>OTA 性能受天线、结构、阻抗匹配等因素影响。</p>
+<section id="trp-total-radiated-power">
+<h3>TRP（Total Radiated Power）<a class="headerlink" href="#trp-total-radiated-power" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>影响对耳通信、通话时发包质量等；</p></li>
+<li><p>要求频点功率呈抛物线分布；</p></li>
+<li><p>结构件如电池线、外壳、喇叭线均可能影响 TRP，尤其在人模测试中；</p></li>
+</ul>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../../../_images/hw_debug_04.png"><img alt="../../../_images/hw_debug_04.png" src="../../../_images/hw_debug_04.png" style="width: 600px;" /></a>
+</figure>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../../../_images/hw_debug_05.png"><img alt="../../../_images/hw_debug_05.png" src="../../../_images/hw_debug_05.png" style="width: 600px;" /></a>
+</figure>
+</section>
+<section id="tis-total-isotropic-sensitivity">
+<h3>TIS（Total Isotropic Sensitivity）<a class="headerlink" href="#tis-total-isotropic-sensitivity" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>影响连接稳定性与抗干扰能力；</p></li>
+<li><p>噪声是主要影响因素：</p>
+<ul>
+<li><p>DCDC 噪声（地电压突变、辐射耦合）</p></li>
+<li><p>触摸、充电、电感、顶针等高速信号干扰</p></li>
+</ul>
+</li>
+</ul>
+<figure class="align-center" id="id8">
+<a class="reference internal image-reference" href="../../../_images/hw_debug_06.png"><img alt="TIS" src="../../../_images/hw_debug_06.png" style="width: 600px;" /></a>
+<figcaption>
+<p><span class="caption-text">TIS</span><a class="headerlink" href="#id8" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id9">
+<a class="reference internal image-reference" href="../../../_images/hw_debug_07.png"><img alt="无匹配" src="../../../_images/hw_debug_07.png" style="width: 600px;" /></a>
+<figcaption>
+<p><span class="caption-text">无匹配</span><a class="headerlink" href="#id9" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id10">
+<a class="reference internal image-reference" href="../../../_images/hw_debug_08.png"><img alt="匹配" src="../../../_images/hw_debug_08.png" style="width: 600px;" /></a>
+<figcaption>
+<p><span class="caption-text">匹配</span><a class="headerlink" href="#id10" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<p>优化建议：</p>
+<ol class="arabic simple">
+<li><p>双面板推荐升级为 4 层板，降低地噪声；</p></li>
+<li><p>电感选用一体成型/全磁屏蔽/叠层电感（注意饱和电流）；</p></li>
+<li><p>电池线、磁铁、铜柱等应远离天线区域，避免结构耦合；</p></li>
+<li><p>TRP/TIS 都建议引入人模测试对比，捕捉干扰增强现象。</p></li>
+</ol>
+</section>
+<section id="id5">
+<h3>私有辐射测试<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h3>
+<p>在对比机没有DUT程序，且需直观对比性能差异时，可通过私有辐射测试，进行不同角度，不同天线，采集功率最大值测试。</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../../../_images/hw_debug_p01.png"><img alt="匹配" src="../../../_images/hw_debug_p01.png" style="width: 600px;" /></a>
+</figure>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../../../_images/hw_debug_p02.png"><img alt="匹配" src="../../../_images/hw_debug_p02.png" style="width: 600px;" /></a>
+</figure>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../../../_images/hw_debug_p03.png"><img alt="匹配" src="../../../_images/hw_debug_p03.png" style="width: 600px;" /></a>
+</figure>
+</section>
+</section>
+<section id="id6">
+<h2>数据收集与分析<a class="headerlink" href="#id6" title="Permalink to this headline"></a></h2>
+<p>收集OTA样机数据：</p>
+<ul class="simple">
+<li><p>建议大批量收集不同结构、型号、平台的耳机 OTA 人模测试数据；</p></li>
+<li><p>便于后续天线设计优化、系列间性能对比、结构可靠性评估；</p></li>
+<li><p>可用于构建 TRP/TIS 分布数据库，辅助硬件量产分析与标准制定。</p></li>
+</ul>
+<figure class="align-default">
+<img alt="../../../_images/hw_debug_09.png" src="../../../_images/hw_debug_09.png" />
+</figure>
+</section>
+<section id="id7">
+<h2>整机装配<a class="headerlink" href="#id7" title="Permalink to this headline"></a></h2>
+<p>优化建议：</p>
+<ol class="arabic simple">
+<li><p><strong>装配顺序合理</strong>：优先组装结构件，再进行柔性排线与电池线布线，避免反复拆装对接口和焊点造成损伤。</p></li>
+<li><p><strong>结构一致性控制</strong>：确保天线位置与塑胶件位置的一致性，避免因装配公差导致辐射方向变化。</p></li>
+<li><p><strong>天线压合稳定性</strong>：若采用 FPC 天线或弹片，需确认压合强度一致，避免浮起或接地不良。</p></li>
+<li><p><strong>导电胶/屏蔽罩接地确认</strong>：保证导电胶与屏蔽金属面接触良好，提升 EMI 抑制效果。</p></li>
+<li><p><strong>避开 RF 区域走线</strong>：如喇叭线、电池线不应绕过天线区域，避免耦合。</p></li>
+<li><p><strong>贴纸、胶水、垫片干扰验证</strong>：结构内胶水粘贴、双面胶、泡棉垫片等需验证对天线的影响（特别是频率响应偏移）。</p></li>
+<li><p><strong>整机压装工艺一致性确认</strong>：避免因螺丝松紧、卡扣不紧造成结构件松动，影响测试一致性。</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

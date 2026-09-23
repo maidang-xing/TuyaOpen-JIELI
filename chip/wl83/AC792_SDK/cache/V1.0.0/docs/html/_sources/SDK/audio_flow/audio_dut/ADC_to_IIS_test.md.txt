@@ -1,0 +1,7 @@
+# ADC_to_IIS
+
+## 预设数据流说明
+- **ADC_to_IIS_test**
+    - 测试ADC->IIS直通通路，可以用于单独确认ADC指标
+- **ADC_to_IIS_test(SYNC)**
+    - 测试ADC->SYNC->IIS，可以用于单独确认ADC指标，引入同步更贴近实际工程使用情况。

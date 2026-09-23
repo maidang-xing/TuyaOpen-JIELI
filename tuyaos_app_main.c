@@ -5,8 +5,6 @@
 #include "tkl_init.h"
 #include "tkl_output.h"
 
-void example_jieli_uart_hello(void);
-
 const struct irq_info irq_info_table[] = {
     { -1, -1, -1 },
 };
@@ -24,13 +22,17 @@ static void jieli_hello_task(void *arg)
     (void)arg;
     while (1) {
         os_time_dly(200);
+        tkl_log_output("TuyaOpen Jieli UART heartbeat\r\n");
     }
 }
 
 void app_main(void)
 {
     tkl_init();
-    tkl_log_output("TuyaOpen Jieli wl82 (AC7916A board)\r\n");
-    example_jieli_uart_hello();
+#if defined(CONFIG_CPU_WL83)
+    tkl_log_output("TuyaOpen Jieli AC792N_Develop_Board (wl83)\r\n");
+#else
+    tkl_log_output("TuyaOpen Jieli AC79_DevKitBoard (wl82)\r\n");
+#endif
     os_task_create(jieli_hello_task, NULL, 10, 1000, 0, "tuya_hello");
 }

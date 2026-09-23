@@ -1,71 +1,60 @@
-# Jieli wl82 平台（AC7916A 开发板）
+# JieLi 平台：AC79_DevKitBoard 与 AC792N_Develop_Board
 
-当前平台适配的第一个里程碑是 `jieli_uart_hello`：使用 TuyaOpen 的
-`tos.py config/build/flash/monitor` 入口，最终链接仍由 AC79 SDK 的
-`apps/demo/demo_hello/board/wl82/Makefile` 完成。
+| 统一板名 | 芯片/平台 | 状态 | SDK |
+| --- | --- | --- | --- |
+| `AC79_DevKitBoard` | AC791 / WL82 | 完整 TuyaOpen `switch_demo` 构建入口已验证；历史别名 `AC7916A` 保留 | `chip/wl82/AC79_AIoT_SDK` |
+| `AC792N_Develop_Board` | AC792N / WL83 | 完整 `switch_demo` 镜像已在 Windows 上构建、链接；实板烧录、Wi-Fi/BLE 配网及云端 DP 验证待做 | `chip/wl83/AC792_SDK` |
 
-## 环境变量
+所有工程均从 TuyaOpen 仓库根目录或示例目录使用 `tos.py`。Windows 是当前支持的烧录环境。AC79 与 AC792 SDK 源码直接纳入 JieLi 平台仓库的 `chip/` 目录，不使用 Git submodule；AC79 SDK 中当前未使用的 `libmatter.a` 按项目约定忽略，不提交。本地工具链默认从 `C:\\JL\\pi32\\bin` 查找，也可设置 `JIELI_TOOL_DIR`。
 
-默认会使用当前目录下的 `AC79_AIoT_SDK`（该目录为本地厂商 SDK，已在仓库中排除）。
-如 SDK 放在其他位置，再设置 `JIELI_SDK_ROOT`：
+## 选择板卡与构建
 
-```sh
-export JIELI_SDK_ROOT=/path/to/AC79_AIoT_SDK
-export JIELI_TOOL_DIR=/path/to/pi32v2/bin
-```
+AC79 完整应用（例如 `apps/tuya_cloud/switch_demo`）：
 
-`JIELI_TOOL_DIR` 至少需要包含 `clang`、`lto-wrapper`、`lto-ar`、`objdump`
-和 `objsizedump`。Linux 主机没有杰理 `host-client` 时，构建适配会使用
-杰理 `objcopy` 从 `sdk.elf` 生成原始 `app.bin`；这不是完整 UFW 包。
-
-## 构建
-
-```sh
-cd examples/get-started/jieli_uart_hello
-tos.py config set CONFIG_BOARD_CHOICE=AC7916A
+```powershell
+tos.py config set CONFIG_BOARD_CHOICE_AC79_DEVKITBOARD=y CONFIG_JIELI_MINIMAL_HELLO=n CONFIG_JIELI_UART_LOG_PORT=1 CONFIG_JIELI_UART_LOG_BAUDRATE=1000000
 tos.py build
 ```
 
-Windows PowerShell 也可以直接使用仓库虚拟环境：
+AC792 完整 Tuya `switch_demo`：
 
 ```powershell
-$env:JIELI_TOOL_DIR = 'C:\JL\pi32\bin'
-& .venv\Scripts\python.exe tos.py build
+tos.py config set CONFIG_BOARD_CHOICE_AC792N_DEVELOP_BOARD=y CONFIG_JIELI_MINIMAL_HELLO=n CONFIG_JIELI_UART_LOG_PORT=0 CONFIG_JIELI_UART_LOG_BAUDRATE=1000000
+tos.py build
 ```
 
-输出文件为：
+该镜像包含 Tuya TKL Wi-Fi/BLE、BLE 配网、Tuya IoT 和 `switch_demo` DP 业务。AC792 SDK 的 WPA/SAE 还需链接 `libcrypto_mbedtls.a`。2026-09-23 已完成完整镜像的软件构建和链接；本次未将最新镜像烧录到 AC792 实板，Wi-Fi、BLE 配网、云端激活与 DP 上报/下发尚未按本次构建结果进行硬件验证。
 
-```text
-dist/jieli_uart_hello_1.0.0/jieli_uart_hello_QIO_1.0.0.bin
-```
+## 板级串口与内存参考
 
-## 烧录和串口
+| 板卡 | UART 日志配置 | Flash / RAM 参考 |
+| --- | --- | --- |
+| `AC79_DevKitBoard` | 按官方 `demo_DevKitBoard`：UART1、TX=PB3、RX 未使用、1,000,000 baud | **实测 Flash ID `5E4017`、8 MiB；2026-09-23 官方 SDK USB 下载成功**。片上 SRAM 578 KB；本次 switch_demo 启动日志报告 SDRAM 2 MiB，官方 DevKit 示例配置 8 MiB，需核对板卡与 SDK 内存配置 |
+| `AC792N_Develop_Board` | WL83 SDK `demo_hello`：UART0、TX=PD1、RX=PE11、1,000,000 baud。bring-up 默认采用此值 | AC7926A SDK 开发板 profile：8 MiB Flash、16 MiB DDR1；芯片片上 SRAM 256 KB |
 
-Windows 下如果 `platform/JIELI/AC79_AIoT_SDK/cpu/wl82/tools` 中的官方
-`isd_download.exe`、`isd_config.ini`、`uboot.boot` 和 `cfg_tool.bin` 均存在，
-`tos.py flash` 会自动使用 SDK 的 WL82 USB 下载参数。板卡需要先进入下载模式。
-如果使用其他烧录器，可以配置命令覆盖默认行为：
+UART 与 RAM 参数是 SDK/历史工程软件配置参考，须结合实板进一步确认。AC79 Flash ID/容量已由 2026-09-23 USB 下载器读取确认；用户连接串口时仍需核对开发板硬件版本、跳线、TX/RX/GND、COM 号及波特率。`tos.py monitor` 默认波特率从当前 Kconfig 配置读取；AC79 与 AC792 当前均为 1,000,000 baud。2026-09-23 的 AC791 `switch_demo` 实板日志已保存于 `apps/tuya_cloud/switch_demo/src/monitor.log`：固件正常启动，但未观察到 BLE 配网完成、Wi-Fi 连接、Tuya 云激活或 DP 通信；详见项目 guide 中的测试记录。
 
-```sh
-export JIELI_FLASH_CMD='my-jieli-uploader --file "{binfile}" --port "{port}" --baud "{baud}"'
-tos.py flash -p /dev/ttyUSB0 -b 115200
-tos.py monitor -p /dev/ttyUSB0 -b 115200
-```
+## 烧录与串口日志
 
-使用 SDK 官方 USB 下载器时无需设置 `JIELI_FLASH_CMD`：
+Windows 上构建完成后运行：
 
 ```powershell
-& .venv\Scripts\python.exe tos.py flash
-& .venv\Scripts\python.exe tos.py monitor -p COM11 -b 115200
+tos.py flash
+tos.py monitor -p COM3
 ```
 
-`JIELI_FLASH_CMD` 中支持 `{binfile}`、`{port}`、`{baud}`、`{chip}` 和
-`{board}` 占位符。Linux 或 SDK 下载器文件不完整时，必须配置外部烧录器；
-平台不会退回通用 `tyutool`。
+`tos.py flash` 根据当前 `CHIP_CHOICE` 选择对应 SDK 的 `isd_download.exe` 和配置文件。AC792 USB 烧录按官方流程按住 `UPDATE` 键并重新上电，确认设备枚举为 `WL83 UBOOT1.00 USB Device` 后执行下载。AC79 使用其 WL82 USB 下载模式。烧录桥不负责识别日志 COM 口；`tos.py monitor` 需要指定设备管理器中的日志 COM 号。
 
-预期串口输出包含：
+也可以显式覆盖波特率：
 
-```text
-TuyaOpen Jieli AC7916A
-UART Hello World
+```powershell
+tos.py monitor -p COM3 -b 1000000
 ```
+
+AC792 bring-up 固件预期打印 `TuyaOpen Jieli AC792N_Develop_Board (wl83)` 和周期性的 `TuyaOpen Jieli UART heartbeat`。只有连接实板抓取到这些日志，才能确认硬件日志链路已跑通。
+
+## 历史 AC7916A 工程
+
+`D:\\tuya_proj\\jieli\\ipc_ac7916a` 曾使用 AC7916A，映射到当前统一板名 `AC79_DevKitBoard`。项目保留用于历史参考，不作为当前调试工程；其中 UART2/PB6/115200 是历史工程配置。当前固件按官方 DevKit 示例使用 UART1/PB3/1 Mbps，实际硬件接线仍需实板确认。
+
+完整项目和官方资料索引见 [`docs/jieli_ac791x_ac792x_project_guide.md`](../../docs/jieli_ac791x_ac792x_project_guide.md)。

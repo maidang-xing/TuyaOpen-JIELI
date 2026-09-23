@@ -1,0 +1,76 @@
+杰理Auracast助手介绍
+############
+
+手机APP下载地址：
+
+Android：https://www.pgyer.com/4VtrMJUr
+
+iOS TestFlight下载链接：https://testflight.apple.com/join/naAsw6FW
+
+iOS APP Store：敬请期待
+
+Auracast助手介绍
+=============
+
+支持Bluetooth 5.2+的Auracast助手
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Auracast助手提供远程用户界面，通过扫描Auracast发射器并为用户提供选择收听哪个广播的方法，使选择更加容易。 这种方案允许 Auracast接收器卸载其扫描功能，依靠 Auracast助手为其完成工作。 一旦 Auracast助手建立了可用的 Auracast发射器列表，它就会让用户选择收听哪一个，并指示接收器（例如耳塞、助听器、扬声器等）开始接收和呈现适当的广播流。 Auracast助手还负责保持 Auracast接收器对彼此同步，以便任一接收器上的更改都会立即反映在另一个接收器上。
+
+    .. figure:: imgs/auracast_work_flow.png
+
+.. tip::
+
+    1、Auracast发射器和接收器之间没有任何连接
+    
+    2、Auracast发射器和Auracast助手之间没有任何连接
+    
+    3、协调组内的左接收器和右接收器之间没有蓝牙连接
+    
+    4、Auracast助手和接收器通过GATT通讯
+
+支持传统智能手机(Bluetooth 4.2+)的Auracast助手
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Auracast助手是智能手机的应用，通过GATT连接Auracast接收器, 从Auracast接收器获取Auracast广播列表，使用户选择更加容易。
+
+        .. figure:: imgs/auracast_app_work_flow.png
+
+产品形态设计
+=============
+
+基于应用程序的实现
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+基于独立设备(比如：智能手机，智能手表，智能充电仓等)开发的应用程序实现 Auracast助手功能。
+
+智能手机应用
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        .. figure:: imgs/JLAuracastAssistant.JPG
+                :width: 320px
+                :height: 650px
+        .. figure:: imgs/auracast_assistant_controller_1.png
+                :width: 320px
+                :height: 650px
+
+针对接收端的方案设计
+=============
+
+支持BLE 5.2+ 的蓝牙设备作为Auracast助手
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+如图所示， Auracast助手通过接收Auracast发射器的广播信息，得到广播列表，然后向用户展示。
+用户可以通过Auracast助手选择可用的Auracast广播，收听喜欢的广播流。
+
+        .. figure:: imgs/ble_5.2_assistant_work_flow.png
+
+传统智能手机作为Auracast助手
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+如图所示，Auracast助手与Auracast接收器建立GATT通讯，控制Auracast接收器获取广播列表，然后向用户展示。
+用户可以通过Auracast助手选择可用的Auracast广播，收听喜欢的广播流。
+
+        .. figure:: imgs/ble_4.2_assistant_work_flow.png
+
+

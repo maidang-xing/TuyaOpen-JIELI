@@ -1,0 +1,14 @@
+# 可视化音频流FAQ
+
+## 数据流接口说明
+---
+
+### 数据流创建失败 
+
+```C
+struct jlstream *jlstream_pipeline_parse(u16 pipeline, u16 source_uuid);
+```
+- 返回NULL原因分析
+    - 检查音频流程框图右上角的导出开关<br>
+    ![](./assets/audio_flow_export_enable.png)
+    - 检查流程中是否有**Source**、**Sink**，二者需要根据配置的名称一一对应，检查是否其中一个没有导出<br>

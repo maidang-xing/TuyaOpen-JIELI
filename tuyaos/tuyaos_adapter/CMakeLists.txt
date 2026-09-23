@@ -12,6 +12,7 @@ set(JIELI_ADAPTER_SRC
     ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_ota.c
     ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_assert.c
     ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_bluetooth.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_jieli_chip_mac.c
     ${CMAKE_CURRENT_LIST_DIR}/src/system/tuyaopen_license.c
     ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_network.c
     ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_wifi.c
@@ -38,11 +39,11 @@ target_include_directories(${JIELI_ADAPTER_NAME}
         ${JIELI_SDK_ROOT}/include_lib/btstack
         ${JIELI_SDK_ROOT}/include_lib/btstack/le
         ${JIELI_SDK_ROOT}/include_lib/btctrler
-        ${JIELI_SDK_ROOT}/include_lib/btctrler/port/wl82
+        ${JIELI_SDK_ROOT}/include_lib/btctrler/port/${JIELI_CPU}
         ${JIELI_SDK_ROOT}/include_lib/net
         ${JIELI_SDK_ROOT}/include_lib/driver
         ${JIELI_SDK_ROOT}/include_lib/driver/device
-        ${JIELI_SDK_ROOT}/include_lib/driver/cpu/wl82
+        ${JIELI_SDK_ROOT}/include_lib/driver/cpu/${JIELI_CPU}
         ${JIELI_SDK_ROOT}/include_lib/system
         ${JIELI_SDK_ROOT}/include_lib/utils
         ${JIELI_SDK_ROOT}/include_lib/utils/syscfg

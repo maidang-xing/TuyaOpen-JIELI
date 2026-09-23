@@ -1,0 +1,3 @@
+# 串口数据导出FAQ
+
+串口数据导出使用指引:[🔗点击跳转](./../audio_cvp/cvp_uart_data_export.md)

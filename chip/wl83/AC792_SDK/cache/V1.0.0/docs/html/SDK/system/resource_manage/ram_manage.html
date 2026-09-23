@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAM管理帮助 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../_static/js/custom.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>RAM管理帮助</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ram">
+<h1>RAM管理帮助<a class="headerlink" href="#ram" title="Permalink to this headline"></a></h1>
+<p>目前默认部分代码放在RAM来提高运行效率，同时可以避免频繁读写flash而导致功耗增加，在RAM不够的情况下可以将部分代码放回flash到达释放RAM资源的目的。</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>建议将RAM资源用到极致，保证RAM使用最高峰值的情况下不会出现RAM不足即可。</p>
+</div>
+<section id="id1">
+<h2>问题现象<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<p>RAM不足的情况下，打印会出现断言死机，ASSERT: vmalloc_147</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../_images/vmalloc_147.png" src="../../../_images/vmalloc_147.png" />
+</figure>
+</div></blockquote>
+</section>
+<section id="id2">
+<h2>查看当前运行RAM剩余<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<p>开启定时器打印。</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../_images/ram_timer.png" src="../../../_images/ram_timer.png" />
+</figure>
+<figure class="align-default">
+<img alt="../../../_images/ram_timer_log.png" src="../../../_images/ram_timer_log.png" />
+</figure>
+</div></blockquote>
+</section>
+<section id="id3">
+<h2>RAM资源使用优化方法<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>根据需求释放RAM，不一定需要全部放。下述操作执行后均需要重新编译。</p>
+</div>
+<section id="flash">
+<h3>音频算法放到flash<a class="headerlink" href="#flash" title="Permalink to this headline"></a></h3>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../_images/audio_config_ram.png" src="../../../_images/audio_config_ram.png" />
+</figure>
+</div></blockquote>
+</section>
+<section id="overlay">
+<h3>释放overlay代码<a class="headerlink" href="#overlay" title="Permalink to this headline"></a></h3>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../_images/overlay.png" src="../../../_images/overlay.png" />
+</figure>
+</div></blockquote>
+</section>
+<section id="sdk-ld-cramdata-code-flash">
+<h3>修改sdk_ld.c将RAM中的data_code区域中一些代码注释掉，就会放回flash<a class="headerlink" href="#sdk-ld-cramdata-code-flash" title="Permalink to this headline"></a></h3>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>前两点修改完还不够再考虑改这个</p>
+<figure class="align-default">
+<img alt="../../../_images/sdk_ld_ram.png" src="../../../_images/sdk_ld_ram.png" />
+</figure>
+</div>
+</section>
+<section id="le-audio-jl-unicast-sink">
+<h3>LE_AUDIO_JL_UNICAST_SINK项目优化<a class="headerlink" href="#le-audio-jl-unicast-sink" title="Permalink to this headline"></a></h3>
+<p>如果是耳机端配置jl_unicast的工程RAM不够，可以根据dongle端的unicast配置修改删减LC3的帧长和采样率使能、以及代码段（20K左右）。</p>
+<p>比如dongle端的unicast配置如下：</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../_images/lea_jl_dongle.png" src="../../../_images/lea_jl_dongle.png" />
+</figure>
+</div></blockquote>
+<p>头戴式耳机只需要保留帧长是10ms、采样率是48K的配置：</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../_images/lea_jl_earphone.png" src="../../../_images/lea_jl_earphone.png" />
+</figure>
+<figure class="align-default">
+<img alt="../../../_images/lea_jl_earphone_data_text.png" src="../../../_images/lea_jl_earphone_data_text.png" />
+</figure>
+</div></blockquote>
+</section>
+<section id="id4">
+<h3>其余参考优化链接<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h3>
+<ul>
+<li><p>详细见：</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>音频配置-&gt;音频代码段链接配置 章节</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>软件调试 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../_static/js/custom.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>软件调试</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="id1">
+<h1>软件调试<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h1>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 34%" />
+<col style="width: 22%" />
+<col style="width: 26%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>Date</strong></p></td>
+<td><p><strong>Version</strong></p></td>
+<td><p><strong>Authors</strong></p></td>
+<td><p><strong>Changes</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>2025/07/08</p></td>
+<td><p>1.0</p></td>
+<td><p>Gw</p></td>
+<td><p>初稿</p></td>
+</tr>
+</tbody>
+</table>
+<section id="id2">
+<h2>系统及电源配置<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>时钟频率：可以通过 <cite>void clock_dump(void)</cite> 函数输出时钟系统信息。重点关注：</p>
+<ul>
+<li><p>PLL TARGET CLOCK</p></li>
+<li><p>HSP CLK</p></li>
+<li><p>SPI CLK</p></li>
+</ul>
+</li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="c1">//clock_dump:</span>
+<span class="linenos">2</span><span class="p">[</span><span class="n">CLOCK</span><span class="p">]</span><span class="o">---</span><span class="n">sys</span><span class="w"> </span><span class="n">clk</span><span class="w"> </span><span class="n">set</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">192000000</span><span class="w"></span>
+<span class="linenos">3</span><span class="p">[</span><span class="n">CLOCK</span><span class="p">]</span><span class="o">---</span><span class="n">SYSPLL</span><span class="w"> </span><span class="n">EN</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="linenos">4</span><span class="p">[</span><span class="n">CLOCK</span><span class="p">]</span><span class="o">---</span><span class="n">D_PLL</span><span class="w"> </span><span class="n">EN</span><span class="w">  </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="linenos">5</span><span class="p">[</span><span class="n">CLOCK</span><span class="p">]</span><span class="o">---</span><span class="n">HSB</span><span class="w"> </span><span class="n">CLK</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">48000000</span><span class="w"></span>
+<span class="linenos">6</span><span class="p">[</span><span class="n">CLOCK</span><span class="p">]</span><span class="o">---</span><span class="n">LSB</span><span class="w"> </span><span class="n">CLK</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">24000000</span><span class="w"></span>
+<span class="linenos">7</span><span class="p">[</span><span class="n">CLOCK</span><span class="p">]</span><span class="o">---</span><span class="n">SFC</span><span class="w"> </span><span class="n">CLK</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">48000000</span><span class="w"></span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>电源模式：在 <cite>可视化工具</cite> —&gt; <cite>电源配置</cite> —&gt; <cite>时钟&amp;电源</cite> —&gt; <cite>电源模式选择</cite> ：</p>
+<ul>
+<li><p>LDO</p></li>
+<li><p>DCDC15</p></li>
+</ul>
+</li>
+<li><p>DCDC电感：SDK支持配置10uH或4.7uH，通过修改的 <cite>dcdc_L</cite> 值选择。</p>
+<ul>
+<li><p>10uH(default)</p></li>
+<li><p>4.7uH</p></li>
+</ul>
+</li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="c1">//power_config.c</span>
+<span class="linenos">2</span><span class="k">enum</span><span class="w"> </span><span class="n">DCDC_L</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="linenos">3</span><span class="w">    </span><span class="n">DCDC_L_4p7uH</span><span class="p">,</span><span class="w"></span>
+<span class="linenos">4</span><span class="w">    </span><span class="n">DCDC_L_10uH</span><span class="p">,</span><span class="w"></span>
+<span class="linenos">5</span><span class="p">};</span><span class="w"></span>
+<span class="linenos">6</span>
+<span class="linenos">7</span><span class="k">const</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">dcdc_L</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DCDC_L_10uH</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>DCDC电感参数必须软硬件对应。</p>
+</div>
+</section>
+<section id="id3">
+<h2>音频类配置<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>最大延时：在 <cite>可视化工具</cite> —&gt; <cite>蓝牙配置</cite> —&gt; <cite>经典蓝牙</cite> —&gt; <cite>A2DP自适应最大延时(msec)</cite> ：</p>
+<ul>
+<li><p>550(default)</p></li>
+</ul>
+</li>
+<li><p>通用延时：在 <cite>可视化工具</cite> —&gt; <cite>蓝牙配置</cite> —&gt; <cite>经典蓝牙</cite> —&gt; <cite>A2DP延时xxx(msec)</cite> ：</p>
+<ul>
+<li><p>300(default)</p></li>
+</ul>
+</li>
+<li><p>解码格式：</p>
+<ul>
+<li><p>AAC</p></li>
+<li><p>SBC</p></li>
+<li><p>LDAC</p></li>
+<li><p>LHDC</p></li>
+</ul>
+</li>
+<li><p>码率确认：</p>
+<ul>
+<li><p>AAC：通过bt_set_aac_bitrate配置码率。注：此配置为协商的建议值，实际码率不同型号手机不同。</p></li>
+<li><p>SBC：配置宏定义TCFG_BT_SBC_BITPOOL，具体数值转换参考下图或 <a class="reference external" href="https://btcodecs.valdikss.org.ru/sbc-bitrate-calculator/">连接</a></p></li>
+</ul>
+</li>
+</ul>
+<figure class="align-center" id="id9">
+<img alt="../../../_images/sw_debug_sbc.png" src="../../../_images/sw_debug_sbc.png" />
+<figcaption>
+<p><span class="caption-text">SBC参数图</span><a class="headerlink" href="#id9" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<ul>
+<li><p>音频流确认(SDK默认配置)：</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>A2DP_RX</dt><dd><ul>
+<li><p>网络时钟转本地时钟：Disable</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>蓝牙音频同步：</dt><dd><ul>
+<li><p>网络时钟配置：AUDIO_NETWORK_BT2_1</p></li>
+<li><p>对齐模式：快速对齐</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>DAC</dt><dd><ul>
+<li><p>dac通道延时(ms)：30</p></li>
+<li><p>dac延时保护时间(ms)：8</p></li>
+<li><p>DAC写入模式：BLOCK</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<figure class="align-center" id="id10">
+<a class="reference internal image-reference" href="../../../_images/sw_debug_stream.png"><img alt="jlstream图" src="../../../_images/sw_debug_stream.png" style="width: 600px;" /></a>
+<figcaption>
+<p><span class="caption-text">jlstream图</span><a class="headerlink" href="#id10" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="id5">
+<h2>蓝牙类配置<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h2>
+<p>以下配置对距离测试均有影响，与金机对比时候建议使用相同用配置。</p>
+<ul class="simple">
+<li><p>TWS功能：根据方案选择。</p></li>
+<li><p>QoS功能：默认开启。</p></li>
+<li><p>1to2功能：默认开启。</p></li>
+<li><p>BLE功能确认：根据方案开启。注意如果是仅广播功能，间隔interval=2S，或添加动态广播控制。</p></li>
+<li><p>频偏校准：测试距离前必须使用杰理测试盒确认频偏已经校准。</p></li>
+</ul>
+</section>
+<section id="id6">
+<h2>参数修改 &amp; 调试<a class="headerlink" href="#id6" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>extws_cnt：TWS监听参数。</p></li>
+<li><p>rx缓存buffer：蓝牙接收缓存.</p></li>
+</ul>
+<section id="debug-edr-info">
+<h3>debug_edr_info<a class="headerlink" href="#debug-edr-info" title="Permalink to this headline"></a></h3>
+<p>若金机环境仍能出现问题，可以通过抓取日志和使用可视化分析工具进行分析问题。</p>
+<ul class="simple">
+<li><p>硬件环境：需要拉出打印接口，连接 <cite>日志小板</cite> 。</p></li>
+<li><p>软件配置： 在bt_mode_init函数开头第一句位置添加代码 <cite>set_debug_edr_info(BIT(0)|BIT(1));</cite>  。</p></li>
+<li><p>复现问题并提抓取日志，使用 <cite>串口数据可视化工具分析</cite> 。</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>打印线尽量避开天线，避免整机RF性能有干扰。</p>
+</div>
+<figure class="align-center" id="id11">
+<a class="reference internal image-reference" href="../../../_images/sw_debug_log_board.png"><img alt="日志小板" src="../../../_images/sw_debug_log_board.png" style="width: 300px;" /></a>
+<figcaption>
+<p><span class="caption-text">日志小板</span><a class="headerlink" href="#id11" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id12">
+<a class="reference internal image-reference" href="../../../_images/sw_debug_log_device.png"><img alt="示例样机" src="../../../_images/sw_debug_log_device.png" style="width: 300px;" /></a>
+<figcaption>
+<p><span class="caption-text">示例样机</span><a class="headerlink" href="#id12" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id13">
+<a class="reference internal image-reference" href="../../../_images/sw_debug_log_sample.png"><img alt="完整示例" src="../../../_images/sw_debug_log_sample.png" style="width: 300px;" /></a>
+<figcaption>
+<p><span class="caption-text">完整示例</span><a class="headerlink" href="#id13" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<ul>
+<li><p>串口数据可视化工具（不开放）</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>工具最多支持两路log数据输入</p></li>
+<li><p>添加 <a href="#id7"><span class="problematic" id="id8">`</span></a>set_debug_edr_info(BIT(0)|BIT(1));`代码后，设备log出现如下内容：</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">phone_rx_info</span><span class="o">=</span><span class="p">[</span><span class="n">role_r</span><span class="w"> </span><span class="n">delay_r</span><span class="w"> </span><span class="n">dec_num_err</span><span class="w"> </span><span class="n">phone_rx_a2dp_err_cnt</span><span class="w"> </span><span class="n">tws_forward_cnt</span><span class="w"> </span><span class="n">tws_forward_timeout_cnt</span><span class="w"> </span><span class="n">tws_rx_a2dp_cnt</span><span class="w"> </span><span class="n">tws_rx_a2dp_timeout_cnt</span><span class="w"> </span><span class="n">extws_cnt_set</span><span class="w"> </span><span class="n">qos</span><span class="w"> </span><span class="n">phone_rssi</span><span class="w"> </span><span class="n">tws_rssi</span><span class="w"> </span><span class="n">power_set</span><span class="p">]</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>此时把收集的log日志转给珠海公司蓝牙部门分析即可</p>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

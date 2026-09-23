@@ -1,0 +1,7 @@
+# Hi-Res Audio FAQ
+
+- **Hi-Res Audio认证指引**
+    - [🔗LDAC认证流程](./../audio_config/Hi_Res_Audio/LDAC_Certification.md)
+    - [🔗LHDC认证流程](./../audio_config/Hi_Res_Audio/LHDC_Certification.md)
+
+- **Hi-Res Audio FAQ**：[🔗点击跳转](./../audio_config/Hi_Res_Audio/HiRes_FAQ.md)

@@ -1,0 +1,15 @@
+# TDM
+
+|Version|Platforms|Notes|
+|---|---|---|
+|V1|701N、703N||
+|V2|708N、709N、710N||
+
+- **V1 Features**
+    - <font color="red">仅支持主机接收，从机发送</font>
+    - 独立TDM模块
+    - 最大支持**32 slot**
+- **V2 Features**
+    - 支持主机收发和从机收发
+    - 复用IIS模块
+    - 最大支持**8 slot**

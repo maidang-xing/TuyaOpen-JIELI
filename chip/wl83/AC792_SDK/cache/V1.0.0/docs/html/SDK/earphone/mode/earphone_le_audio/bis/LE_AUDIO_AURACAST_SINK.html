@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LE_AUDIO_AURACAST_SINK开发说明 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../../../_static/js/custom.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>LE_AUDIO_AURACAST_SINK开发说明</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="le-audio-auracast-sink">
+<h1>LE_AUDIO_AURACAST_SINK开发说明<a class="headerlink" href="#le-audio-auracast-sink" title="Permalink to this headline"></a></h1>
+<section id="id1">
+<h2>开发说明<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<ol class="arabic simple">
+<li><p>Auracast让蓝牙设备实现 “广播式” 音频传输，一人分享、多人收听，无需配对，这里的杰理耳机主要作为SINK接收端，接受来自Auracast源的广播音频。</p></li>
+<li><p>杰理Auracast助手手机APP主要是用来配置耳机开关Auracast功能、用来选择接收哪个Auracast源头音频，详情请看杰理Auracast助手介绍。</p></li>
+</ol>
+</section>
+<section id="id2">
+<h2>工程配置<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<ol class="arabic">
+<li><p>开启ble和第三方协议配置</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/Auracast工程配置1.png" src="../../../../../_images/Auracast工程配置1.png" />
+</figure>
+</div></blockquote>
+</li>
+<li><p>开启le_audio配置中的LE_AUDIO_AURACAST_SINK_EN</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/Auracast工程配置2.png" src="../../../../../_images/Auracast工程配置2.png" />
+</figure>
+</div></blockquote>
+</li>
+<li><p>把媒体和蓝牙通话流程改为le_audio的流程</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/Auracast工程配置3.png" src="../../../../../_images/Auracast工程配置3.png" />
+</figure>
+</div></blockquote>
+</li>
+<li><p>开启le_audio_sink流程</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/Auracast工程配置4.png" src="../../../../../_images/Auracast工程配置4.png" />
+</figure>
+</div></blockquote>
+</li>
+</ol>
+</section>
+<section id="id3">
+<h2>流程说明<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/auracast_流程说明.png" src="../../../../../_images/auracast_流程说明.png" />
+</figure>
+</div></blockquote>
+</section>
+<section id="id4">
+<h2>接口说明<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h2>
+<p>auracast功能初始化</p>
+<blockquote>
+<div><figure class="align-default">
+<img alt="../../../../../_images/app_auracast_sink_init.png" src="../../../../../_images/app_auracast_sink_init.png" />
+</figure>
+</div></blockquote>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * @brief 获取auracast状态</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="n">BROADCAST_STATUS</span><span class="w"> </span><span class="nf">le_auracast_status_get</span><span class="p">();</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm"> * @brief 关闭auracast功能（音频、扫描）</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">le_auracast_stop</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm"> * @brief 手机选中广播设备开始播歌</span>
+<span class="cm"> *</span>
+<span class="cm"> * @param param 要监听的广播设备</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">app_auracast_sink_big_sync_create</span><span class="p">(</span><span class="n">auracast_sink_source_info_t</span><span class="w"> </span><span class="o">*</span><span class="n">param</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm"> * @brief 关闭所有正在监听播歌的广播设备</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">app_auracast_sink_big_sync_terminate</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm"> * @brief 手机通知设备开始搜索auracast广播</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">app_auracast_sink_scan_start</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm"> * @brief 手机通知设备关闭搜索auracast广播</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">app_auracast_sink_scan_stop</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm"> * @brief 接收端接收事件回调</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">auracast_sink_event_callback</span><span class="p">(</span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">packet</span><span class="p">,</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">length</span><span class="p">)</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm"> * @brief 设备收到广播设备信息汇报给手机APP</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="kt">void</span><span class="w"> </span><span class="n">auracast_sink_source_info_report_event_deal</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">packet</span><span class="p">,</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">length</span><span class="p">)</span><span class="w"></span>
+
+<span class="cm">/**</span>
+<span class="cm"> * @brief 打开设备的音频流</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">le_auracast_audio_open</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">packet</span><span class="p">,</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">length</span><span class="p">)</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>注：其余更多接口使用说明，详细见app_le_auracast.h/.c</p>
+</div>
+</section>
+<section id="id5">
+<h2>参数规格<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h2>
+<p>LE_AUDIO_AURACAST资源统计如下：</p>
+<p>Bluetooth: 支持蓝牙bis+ACL 双工传输</p>
+<p>代码量：264kb (对比前后开关ble+Auracast宏编译后的app.app大小)</p>
+</section>
+<section id="id6">
+<h2>问题汇总<a class="headerlink" href="#id6" title="Permalink to this headline"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,50 @@
+Auracast Receiver 方案设计
+############
+
+杰理Auracast助手接收流程
+=============
+
+#. Auracast Reciver打开广播
+
+#. 杰理Auracast助手手机客户端连接上Auracast Reciver
+
+#. 杰理Auracast助手手机客户端需要兼容旧手机收不到周期广播获取不到BIG_info的情况
+
+#. 杰理Auracast助手手机客户端发送指令让Auracast Receiver扫描
+
+#. Auracast Receiver扫描到信息发送到杰理Auracast助手手机客户端
+
+    .. figure:: imgs/协助扫描.png
+
+#. 杰理Auracast助手手机客户端选择需要同步的广播
+
+#. 杰理Auracast助手手机客户端通过ATT传输BIG info同步参数和音频解码参数，BAP,PBP等服务
+
+#. Auracast Reciver收到同步信息后直接创建BIG同步，不用再获取EA，PA，可省电省时间
+
+#. 切换其它Auracast广播由杰理Auracast助手手机客户端控制
+
+#. 杰理Auracast助手手机客户端和Auracast Reciver一直保持连接
+
+Auracast Receiver功能支持
+=============
+
+#. 支持BAP：广播音频参数服务
+
+#. 支持PACS：音频解码参数服务
+
+#. 支持BASS：广播助手控制服务
+
+#. 支持CAP：音频配置服务
+
+#. 支持LC3：标准的LC3解码
+
+音频时延
+=============
+
+广播的sdu interval 是固有时延，一般是10ms，Auracast Receiver不可控
+
+    .. figure:: imgs/AuracastLatency.png
+
+其它部分由Auracast Receiver对比竞品参考优化
+

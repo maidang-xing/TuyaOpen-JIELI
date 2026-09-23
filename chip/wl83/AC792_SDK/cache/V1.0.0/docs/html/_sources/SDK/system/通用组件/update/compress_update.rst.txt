@@ -1,0 +1,110 @@
+压缩双备份升级
+##############
+压缩双备份升级是指在设备升级过程中，使用压缩包的方式来存储和传输升级文件，以节省存储空间和提高传输效率。该方法通常涉及将升级文件打包成一个压缩文件，并在设备上进行解压和安装。可以利用该功能扩大在普通双备份模式下的代码区空间，解决双备份模式下代码区空间不足的问题。
+
+压缩双备份flash结构
+------------
+.. image:: image/压缩双备份flash结构.png
+    :alt: 压缩双备份flash结构
+    :width: 30%
+    :align: center
+
+.. note:: 
+    - 结构基本与普通双备份flash结构相同，但appcore1区域小于appcore0区域
+    - 对比普通双备份flash结构，appcore0区域可以比原来增大约16%~18%空间
+    - 升级包传输完成后，不能立刻重启完成，需要一定解压刷flash耗时（2MB的flash约耗时10~20秒）
+
+压缩双备份使用方法
+------------
+
+SDK配置
+~~~~~~~
+- 在sdk_config.h中，开启宏配置
+
+.. code-block:: c
+    :linenos:
+
+    #define TCFG_DUAL_BANK_ENABLE 1    //双备份
+    #define TCFG_UPDATE_COMPRESS 1     //压缩升级
+
+.. image:: image/压缩双备份-可视化配置.png
+    :alt: 压缩双备份-可视化配置
+    :width: 60%
+    :align: center
+
+- 在isd_config_rule.c（或isd_donwload.ini）文件中，默认的升级区AREA_SIZE参数为0
+
+.. code-block:: bash
+    :linenos:
+
+    [COMPRESS_BACKUP]
+    AREA_SIZE=0;           #默认升级区为0，双击执行download.bat脚本查看推荐配置
+    BLOCK_SIZE=65536;      #压缩块大小，配置为64KB，不用修改
+
+.. image:: image/isd_config_ini配置初始为0.png
+    :alt: isd_config_ini配置初始为0
+    :width: 30%
+    :align: center
+
+- 可视化工程中，直接点击“编译”，可视化终端会根据固件的实际压缩率给出升级区的空间大小推荐值，（非可视化工程则在下载目录下双击执行download.bat脚本），输出如下
+
+.. image:: image/推荐压缩升级区配置.png
+    :alt: 推荐压缩升级区配置
+    :width: 60%
+    :align: center
+
+推荐的压缩升级区空间大小为812K，此时还不能成功编译出固件
+
+- 在isd_config_rule.c（或isd_donwload.ini）文件中，配置升级区AREA_SIZE参数为812K
+
+.. code-block:: bash
+    :linenos:
+
+    [COMPRESS_BACKUP]
+    AREA_SIZE=812K;      #注意单位是K，不能写KB
+    BLOCK_SIZE=65536;    #压缩块大小，配置为64KB，不用修改
+
+- 再次点击“编译”（非可视化则双击执行download.bat脚本），有如下打印输出，则证明固件编译成功
+
+.. code-block:: bash
+    :linenos:
+
+    compressing firmware data, please waiting ...
+    Firmware data length: 840K(0xd2000)                        #实际的flash.bin大小
+    Compressed firmware data length: 553.231K(0x8a4ed)         #压缩后的flash.bin压缩包大小
+    The compression ratio is: 0.341391                         #压缩率
+    The total app code area size: 1188K(0x129000)              #flash.bin的总可用flash空间大小
+    The free app code area size : 348K(0x57000)                #flash.bin的剩余可用flash空间大小
+    The total compress backup area size: 812K(0xcb000)         #压缩OTA包的总可用flash空间大小
+    The free compress backup area size : 258.769K(0x40b13)     #压缩OTA包的剩余可用flash空间大小
+
+- 升级区AREA_SIZE参数配置完成一次后，即分区确定！后续版本不能再修改！！否则出现OTA失败问题
+- 需要修改分区空间，只能通过测试盒串口，或USB强制升级等刷机升级方式
+- 若方案有无log版本与有log版本两种固件。确定分界线时应当以量产版本为准，一般以无log情况确定分界线。
+
+打包工具
+~~~~~~~
+- 可视化工程已经配置好打包指令，无需以下的打包工具修改操作
+- 使用isd_download.exe工具（版本>=V4.2.68），在PC上生成压缩OTA包
+- 在download.bat脚本中，加入如下指令，即可从.ufw文件中导出压缩OTA包
+
+.. code-block:: bash
+    :linenos:
+
+    .\isd_download.exe -make-upgrade-bin -ufw update.ufw -output db_update.bin
+    .\ufw_maker.exe -chip AC710N -enc -res db_update.bin -output update-com.ufw
+
+- 参数解释
+.. code-block:: bash
+    :linenos:
+
+    isd_download.exe从ufw文件中导出压缩OTA包
+    -ufw：指定目标版本.ufw文件
+    -output：输出文件名，主动升级这里必须命名为db_update.bin
+    
+    ufw_maker.exe将压缩OTA包制作成.ufw格式文件，可用于主动升级（RCSP/测试盒无线/sd卡等升级方式）
+    
+OTA
+~~~~~~~
+- 最终设备连接上手机（或其他支持主动升级的上位机，例如测试盒蓝牙，sd卡等），将update-com.ufw放到手机中，点击启动升级即可开始设备升级
+- 注意！测试盒串口升级不能用update-com.ufw文件，必须使用update.ufw文件

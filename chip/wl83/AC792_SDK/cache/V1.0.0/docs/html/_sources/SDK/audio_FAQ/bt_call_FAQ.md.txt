@@ -1,0 +1,4 @@
+# 蓝牙通话FAQ
+
+## 单端MIC和差分MIC是否支持做2mic-beamforming通话
+- 支持，[🔗点击查看详细说明](./../audio_cvp/SingleEded_and_differential_DMS.md)

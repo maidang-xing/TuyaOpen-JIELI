@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>任务报告 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../_static/js/custom.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>任务报告</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="id1">
+<h1>任务报告<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h1>
+<dl class="simple">
+<dt>任务在运行过程中会统计以下信息：</dt><dd><ul class="simple">
+<li><p>1.处理器运行时长cpu run(unit:usec)</p></li>
+<li><p>2.当前压栈值StaskPush(unit:word)</p></li>
+<li><p>3.最深压栈值StackMax(unit:word)</p></li>
+<li><p>4.任务最新开始运行时刻SwInTime(unit:usec)</p></li>
+<li><p>5.任务运行时长RunTime(unit:usec)</p></li>
+<li><p>6.任务名Name</p></li>
+</ul>
+</dd>
+</dl>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">cpu</span><span class="w"> </span><span class="n">run</span><span class="o">:</span><span class="w"> </span><span class="mi">45872</span><span class="w"></span>
+
+<span class="nl">StackPush</span><span class="p">:</span><span class="w">  </span><span class="n">StackMax</span><span class="o">:</span><span class="w">       </span><span class="n">SwInTime</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">RunTime</span><span class="p">(</span><span class="n">ms</span><span class="p">)</span><span class="o">:</span><span class="w">     </span><span class="n">Name</span><span class="o">:</span><span class="w"></span>
+<span class="mi">75</span><span class="w"> </span><span class="p">(</span><span class="mi">9</span><span class="o">%</span><span class="p">)</span><span class="w">     </span><span class="mi">250</span><span class="w"> </span><span class="p">(</span><span class="mi">32</span><span class="o">%</span><span class="p">)</span><span class="w">       </span><span class="mi">41050</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="o">%</span><span class="p">)</span><span class="w">              </span><span class="n">btstack</span><span class="w"></span>
+<span class="mi">52</span><span class="w"> </span><span class="p">(</span><span class="mi">10</span><span class="o">%</span><span class="p">)</span><span class="w">    </span><span class="mi">303</span><span class="w"> </span><span class="p">(</span><span class="mi">59</span><span class="o">%</span><span class="p">)</span><span class="w">       </span><span class="mi">44014</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="o">%</span><span class="p">)</span><span class="w">              </span><span class="n">btctrler</span><span class="w"></span>
+<span class="mi">116</span><span class="w"> </span><span class="p">(</span><span class="mi">22</span><span class="o">%</span><span class="p">)</span><span class="w">   </span><span class="mi">207</span><span class="w"> </span><span class="p">(</span><span class="mi">40</span><span class="o">%</span><span class="p">)</span><span class="w">       </span><span class="mi">45872</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1038</span><span class="w"> </span><span class="p">(</span><span class="mi">20</span><span class="o">%</span><span class="p">)</span><span class="w">          </span><span class="n">jlstream</span><span class="w"></span>
+<span class="mi">66</span><span class="w"> </span><span class="p">(</span><span class="mi">25</span><span class="o">%</span><span class="p">)</span><span class="w">    </span><span class="mi">66</span><span class="w"> </span><span class="p">(</span><span class="mi">25</span><span class="o">%</span><span class="p">)</span><span class="w">        </span><span class="mi">0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="o">%</span><span class="p">)</span><span class="w">                  </span><span class="n">pmu_task</span><span class="w"></span>
+<span class="mi">21</span><span class="w"> </span><span class="p">(</span><span class="mi">4</span><span class="o">%</span><span class="p">)</span><span class="w">     </span><span class="mi">22</span><span class="w"> </span><span class="p">(</span><span class="mi">4</span><span class="o">%</span><span class="p">)</span><span class="w">         </span><span class="mi">45870</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">3945</span><span class="w"> </span><span class="p">(</span><span class="mi">77</span><span class="o">%</span><span class="p">)</span><span class="w">          </span><span class="n">IDLE0</span><span class="w"></span>
+<span class="mi">20</span><span class="w"> </span><span class="p">(</span><span class="mi">3</span><span class="o">%</span><span class="p">)</span><span class="w">     </span><span class="mi">20</span><span class="w"> </span><span class="p">(</span><span class="mi">3</span><span class="o">%</span><span class="p">)</span><span class="w">         </span><span class="mi">110</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="o">%</span><span class="p">)</span><span class="w">                </span><span class="n">IDLE1</span><span class="w"></span>
+<span class="mi">146</span><span class="w"> </span><span class="p">(</span><span class="mi">19</span><span class="o">%</span><span class="p">)</span><span class="w">   </span><span class="mi">266</span><span class="w"> </span><span class="p">(</span><span class="mi">34</span><span class="o">%</span><span class="p">)</span><span class="w">       </span><span class="mi">45872</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">11</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="o">%</span><span class="p">)</span><span class="w">             </span><span class="n">app_core</span><span class="w"></span>
+<span class="mi">41</span><span class="w"> </span><span class="p">(</span><span class="mi">32</span><span class="o">%</span><span class="p">)</span><span class="w">    </span><span class="mi">41</span><span class="w"> </span><span class="p">(</span><span class="mi">32</span><span class="o">%</span><span class="p">)</span><span class="w">        </span><span class="mi">45871</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="o">%</span><span class="p">)</span><span class="w">              </span><span class="n">systimer</span><span class="w"></span>
+
+<span class="n">core</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">icache</span><span class="p">,</span><span class="w"> </span><span class="n">efficiency</span><span class="o">:</span><span class="w"> </span><span class="mi">73</span><span class="o">%</span><span class="w"></span>
+<span class="n">core</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">icache</span><span class="p">,</span><span class="w"> </span><span class="n">efficiency</span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="o">%</span><span class="w"></span>
+<span class="n">dcache</span><span class="p">,</span><span class="w"> </span><span class="n">efficiency</span><span class="o">:</span><span class="w"> </span><span class="mi">98</span><span class="o">%</span><span class="w"></span>
+</pre></div>
+</div>
+<section id="os-system-info-output">
+<h2>os_system_info_output<a class="headerlink" href="#os-system-info-output" title="Permalink to this headline"></a></h2>
+<p>功能:</p>
+<blockquote>
+<div><p>输出任务状态。</p>
+</div></blockquote>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">os_system_info_output</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>参数:</p>
+<blockquote>
+<div></div></blockquote>
+<p>示例:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">os_system_info_output</span><span class="p">();</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="os-system-info-reset">
+<h2>os_system_info_reset<a class="headerlink" href="#os-system-info-reset" title="Permalink to this headline"></a></h2>
+<p>功能:</p>
+<blockquote>
+<div><p>重置任务运行时长。</p>
+</div></blockquote>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>频率统计模块会定时重置，具体查阅clock_manager.c</p>
+</div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">os_system_info_reset</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>参数:</p>
+<blockquote>
+<div></div></blockquote>
+<p>示例:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">os_system_info_reset</span><span class="p">();</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

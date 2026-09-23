@@ -1,0 +1,41 @@
+# 单端麦和差分麦双麦ENC
+## 使用描述
+![](./assets/single_ended_mic.png)
+![](./assets/fade_differential_mic.png)
+
+## 注意事项
+**2mic-ENC**对两个麦的**相位**和**幅度**差有严格的要求，所以混合使用单端麦和差分麦做双麦ENC的时候，需要确认这两个属性的准入标准
+
+### 相位一致性
+- **单端麦和差分麦相位一致**<br>
+适用于700N、708N、709N、710N（MIC0为单端隔直电容模式，MIC1为差分隔直电容模式）
+
+![](./assets/710_cvp_dms_talk_mic.png)
+![](./assets/710_cvp_dms_ref_mic.png)
+
+
+<mark>如果单端麦和差分麦的相位刚好完全相反，可以先将其中一个麦的数据进行反相处理，示例如下</mark>
+```C
+static int audio_aec_probe(short *talk_mic, short *talk_ref_mic, short *mic3, short *ref, u16 len)
+{
+    digital_phase_inverter_s16(talk_mic,len);//反相处理
+    ...
+}
+```
+
+### 增益一致性
+不同系列ADC设计结构上的差异性，通路增益存在差异。使用上需要根据规格进行增益补偿。
+- **单端麦和差分麦通路增益一致**<br>
+适用于：700N
+
+![AC700N - MIC0 相位对比](./assets/700_cvp_dms_talk_mic_dB.png)
+![AC700N - MIC1 相位对比](./assets/700_cvp_dms_ref_mic_dB.png)
+- **单端麦比差分麦通路增益大6dB**<br>
+适用于：708N、709N、710N
+
+![](./assets/710_cvp_dms_talk_mic_dB.png)
+![](./assets/710_cvp_dms_ref_mic_dB.png)
+
+增益不一致的时候，使用时需要在预处理时将差分麦增益补充6dB
+
+![](./assets/710_pre_dB.png)

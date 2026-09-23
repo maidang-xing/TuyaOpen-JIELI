@@ -1,0 +1,87 @@
+金机对比
+========
+
+
+**Revision History**
+
+============   ====================== ============== =================
+**Date**       **Version**             **Authors**    **Changes**
+------------   ---------------------- -------------- -----------------
+2025/07/08     1.0                    Gw             初稿
+============   ====================== ============== =================
+
+
+..
+  svg文件通过以下网址及flowchart内容生成
+
+..
+  https://mermaid-live.nodejs.cn/
+
+..
+  flowchart TD
+
+    A[开始] --> B[准备硬件测试环境<br>（CMW270、OTA仪表、人模头、金机）]
+    B --> C[准备软件测试环境<br>（AC710N_earphone_V3.0.0_patch03.xx）]
+    C --> D[<span style='color:red'>QC</span><br>进行硬件性能对比]
+
+    D --> D1[RF走线/阻抗]
+    D1 --> D2[传导测试<br>（功率、调制、灵敏度）]
+    D2 --> D3[OTA测试<br>（TRP、TIS、人模数据）]
+
+    D3 --> E{硬件性能达标？}
+    E -- 是 --> F[<span style='color:red'>QC</span><br>进行软件功能对比<br>（功能、连通性、稳定性）]
+    E -- 否 --> E1[<span style='color:red'>PM</span><br>硬件进行分析]
+    --> E2[记录问题原因] --> D
+
+    F --> F1[电源干扰<br>（DCDC/LDO）]
+    F1 --> F2[参数配置<br>（TX功率、延时等）]
+    F2 --> F3[蓝牙相关配置]
+    F3 --> F4[音频相关配置]
+
+    F4 --> G{<span style='color:red'>QC</span><br>软件性能达标？}
+    G -- 是 --> H[汇总分析记录] --> I[结束]
+    G -- 否 --> G2{金机有同样问题？}
+    G2 -- 是 --> G3[<span style='color:red'>PM</span><br>参考debug_edr_info章节，提供debug信息给蓝牙项目组分析]
+    --> J[<span style='color:red'>QC</span><br>更新金机信息] --> H[汇总分析记录]
+    G2 -- 否 --> F
+
+.. note:: QC：金机测试负责人，PM：项目经理
+
+.. figure:: image/cd_workflow.svg
+   :alt: 金机对比流程图
+   :align: center
+   :width: 400px
+
+   金机对比流程图
+ 
+
+TWS耳机 - realme T02 Pro
+-------------------------
+
+- 测试内容：
+
+  - 传导测试
+  - 暗室测试
+  - 距离测试
+  - 功耗测试
+
+- 测试方法：
+
+.. note:: 详情查看测试结果附件
+
+- 测试结果：
+
+  - realme T02 Pro :download:`点击下载<report/realme_T02_Pro_report.xlsx>`
+  - 710N SDK V3.0.0 Patch03 :download:`点击下载<report/AC710N_earphone_SDK_patch03_report.xlsx>`
+
+
+
+头戴耳机 - （待添加）
+---------------------
+
+- 测试内容：
+
+- 测试方法：
+
+- 测试结果：
+

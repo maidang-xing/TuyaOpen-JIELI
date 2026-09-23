@@ -1,0 +1,75 @@
+# 声道适配
+
+## 音频分流器
+
+- 将数据流复制多份进行分流，供后续节点做不同的处理。
+
+![sound_splitter](./assets/sound_splitter.png)
+
+## 声道拆分
+
+- 立体声`LR`拆分为左声道`L` 和 右声道`R`
+
+![vocal_track_separation](./assets/vocal_track_separation.png)
+
+
+- 四声道`FL FR RL RR`拆分成左立体声`FL FR`和右立体声`RL RR`
+
+![vocal_track_separation](./assets/vocal_track_4t2.png)
+
+- 六声道`FL FR ML MR RL RR`拆分成左立体声`FL FR`中立体声`ML MR`和右立体声`RL RR`
+
+![vocal_track_separation](./assets/vocal_track_6t2.png)
+
+- 八声道`FL FR ML MR  NL NR RL RR`拆分成左立体声`FL FR`中左立体声`ML MR`中右立体声`NL NR`和右立体声`RL RR`
+
+![vocal_track_separation](./assets/vocal_track_8t2.png)
+
+## 声道组合
+
+- 支持`两路`单声道`L、R`合并为`立体声`
+
+![vocal_track_synthesis_LR](./assets/vocal_track_synthesis.png)
+
+- 支持`两路`立体声`LR、LR`合并为`四声道`
+
+![vocal_track_synthesis_LR_LR](./assets/vocal_track_synthesis2.png)
+
+
+## ChannelMerge（声道合并器）
+
+- **auto**：根据前级/后级声道数自动协商
+
+- **stereo_to_mono**：支持将输入的`一路`立体声`LR`转换为单声道`LR_MIX`
+
+![channel_merge_LR](./assets/channel_merge.png)
+
+- **qual_to_stereo**：支持将输入的`一路`四声道 `LR_LR`转换为立体声`LR`  
+
+![channel_merge_LR_LR](./assets/channel_merge2.png)
+
+- **qual_to_mono**：支持将输入的`一路`四声道 `LR_LR`转换为单声道`LR_MIX`
+
+![channel_merge_LR_LR](./assets/channel_merge3.png)
+
+- **tws_auto**：根据tws连接情况自动分配声道，一般用于二变一
+    - tws断开(单耳)：立体声`LR`转换为混合单声道`LR_MIX`
+    - tws连接(对耳)：立体声`LR`转换为单左`L`/单右`R`（根据对耳配对情况自动适配）
+
+
+
+## ChannelExpander（声道扩展器）
+
+- 支持将输入的`一路`立体声`LR`扩展为四声道`LR_LR`
+- 支持将输入的`一路`单声道扩展为立体声`LR`
+
+![channel_expander](./assets/channel_expander.png)
+
+此外ChannelExpander还提供配置选项，选择是否将扩展的声道静音（立体声的`R`声道、四声道的`RL / RR`声道）。
+
+![channel_expander_param](./assets/channel_expander_param.png)
+
+
+## 声道交换器
+
+- 将立体声左右声道进行交换

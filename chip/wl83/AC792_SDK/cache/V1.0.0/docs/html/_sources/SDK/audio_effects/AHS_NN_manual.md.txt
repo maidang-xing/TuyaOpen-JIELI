@@ -1,0 +1,31 @@
+# AHS-NN
+acoustic howling suppress
+
+## 功能介绍
+通过神经网络算法进行啸叫抑制
+
+## 使用注意事项
+- 该算法支持的数据帧格式为：16bit、1channel、256points（使能该算法后，sdk会默认配置，不可自行修改）。
+- 数据流延时配置：DAC延时 > 播放同步延时 > 数据帧长（16ms）。
+- 资源消耗：Ram：172812 Bytes，Mips：400 MHz。请根据项目功能需求自行评估。
+- 默认仅支持将AHS-NN接在“麦克风音效”框图之内，若需要接到其他框图（如“媒体”）中，需要参考mic_effect.c中的配置自行移植。
+- 支持导出算法前后数据分析查看：
+```c
+//数据写卡导出，需要使能AUDIO_DATA_EXPORT_VIA_UART
+//串口写卡工具配置3通道，每通道512byte
+//通道0：原始数据
+//通道1：dac参考数据
+//通道2：算法处理后数据
+const int const_audio_howling_ahs_data_export = 1;  
+```
+- dac采样率需要配置为16k的倍数，建议配置全局采样率为48k。
+- 需要将AHS-NN接在播放同步之前，可以添加一个Fade节点以规避开ADC的po声。数据流串接如下图所示：
+![ahs-nn](./assets/ahs_nn.png)
+- 若输入为IIS_RX，输出为DAC，需要额外使能该const变量：
+```c
+/*
+ * ahs算法所处的数据流输入为iis，输出为dac时需要使能。
+ * 由于src输入输出buffer复用问题，建议采样率配置:iis(16k)->dac(32k/48k)。
+ */
+const int const_audio_howling_ahs_iis_in_dac_out = 1;
+```

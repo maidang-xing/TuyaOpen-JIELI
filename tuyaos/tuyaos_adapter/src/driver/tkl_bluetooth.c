@@ -12,6 +12,7 @@
 #include "ble/hci_ll.h"
 #include "le_common_define.h"
 #include "le_user.h"
+#include "tkl_jieli_chip_mac.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -38,6 +39,7 @@ static uint8_t s_connection_role = TKL_BLE_ROLE_SERVER;
 #define JIELI_BLE_ADV_DATA_MAX (31)
 static uint8_t s_ble_stack_ready;
 static uint8_t s_ble_adv_enabled;
+static uint8_t s_ble_own_address_type = TKL_BLE_GAP_ADDR_TYPE_RANDOM;
 static TKL_BLE_GAP_ADV_PARAMS_T s_ble_adv_params;
 static uint8_t s_ble_adv_data[JIELI_BLE_ADV_DATA_MAX];
 static uint8_t s_ble_scan_rsp_data[JIELI_BLE_ADV_DATA_MAX];
@@ -640,6 +642,10 @@ static void jieli_ble_apply_advertising(void)
         !jieli_ble_adv_type(s_ble_adv_params.adv_type, &jieli_adv_type)) {
         return;
     }
+    if (jieli_ble_cmd_result((ble_cmd_ret_e)ble_op_set_own_address_type(s_ble_own_address_type)) != OPRT_OK) {
+        printf("[JIELI] BLE address type setup failed:%u\n", (unsigned int)s_ble_own_address_type);
+        return;
+    }
     ll_hci_adv_set_params(s_ble_adv_params.adv_interval_min, s_ble_adv_params.adv_interval_max,
                           jieli_adv_type, s_ble_adv_params.direct_addr.type,
                           (uint8_t *)s_ble_adv_params.direct_addr.addr,
@@ -674,20 +680,20 @@ OPERATE_RET tkl_ble_stack_init(uint8_t role)
     s_ble_scan_rsp_data_len = 0;
     memset(&s_ble_adv_params, 0, sizeof(s_ble_adv_params));
 
-    /* The AC79 controller does not derive the LE address from the EDR
-     * address automatically.  Match the vendor BLE examples so the
-     * controller never starts with the erased FF:FF:FF:FF:FF:FF address. */
+    /* Use a stable UID-derived random-static address. Do not query the vendor
+     * EDR getter here: its fallback can wait for WiFi while WiFi is deferred. */
     void lmp_set_sniff_disable(void);
-    const u8 *bt_get_mac_addr(void);
-    void lib_make_ble_address(u8 *ble_address, u8 *edr_address);
-    int le_controller_set_mac(void *addr);
+    int le_controller_set_random_mac(void *addr);
     u8 ble_addr[6];
 
     lmp_set_sniff_disable();
-    lib_make_ble_address(ble_addr, (u8 *)bt_get_mac_addr());
-    if (le_controller_set_mac(ble_addr) != 0) {
+    if (jieli_chip_mac_get_ble(ble_addr) != 0) {
         return OPRT_COM_ERROR;
     }
+    if (le_controller_set_random_mac(ble_addr) != 0) {
+        return OPRT_COM_ERROR;
+    }
+    s_ble_own_address_type = TKL_BLE_GAP_ADDR_TYPE_RANDOM;
 
     ble_stack_gatt_role(jieli_role);
     hci_event_callback_set(jieli_hci_event_handler);
@@ -731,14 +737,24 @@ OPERATE_RET tkl_ble_gatt_callback_register(const TKL_BLE_GATT_EVT_FUNC_CB gatt_e
 
 OPERATE_RET tkl_ble_gap_addr_set(TKL_BLE_GAP_ADDR_T const *p_peer_addr)
 {
+    int result;
+
     if (p_peer_addr == NULL) {
         return OPRT_INVALID_PARM;
     }
     if (p_peer_addr->type == TKL_BLE_GAP_ADDR_TYPE_RANDOM) {
-        return le_controller_set_random_mac((void *)p_peer_addr->addr) == 0 ? OPRT_OK : OPRT_COM_ERROR;
+        result = le_controller_set_random_mac((void *)p_peer_addr->addr);
+        if (result == 0) {
+            s_ble_own_address_type = TKL_BLE_GAP_ADDR_TYPE_RANDOM;
+        }
+        return result == 0 ? OPRT_OK : OPRT_COM_ERROR;
     }
     if (p_peer_addr->type == TKL_BLE_GAP_ADDR_TYPE_PUBLIC) {
-        return le_controller_set_mac((void *)p_peer_addr->addr) == 0 ? OPRT_OK : OPRT_COM_ERROR;
+        result = le_controller_set_mac((void *)p_peer_addr->addr);
+        if (result == 0) {
+            s_ble_own_address_type = TKL_BLE_GAP_ADDR_TYPE_PUBLIC;
+        }
+        return result == 0 ? OPRT_OK : OPRT_COM_ERROR;
     }
     return OPRT_INVALID_PARM;
 }
@@ -748,7 +764,10 @@ OPERATE_RET tkl_ble_gap_address_get(TKL_BLE_GAP_ADDR_T *p_peer_addr)
     if (p_peer_addr == NULL) {
         return OPRT_INVALID_PARM;
     }
-    p_peer_addr->type = TKL_BLE_GAP_ADDR_TYPE_PUBLIC;
+    p_peer_addr->type = s_ble_own_address_type;
+    if (s_ble_own_address_type == TKL_BLE_GAP_ADDR_TYPE_RANDOM) {
+        return le_controller_get_random_mac((void *)p_peer_addr->addr) == 0 ? OPRT_OK : OPRT_COM_ERROR;
+    }
     return le_controller_get_mac((void *)p_peer_addr->addr) == 0 ? OPRT_OK : OPRT_COM_ERROR;
 }
 
@@ -819,6 +838,10 @@ OPERATE_RET tkl_ble_gap_scan_start(TKL_BLE_GAP_SCAN_PARAMS_T const *p_scan_param
         p_scan_params->window > p_scan_params->interval) {
         return OPRT_INVALID_PARM;
     }
+    result = (ble_cmd_ret_e)ble_op_set_own_address_type(s_ble_own_address_type);
+    if (jieli_ble_cmd_result(result) != OPRT_OK) {
+        return OPRT_COM_ERROR;
+    }
     result = ble_user_cmd_prepare(BLE_CMD_SCAN_PARAM, 3, p_scan_params->active ? 0 : 1,
                                    p_scan_params->interval, p_scan_params->window);
     if (result != BLE_CMD_RET_SUCESS) {
@@ -847,6 +870,9 @@ OPERATE_RET tkl_ble_gap_connect(TKL_BLE_GAP_ADDR_T const *p_peer_addr,
     param.supervision_timeout = p_conn_params->conn_sup_timeout;
     param.peer_address_type = p_peer_addr->type;
     memcpy(param.peer_address, p_peer_addr->addr, sizeof(param.peer_address));
+    if (jieli_ble_cmd_result((ble_cmd_ret_e)ble_op_set_own_address_type(s_ble_own_address_type)) != OPRT_OK) {
+        return OPRT_COM_ERROR;
+    }
     return jieli_ble_cmd_result(ble_user_cmd_prepare(BLE_CMD_CREATE_CONN, 1, &param));
 }
 

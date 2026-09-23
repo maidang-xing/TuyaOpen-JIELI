@@ -29,6 +29,7 @@ OPERATE_RET tkl_thread_create(TKL_THREAD_HANDLE *thread, const char *name, uint3
                               uint32_t priority, const THREAD_FUNC_T func, void *const arg)
 {
     JIELI_TKL_THREAD *jieli_thread;
+    const char *native_name;
     if (thread == NULL || func == NULL) {
         return OPRT_INVALID_PARM;
     }
@@ -39,8 +40,14 @@ OPERATE_RET tkl_thread_create(TKL_THREAD_HANDLE *thread, const char *name, uint3
     jieli_thread->magic = JIELI_TKL_THREAD_MAGIC;
     jieli_thread->func = func;
     jieli_thread->arg = arg;
-    strncpy(jieli_thread->name, (name != NULL && name[0] != '\0') ? name : "tuya",
-            sizeof(jieli_thread->name) - 1u);
+    native_name = (name != NULL && name[0] != '\0') ? name : "tuya";
+    /* AC79/AC792 app_main already registers a vendor task named sys_timer.
+     * Tuya's software-timer worker is a separate task and must not reuse that
+     * name in the Jieli task registry. */
+    if (strcmp(native_name, "sys_timer") == 0) {
+        native_name = "tuya_sw_timer";
+    }
+    strncpy(jieli_thread->name, native_name, sizeof(jieli_thread->name) - 1u);
     if (os_task_create(jieli_tkl_thread_entry, jieli_thread, jieli_tkl_map_priority(priority),
                        (stack_size + 3u) / 4u, 0, jieli_thread->name) != 0) {
         free(jieli_thread);

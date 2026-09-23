@@ -1,0 +1,74 @@
+# 省电容麦使用指引
+
+版本号|修改说明
+:----:|:---------------:
+v1.0  |初始化版本
+
+## 省电容麦版本说明
+省电容mic模式|适用系列
+:----:|:----:
+模式3|706N、707N、710N、AW32N
+
+## 省电容麦介绍
+省电容麦硬件示意图如下<br>
+![MIC Capless Enable](./assets/mic_capless.png)
+
+即mic的信号输出直接接到芯片端的micin port，中间无需额外供电和串隔直电容。偏置电压由芯片内部电路提供，示例如下：<br>
+![MIC Capless power](./assets/capless.png)
+
+省电容的分压电路图如上所示，要校准的就是mic的偏置电压值， 其中mic ldo的电压值是固定的，只有调R1的值来使mic达到合适的偏置电压值，偏置电压值等于VCM电压值时 ADC采样的动态范围最大，在ADC增益为0dB 的时候，采样的Vpp电压值可以达到接近2倍VCM，如果ADC 有增益，则mic in 脚可以采样的电压值范围大小变成2倍VCM/增益。
+
+## 配置说明
+### 省电容模式配置
+![MIC Capless Enable](./assets/capless_mode.png)
+
+### MIC LDO配置
+
+![MIC Capless Enable](./assets/mic_ldo.png)
+
+### VCM 电压配置
+
+![MIC Capless Enable](./assets/vcm.png)
+
+省电容mic 校准出来的 mic 偏置电压一般就等于 vcm 配置的电压值，以706N为例， vcm有4档可以配置，从低到高分别是 1.2v,1,3v,1.4v和1.5v，默认是最高的1.5v，若配置的vcm 为1.5v，则最后省电容校准出来的 mic偏置 电压值 为1.5v时，ADC 动态采样范围最大
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>按照麦克风规格书，一般麦克风工作电压范围是1.5V到3.0V左右，所以省电容麦的校准电压应该设置到<mark>1.5V</mark>挡位，使得麦克风有更好的工作性能。</p>
+</div>
+
+### 省电容校准函数逻辑介绍
+
+![MIC Capless Enable](./assets/trimf.png)
+
+如上图所示，调用audio_mic_bias_adjust 进行校准偏置电阻的值，函数逻辑是获取mic的偏置电压和 vcm电压的差值，当偏置电压小于vcm 时则 调高偏置电阻值，反之则调小，最终当vcm电压和偏置电压值小于设定的阈值时就退出校准，    返回值为0则代表校准成功，会把校准值的结构体写到vm,校准值结构体如下图所示，包括校准到的偏置电阻对应的寄存器值以及校准的电压阈值。
+
+![MIC Capless Enable](./assets/mic_bias_struct.png)
+
+### 省电容MIC的打印分析
+省电容的校准流程是在库里的，但是可以开校准打印来看最后校准出来的电压值是多少，开打印如下图
+
+![MIC Capless Enable](./assets/capless_dump.png)
+
+下图是校准过程，第一个值是偏置电阻对应的寄存器值，第二个值是偏置电压和vcm电压的差值，第三个值是上一次偏置电压和vcm电压的差值，
+最后的1509代表最终校准出来的偏置电压是 1.509v。
+
+![MIC Capless Enable](./assets/mic_bias.png)
+
+校准成功的打印如下图
+
+![MIC Capless Enable](./assets/trims.png)
+
+## 注意事项
+### 省电容麦模式，ADC的PGA不宜过大
+省电容模式下，输入到ADC的信号有直流成分，PGA会进一步放大直流，压缩ADC的输入动态。当输入信号大的时候，信号会削波失真。所以PGA不宜过大，具体放大倍数，可以根据具体方案确认。<br>
+比如特定方案下，PGA=10dB，这个时候大声喊话，没有失真情况，如果再增加PGA，会有削波失真出现，即可以配置PGA为10dB为最大值。不够大声，可进行数字放大。
+
+<mark>输入信号幅度大的时候，比如对着麦克风吹气，如果需要兼容这种情况避免输入削波，PGA一般需要设置到0dB，然后根据具体信号幅度逐步调整</mark>
+
+### 如何放大省电容麦的采样数据
+使用Limiter/DRC模块对数字信号进行放大，并限幅，防止信号放大后饱和失真<br>
+![mic_capless放大](./assets/mic_capless_gain.png)
+
+### 校准环境要求
+<mark>必须保证校准环境较为安静，在嘈杂环境中进行校准动作可能导致校准失败或结果偏差导致无声</mark>

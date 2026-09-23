@@ -1,0 +1,21 @@
+
+音频配置
+#########
+
+.. toctree::
+   :maxdepth: 1
+
+   DAC_cfg.md
+   ADC_cfg.md
+   IIS_cfg.md
+   PDM_cfg.md
+   General_cfg.md
+   phone_call_cfg.md
+   audio_algo_cfg.md
+   codec/index.rst
+   music_palyback.md
+   kws.md
+   Hi_Res_Audio/index.rst
+   audio_delay.md
+
+

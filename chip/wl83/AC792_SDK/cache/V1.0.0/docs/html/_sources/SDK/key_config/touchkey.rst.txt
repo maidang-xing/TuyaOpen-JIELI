@@ -1,0 +1,30 @@
+触摸按键说明
+############
+
+触摸入耳检测配置
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+
+1. 可视化触摸配置使能入耳检测总开关，添加触摸按键通道，要使能支持入耳检测。
+
+     .. figure:: image/touchkey_config1.png
+
+     .. figure:: image/touchkey_config2.png
+
+     .. figure:: image/touchkey_config3.png
+
+.. warning:: 
+   支持入耳检测的通道数只能小于或者等于两个。
+
+2. 在lp_touch_key_eartch.c中提供出入耳信息，根据应用自行处理，修改点如下：
+
+     .. figure:: image/touchkey_config4.png
+
+.. tip::
+   #. 该函数为弱函数，用户可在其他文件实现其实体；
+   #. 函数传入 EARTOUCH_STATE_IN_EAR 为入耳；
+   #. 函数传入 EARTOUCH_STATE_OUT_EAR 为出耳；
+   #. 用户根据 不同的传参 post 不同的消息 到用户线程自行处理；
+   #. 该函数只能用于 post消息，不能加过多代码。
+
+

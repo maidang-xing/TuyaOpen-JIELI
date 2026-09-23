@@ -1,0 +1,35 @@
+# 音效处理延时说明
+本文档用来说明音效处理过程，那些模块的使用会引入延时。
+
+## Limiter
+全带限幅器（Limiter）和多带限幅器（MB Limiter）中的**Detect Time**参数会引入延时，设置多少检测时间，就会延时多少时间，比如设置4ms，输出就会延时4ms
+
+## DRC Advance
+DRC Advance和多带DRC（MDRC）中的**Detect Time**参数引入延时。<br>
+注：仅DRC Advance有此参数，DRC不支持。
+
+## Frequency Shift
+移频啸叫抑制模块。
+- Pitch Shift Ratio(等比例移频)引入延时：1~11ms浮动。
+- Frequency Shift Scale(绝对值移频)引入延时：1.5ms。
+
+## Voice Changer
+变声。引入延时：20~80ms浮动。
+
+## LLNS
+低延时降噪。参数**Delay**配置引入的延时时间。
+
+## NF Suppressor
+神经网络噪声抑制。参数**FFT_SIZE**引入延时。<br>
+计算公式：delay = FFT_SIZE / 2 / sample_rate。
+
+## AHS-NN
+神经网络啸叫抑制。引入延时:16ms。
+
+## PCM Delay
+延时模块。参数**Chx Delay**引入延时。
+
+## 空间音效
+- V2.0.0版本。无延时。
+- V3.0.0版本。引入延时：5ms。
+- lite版本（Spatial Adv节点）。界面中的**Delay**参数引入延时。

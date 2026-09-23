@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3.4.3. 通话算法集成 &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../../_static/js/custom.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="3.4.4. 辅听算法集成" href="hearing_aid_3rd_party.html" />
+    <link rel="prev" title="3.4.2. 音乐算法集成" href="music_effect_3rd_party.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">3. 音频流程</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../audio_stream_flow_rules.html">3.1. 音频流程规范</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommonComponents/index.html">3.2. 音频流通用配置</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../typical_application/index.html">3.3. 典型音频流程</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">3.4. 第三方算法集成</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="porting_guide.html">3.4.1. 算法集成指引</a></li>
+<li class="toctree-l3"><a class="reference internal" href="music_effect_3rd_party.html">3.4.2. 音乐算法集成</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">3.4.3. 通话算法集成</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">3.4.3.1. 功能介绍</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">3.4.3.2. 开发流程</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hearing_aid_3rd_party.html">3.4.4. 辅听算法集成</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../system_flow.html">3.5. 系统模式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../media_flow.html">3.6. 媒体</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../bt_call/index.html">3.7. 蓝牙通话</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mic_effects/index.html">3.8. 麦克风音效</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usb_audio/index.html">3.9. USB Audio</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../audio_dut/index.html">3.10. 产测模式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user_defined/index.html">3.11. 自定义</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html"><span class="section-number">3. </span>音频流程</a> &raquo;</li>
+          <li><a href="index.html"><span class="section-number">3.4. </span>第三方算法集成</a> &raquo;</li>
+      <li><span class="section-number">3.4.3. </span>通话算法集成</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="id1">
+<h1><span class="section-number">3.4.3. </span>通话算法集成<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h1>
+<section id="id2">
+<h2><span class="section-number">3.4.3.1. </span>功能介绍<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<hr class="docutils" />
+<p>本文档用来介绍如何集成开发第三方通话算法，不同平台，可用资源汇总如下：<br>
+<mark></p>
+<ul class="simple">
+<li><p><strong>备注1</strong>：RAM数据仅供参考，非精确数据，具体项目由于功能不同，存在差异</p></li>
+<li><p><strong>备注2</strong>：CPU指的是平台支持的最大主频，以及CPU核的个数，x2表示双核
+</mark></p></li>
+</ul>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Platform</p></th>
+<th class="head"><p>RAM</p></th>
+<th class="head"><p>CPU</p></th>
+<th class="head"><p>Note</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>701N</strong></p></td>
+<td><p>450k</p></td>
+<td><p>192M x2</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>708N</strong></p></td>
+<td><p>220k</p></td>
+<td><p>192M x2</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>709N</strong></p></td>
+<td><p>180k</p></td>
+<td><p>192M x2</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>710N</strong></p></td>
+<td><p>80k</p></td>
+<td><p>192M</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id3">
+<h2><span class="section-number">3.4.3.2. </span>开发流程<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<hr class="docutils" />
+<section id="id4">
+<h3><span class="section-number">3.4.3.2.1. </span>流程图配置<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>在侧边栏的<code class="docutils literal notranslate"><span class="pre">清晰语音</span></code>选择<code class="docutils literal notranslate"><span class="pre">通话第三方算法</span></code>节点，根据方案在<code class="docutils literal notranslate"><span class="pre">通话第三方算法</span></code>节点配置中选择对应的<code class="docutils literal notranslate"><span class="pre">算法类型</span></code>
+<img alt="第三方算法流程图" src="../../../_images/other_call_flow.png" />
+<br></p></li>
+<li><p>如下图所示，配置单麦算法<br>
+<img alt="第三方算法节点配置" src="../../../_images/other_call_flow_type.png" /></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ADC</span></code>节点配置中<code class="docutils literal notranslate"><span class="pre">MIC使能</span></code>，勾选与算法对应的MIC个数, 如上图选择的<code class="docutils literal notranslate"><span class="pre">单麦算法</span></code>，则<code class="docutils literal notranslate"><span class="pre">MIC使能</span></code>勾选一个原理图对应的MIC，双麦算法则需要在<code class="docutils literal notranslate"><span class="pre">ADC</span></code>节点勾选两个<code class="docutils literal notranslate"><span class="pre">MIC使能</span></code>，以此类推；
+<img alt="第三方算法节点配置" src="../../../_images/other_call_ADC.png" /></p></li>
+</ul>
+</section>
+<section id="id5">
+<h3><span class="section-number">3.4.3.2.2. </span>算法集成流程<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p><strong>算法处理帧长配置</strong><br>
+（1）在audio/CVP/audio_cvp_develop.c里面配置算法处理帧长的宏AEC_FRAME_POINTS<br></p></li>
+</ul>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="p">...</span><span class="w"></span>
+
+<span class="cp">#define AEC_FRAME_POINTS	256					</span><span class="cm">/*AEC处理帧长，跟mic采样长度关联*/</span><span class="cp"></span>
+
+<span class="p">...</span><span class="w"></span>
+</pre></div>
+</div>
+<p>（2）蓝牙模式时，在audio/interface/recoder/esco_recoder.c文件里面，esco_recoder_open()函数里面，把adc节点的中断点数修改成和算法的处理帧长AEC_FRAME_POINTS一样<br></p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">esco_recoder_open</span><span class="p">(</span><span class="n">u8</span><span class="w"> </span><span class="n">link_type</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">bt_addr</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">//设置ADC的中断点数</span>
+<span class="w">    </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jlstream_node_ioctl</span><span class="p">(</span><span class="n">recoder</span><span class="o">-&gt;</span><span class="n">stream</span><span class="p">,</span><span class="w"> </span><span class="n">NODE_UUID_SOURCE</span><span class="p">,</span><span class="w"> </span><span class="n">NODE_IOC_SET_PRIV_FMT</span><span class="p">,</span><span class="w"> </span><span class="mi">256</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">__exit1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>算法开发位置</strong><br></p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">audio</span><span class="o">/</span><span class="n">CVP</span><span class="o">/</span><span class="n">audio_cvp_develop</span><span class="o">.</span><span class="n">c</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>算法初始化和退出</strong><br></p></li>
+</ul>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="c1">//算法初始化位置</span>
+<span class="n">audio_aec_init</span><span class="p">();</span><span class="w"></span>
+
+<span class="c1">//算法退出释放资源位置</span>
+<span class="n">audio_aec_close</span><span class="p">();</span><span class="w"></span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>算法运行</strong><br></p></li>
+</ul>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm">*********************************************************************</span>
+<span class="cm">*                  Audio AEC RUN</span>
+<span class="cm">* Description: AEC数据处理核心</span>
+<span class="cm">* Arguments  : in 		Talk Mic采样数据</span>
+<span class="cm">*			   inref	FF Mic采样数据</span>
+<span class="cm">*			   inref1	FB Mic采样数据</span>
+<span class="cm">*			   ref		speaker回采参考数据</span>
+<span class="cm">*			   out		数据输出</span>
+<span class="cm">*			   points   数据点数，单位short</span>
+<span class="cm">* Return	 : 数据运算输出长度</span>
+<span class="cm">* Note(s)    : 在这里实现AEC_core</span>
+<span class="cm">*********************************************************************</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">audio_aec_run</span><span class="p">(</span><span class="n">s16</span><span class="w"> </span><span class="o">*</span><span class="n">in</span><span class="p">,</span><span class="w"> </span><span class="n">s16</span><span class="w"> </span><span class="o">*</span><span class="n">inref</span><span class="p">,</span><span class="w"> </span><span class="n">s16</span><span class="w"> </span><span class="o">*</span><span class="n">inref1</span><span class="p">,</span><span class="w"> </span><span class="n">s16</span><span class="w"> </span><span class="o">*</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="n">s16</span><span class="w"> </span><span class="o">*</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="n">u16</span><span class="w"> </span><span class="n">points</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/*TODO:这里调用第三方算法处理*/</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//3rd_party_algo_run();</span>
+<span class="w">    </span><span class="n">memcpy</span><span class="p">(</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="n">in</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">points</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="n">out_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">points</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="p">...</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>原始数据抓取</strong><br></p></li>
+</ul>
+<p>流程预置了串口抓数据的接口，支持抓取麦克风原始数据、扬声器参考数据和算法输出数据。<code class="docutils literal notranslate"><span class="pre">CVP通话</span></code>导出数据的类型可在<code class="docutils literal notranslate"><span class="pre">app_config.h</span></code>配置</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> * CVP串口数据导出</span>
+<span class="cm"> * 0 : 关闭数据导致</span>
+<span class="cm"> * 1 : 导出 mic0 mic1 far</span>
+<span class="cm"> * 2 : 导出 mic0 mic1 out</span>
+<span class="cm"> * 3 : 导出 mic0 far out</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="cp">#if ((defined TCFG_AUDIO_DATA_EXPORT_DEFINE) &amp;&amp; (TCFG_AUDIO_DATA_EXPORT_DEFINE == AUDIO_DATA_EXPORT_VIA_UART))</span>
+<span class="k">const</span><span class="w"> </span><span class="n">u8</span><span class="w"> </span><span class="n">CONST_AEC_EXPORT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="cm">/*1:far 2:out*/</span><span class="w"></span>
+<span class="cp">#else</span>
+<span class="k">const</span><span class="w"> </span><span class="n">u8</span><span class="w"> </span><span class="n">CONST_AEC_EXPORT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="cp">#endif</span><span class="cm">/*TCFG_AUDIO_DATA_EXPORT_DEFINE*/</span><span class="cp"></span>
+
+</pre></div>
+</div>
+<p>对于不同mic数量，导出哪一类数据可以配置如下<br>
+<img alt="" src="../../../_images/cvp_develop_1.png" /><br>
+然后通过在app_config.h文件里面把TCFG_AUDIO_DATA_EXPORT_DEFINE宏配置为AUDIO_DATA_EXPORT_VIA_UART打开串口数据导出功能，如下图所示<br>
+<img alt="" src="../../../_images/cvp_develop_2.png" /><br></p>
+<p>有关串口数据导出的更多信息，请参考以下文档：
+<a class="reference internal" href="../../audio_cvp/cvp_uart_data_export.html"><span class="doc std std-doc">串口数据导出文档</span></a></p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="music_effect_3rd_party.html" class="btn btn-neutral float-left" title="3.4.2. 音乐算法集成" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="hearing_aid_3rd_party.html" class="btn btn-neutral float-right" title="3.4.4. 辅听算法集成" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

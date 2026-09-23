@@ -1,0 +1,172 @@
+{
+  "fields": [
+    {
+      "__config__": {
+        "layout": "rowFormItem",
+        "tag": "group",
+        "tagIcon": "row",
+        "layoutTree": true,
+        "componentName": "编码器参数配置",
+        "enableUuid": "",
+        "showComponentName": true,
+        "dataType": [
+          "8",
+          "1"
+        ],
+        "status": 0,
+        "template": "",
+        "span": 24,
+        "formId": 101,
+        "renderKey": "1011682580902370",
+        "children": [
+          {
+            "__config__": {
+              "label": "蓝牙协议",
+              "showLabel": true,
+              "labelWidth": 200,
+              "tag": "el-select",
+              "tagIcon": "select",
+              "layout": "colFormItem",
+              "span": 24,
+              "required": false,
+              "defaultValue": 0,
+              "regList": [],
+              "changeTag": true,
+              "searchSource": false,
+              "status": 0,
+              "dataType": [
+                "8",
+                "1"
+              ],
+              "formId": 121,
+              "renderKey": "1211721702321944",
+              "eventField": [],
+              "saveWay": "bin",
+              "originValue": 0
+            },
+            "__slot__": {
+              "options": [
+                {
+                  "label": "A2DP(BR/EDR)",
+                  "value": 0,
+                  "hide": false,
+                  "disabled": false
+                },
+                {
+                  "label": "BIS(LE_Audio)",
+                  "value": 1,
+                  "hide": false,
+                  "disabled": false
+                },
+                {
+                  "label": "CIS(LE_Audio）",
+                  "value": 2,
+                  "hide": false,
+                  "disabled": false
+                }
+              ]
+            },
+            "placeholder": "请选择蓝牙协议",
+            "style": {
+              "width": "50%"
+            },
+            "clearable": false,
+            "disabled": true,
+            "filterable": false,
+            "multiple": false,
+            "id": "id_1721702321944_0",
+            "__vModel__": "field121"
+          },
+          {
+            "__config__": {
+              "label": "杰理时间戳",
+              "tag": "el-switch",
+              "tagIcon": "switch",
+              "defaultValue": 0,
+              "span": 24,
+              "showLabel": true,
+              "labelWidth": 200,
+              "layout": "colFormItem",
+              "required": false,
+              "regList": [],
+              "changeTag": true,
+              "status": 0,
+              "dataType": [
+                "8",
+                "1"
+              ],
+              "formId": 120,
+              "renderKey": "1201721630551590",
+              "eventField": [],
+              "saveWay": "bin"
+            },
+            "style": {},
+            "disabled": false,
+            "active-text": "",
+            "inactive-text": "",
+            "active-color": null,
+            "inactive-color": null,
+            "active-value": 1,
+            "inactive-value": 0,
+            "id": "id_1721630551590_4",
+            "__vModel__": "field120"
+          },
+          {
+            "__config__": {
+              "label": "组帧数量",
+              "showLabel": true,
+              "changeTag": true,
+              "labelWidth": 200,
+              "tag": "el-input-number",
+              "tagIcon": "number",
+              "defaultValue": 0,
+              "span": 24,
+              "layout": "colFormItem",
+              "required": false,
+              "regList": [],
+              "status": 0,
+              "dataType": [
+                "8",
+                "1"
+              ],
+              "formId": 116,
+              "renderKey": "1161721629977974",
+              "originValue": 0,
+              "eventField": [],
+              "saveWay": "bin"
+            },
+            "placeholder": "组帧数量",
+            "step": 1,
+            "step-strictly": false,
+            "controls-position": "",
+            "disabled": false,
+            "id": "id_1721629977974_0",
+            "__vModel__": "field116"
+          }
+        ],
+        "eventField": [],
+        "saveWay": "bin"
+      },
+      "type": "default",
+      "justify": "start",
+      "align": "top",
+      "style": {
+        "height": "500px",
+        "paddingLeft": "0px"
+      },
+      "id": "id_1682580902370_0",
+      "show-text": false
+    }
+  ],
+  "formName": "选项卡名称",
+  "formRef": "elForm",
+  "formModel": "formData",
+  "size": "small",
+  "labelPosition": "right",
+  "labelWidth": 100,
+  "formRules": "rules",
+  "gutter": 15,
+  "disabled": false,
+  "span": 24,
+  "formBtns": false
+}

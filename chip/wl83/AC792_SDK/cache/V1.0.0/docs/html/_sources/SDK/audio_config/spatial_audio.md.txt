@@ -1,0 +1,206 @@
+# 空间音效
+
+## 功能介绍
+* **固定头部模式**：即仅仅有空间感的音效，不会跟踪头部动态。
+* **头部跟踪模式**：头部跟踪是在空间音频的基础上，增加了动态头部追踪技术。通过跟踪头部动作，音效也随之对应变化，使得空间音频的体验更加丰富。
+
+## 配置说明
+
+### 固定头部模式
+只需要空间音频，不需要头部跟踪的情况下，不需要开传感器
+
+- **1. 选择传感器选择：`没有传感器`**</br>
+![](./assets/spatial_effects_1.png)</br>
+
+- **2. 在蓝牙音乐流程图选择空间音效数据流**</br>
+![](./assets/spatial_effects_2.png)</br>
+
+### 固定头部+头部跟踪模式
+头部跟踪模式需要陀螺仪传感器的配合，所有需要在固定头部模式配置的情况下，打开传感器配置</br>
+
+- **1. 传感器选择配置**</br>
+    - TWS耳机的时候，头部跟踪只需要用一个耳机陀螺仪的数据，所有需要选择使用左耳的传感器还是右耳的传感器</br>
+    - 头戴式立体声选择**传感器在左耳**和**传感器在右耳**都可以，但是不能选择**没有传感器**</br>
+
+    ![](./assets/spatial_effects_3.png)</br>
+
+- **2. 配置IIC引脚**</br>
+程序支持使用软件IIC接口读取传感器，在board_ac701n_demo_cfg.h文件配置引脚</br>
+    ![](./assets/spatial_effects_4.png)</br>
+
+## 陀螺仪选型
+- **1.  选择传感器型号**</br>
+    <mark>目前支持的陀螺仪传感器型号有：**MPU6887P**、**ICM42670P**、**LSM6DSL**</mark></br>
+    - a、使能传感器TCFG_IMUSENSOR_ENABLE
+    - b、使能对应的传感器，只能使能一个传感器，不可以同时使能多个传感器
+    - c、配置AD0_SELETE_IO引脚，没有时配置NO_CONFIG_PORT
+    - d、配置TCFG_IMU_SENSOR_PWR_PORT传感器供电引脚，没有时配置NO_CONFIG_PORT
+
+    ```C
+    //*********************************************************************************//
+    //                                  imu-sensor配置                                   //
+    //*********************************************************************************//
+    #define TCFG_IMUSENSOR_ENABLE                	1    //imu Sensor使能
+    //mpu6887 cfg
+    #define TCFG_MPU6887P_ENABLE                  	0
+    #define TCFG_MPU6887P_INTERFACE_TYPE          	0 //0:iic, 1:spi
+    #define TCFG_MPU6887P_USER_IIC_TYPE           	0 //iic有效:1:硬件iic, 0:软件iic
+    #define TCFG_MPU6887P_USER_IIC_INDEX          	0 //IIC 序号
+    #define TCFG_MPU6887P_DETECT_IO               	(-1) //传感器中断io
+    #define TCFG_MPU6887P_AD0_SELETE_IO             IO_PORTC_03 //iic地址选择io
+    //icm42607p cfg
+    #define TCFG_ICM42670P_ENABLE                  	0
+    #define TCFG_ICM42670P_INTERFACE_TYPE          	0 //0:iic, 1:spi
+    #define TCFG_ICM42670P_USER_IIC_TYPE           	0 //iic有效:1:硬件iic, 0:软件iic
+    #define TCFG_ICM42670P_USER_IIC_INDEX          	0 //IIC 序号
+    #define TCFG_ICM42670P_DETECT_IO               	(-1) //传感器中断io
+    #define TCFG_ICM42670P_AD0_SELETE_IO            (-1) //iic地址选择io
+    //lsm6dsl cfg
+    #define TCFG_LSM6DSL_ENABLE                     1
+    #define TCFG_LSM6DSL_INTERFACE_TYPE             0 //0:iic, 1:spi
+    #define TCFG_LSM6DSL_USER_IIC_TYPE              0 //1:硬件iic, 0:软件iic
+    #define TCFG_LSM6DSL_USER_IIC_INDEX          	0 //IIC 序号
+    #define TCFG_LSM6DSL_DETECT_IO               	(-1) //传感器中断io
+    #define TCFG_LSM6DSL_AD0_SELETE_IO              (-1) //iic地址选择io
+
+    /*
+     *imu-sensor power manager
+     *不用独立IO供电，则配置 NO_CONFIG_PORT
+     */
+    #define TCFG_IMU_SENSOR_PWR_PORT				IO_PORTD_05
+
+    ```
+
+- **2. 确认传感器位置**</br>
+    确认耳机佩戴时传感器相对于人头部的位置的方位参数，然后填到spatial_effects.c文件的space_motion_param_init函数里面的tranval参数里面</br>
+    ![](./assets/spatial_effects_8.png)</br>
+
+    ```
+    确认方法：
+    根据人头的东、北、天坐标和传感器x、y、z坐标按顺序对比，方向不重合为0，找到重合的组合，方向相同为1，方向相反为-1
+    组合顺序：
+    东 - x
+    东 - y
+    东 - z
+    北 - x
+    北 - y
+    北 - z
+    天 - x
+    天 - y
+    天 - z
+    
+    注意：人头部的东北天坐标可以简单理解为，正前方是北，右手边是东，正上方是天
+    ```
+## 参数说明
+空间音效参数说明：[🔗点击跳转](./../audio_effects/SpatialEffect.md)
+
+## 常用接口
+### 切模式接口
+```C
+//1、空间音效模式定义枚举
+enum SPATIAL_EFX_MODE {
+    SPATIAL_EFX_OFF = 0,		//空间音效关闭
+    SPATIAL_EFX_FIXED,	        //固定头部
+    SPATIAL_EFX_TRACKED,	    //头部跟踪
+};
+/*空间音效模式切换接口*/
+void audio_spatial_effects_mode_switch(enum SPATIAL_EFX_MODE mode)
+```
+### 角度回正接口
+在spatial_effect.c文件里面把全局变量angleresetflag设置成1，可使角度回正0度，</br>
+可通过在spatial_effect.c里面定义函数spatial_audio_angle_reset()，并调用实现角度回正</br>
+
+```C
+/*角度归0回正*/
+void spatial_audio_angle_reset()
+{
+    angleresetflag = 1;
+}
+```
+
+### 角度自动回正时间
+在spatial_effect.h里面配置宏**ANGLE_RESET_TIME**来设置角度自动回正时间，单位是秒</br>
+
+### 模式切换方式
+- 支持两种模式切换方式：
+    - 无缝切换：开关数据流时，插入/跳过空间音效处理，可以做到平滑过渡。
+    - 提示音打断切换：切换时播放打断提示音，会根据当前模式选择对应的数据流，数据流需要重开。tws单声道输出时，空间音效关闭的情况下解码器仅需协商单声道，对于资源消耗有优化。
+    ```c
+    /*
+     * spatial_effects_process.h
+     * 模式切换是否添加打断提示音，数据流重新开关
+     */
+    #define SPATIAL_AUDIO_EFFECT_SW_TONE_PLAY     0
+    ```
+
+## 校准说明
+
+头部跟踪模式使用到陀螺仪传感器，需要使用测试盒对传感器进行校准</br>
+
+### 升级测试盒固件
+- **本地升级方式**</br>
+![](./assets/imu_trim_1.png)</br>
+</br>
+- **在线升级方式**</br>
+![](./assets/imu_trim_2.png)</br>
+</br>
+
+### 设置测试盒
+设置测试盒校准命令：“DUT命令模式使能”设置成1，“串口命令配置”设为01</br>
+![](./assets/imu_trim_3.png)</br>
+</br>
+
+### 校准传感器
+- 将含有传感器的耳机保持pcb板子静止在水平面上(**即传感器x轴和y轴在水平面上，z轴垂直于地面**)<br>
+<mark>注意：水平面需要保证平坦，且没有任何的倾斜，校准过程不可以移动，保证能够用夹具固定而不是手拿以确保静止条件</mark><br>
+- 测试盒串口和耳机充电引脚接在一起，进入传感器校准，校准10s后结束校准</br>
+    * 开始校准：测试盒“di”一声，显示屏显示“**trim run...**”
+    * 校准过程：显示屏显示“**trim run...**”
+    * 校准成功：测试盒“didi”两声，显示屏显示“**trim succ ！**”
+    * 校准失败：测试盒“dididi”三声，显示屏显示“**trim fail ！**”
+
+## 常见问题
+- **（1）空间音效跟踪模式没有效果**</br>
+&emsp;&emsp;通过开机打印检查传感器初始化是否成功，如果不成功，检查程序传感器iic引脚、iic供电引脚和iic地址选择引脚是否配置正确，检查硬件电路是否正常。</br>
+![](./assets/spatial_effects_7.png)</br>
+</br>
+- **（2）空间音效跟踪模式效果不对**</br>
+&emsp;&emsp;耳机陀螺仪传感器是否校准过？重新用测试盒校准一遍，确认校准成功</br>
+
+## 手机APP调试说明
+### 传感器角度显示
+手机app可以显示播歌时，传感器当前的角度，具体使用步骤如下：</br>
+（1）在可视化工具的音频配置->空间音频配置打开空间音效在线调试的开关</br>
+![](./assets/spatial_effects_9.png)</br>
+
+（2）使用安卓手机Audio Tools工具->空间音效->传感器界面点击开始，然后播歌的时候，可以显示传感器当前的角度</br>
+a. 打开杰理包管理器获取Audio Tools工具</br>
+![](./assets/spatial_tool_0.png)</br>
+![](./assets/spatial_tool_1.png)</br>
+![](./assets/spatial_tool_2.png)</br>
+</br>
+b. 播歌时连接工具显示角度
+![](./assets/spatial_tool_3.jpg)</br>
+![](./assets/spatial_tool_4.jpg)</br>
+![](./assets/spatial_tool_5.jpg)</br>
+![](./assets/spatial_tool_6.jpg)</br>
+
+### 传感器校准辅助
+Audio Tools上点击校准按钮，可以触发传感校准，传感器校准的时候，传感器要水平放置，并且不能播歌使用传感器，点击校准按钮后，app会立刻显示校准成功，这个并不是校准成功，而是校准命令发送，实际需要等待10s左右的校准时间，通过串口log打印来判断是否校准成功</br>
+![](./assets/spatial_tool_7.jpg)</br>
+
+### 传感器数据抓取
+调试传感器角度有时候需要把传感器的6轴数据导出分析，具体操作如下</br>
+（1）在board_jlxxxn_demo_cfg.h里面配置传感器数据SPP导出功能，注意该功能不可以和MIC的SPP导出功能同时使用</br>
+![](./assets/spatial_tool_12.png)</br>
+</br>
+（2）在播歌使用传感器的时候打开Audio Tools的记录功能抓取数据</br>
+![](./assets/spatial_tool_8.jpg)</br>
+![](./assets/spatial_tool_9.jpg)</br>
+![](./assets/spatial_tool_10.jpg)</br>
+</br>
+（3）点击停止录制按钮后，传感器的数据会保存到手机的Android/data/com.zhjiele.eq/files路径下面</br>
+![](./assets/spatial_tool_11.jpg)</br>
+
+
+

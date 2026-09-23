@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gpadc &mdash; JL Project Documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="https://doc.zh-jieli.com/static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="https://doc.zh-jieli.com/static/js/custom.js"></script>
+        <script src="../../_static/js/custom.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> JieLi_蓝牙音频
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">SDK入门</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../framework/index.html">1. 技术框架</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">2. 快速入门</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">音频功能进阶</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../audio/index.html">1. 音频播放</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_config/index.html">2. 音频配置</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_flow/index.html">3. 音频流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_effects/index.html">4. 音效调试</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_cvp/index.html">5. 通话清晰语音</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_FAQ/index.html">6. 音频FAQ</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">JieLi_蓝牙音频</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>gpadc</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gpadc">
+<h1>gpadc<a class="headerlink" href="#gpadc" title="Permalink to this headline"></a></h1>
+<p>gpadc API是系统提供的用于adc采集的接口</p>
+<section id="adc-init">
+<h2>adc_init<a class="headerlink" href="#adc-init" title="Permalink to this headline"></a></h2>
+<p>功能:</p>
+<blockquote>
+<div><p>adc功能初始化，一般在板级配置.c文件已经默认调用，用户无需再重复调用。</p>
+</div></blockquote>
+<p>原型:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">adc_init</span><span class="p">();</span><span class="w"></span>
+</pre></div>
+</div>
+<p>参数:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 67%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>–</p></td>
+<td><p>无</p></td>
+</tr>
+<tr class="row-even"><td><p>返回值</p></td>
+<td><p>无</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="adc-add-sample-ch">
+<h2>adc_add_sample_ch<a class="headerlink" href="#adc-add-sample-ch" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><p>添加一个指定的 adc 通道到采集队列，采集队列最大支持10个采集通道。</p>
+<p>最大支持通道数由 gpadc.h 文件中 ADC_MAX_CH 宏控制。</p>
+</div></blockquote>
+<p>原型:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u32</span><span class="w"> </span><span class="nf">adc_add_sample_ch</span><span class="p">(</span><span class="k">enum</span><span class="w"> </span><span class="n">AD_CH</span><span class="w"> </span><span class="n">ch</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>参数:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 70%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>ch</p></td>
+<td><p>指定通道</p></td>
+</tr>
+<tr class="row-even"><td><p>返回值</p></td>
+<td><p>指定通道所在队列的编号</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="adc-delete-ch">
+<h2>adc_delete_ch<a class="headerlink" href="#adc-delete-ch" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><p>删除一个指定的adc采集通道。</p>
+</div></blockquote>
+<p>原型:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u32</span><span class="w"> </span><span class="nf">adc_delete_ch</span><span class="p">(</span><span class="k">enum</span><span class="w"> </span><span class="n">AC_CH</span><span class="w"> </span><span class="n">ch</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>参数:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 70%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>ch</p></td>
+<td><p>指定通道</p></td>
+</tr>
+<tr class="row-even"><td><p>返回值</p></td>
+<td><p>指定通道所在队列的编号</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="adc-set-sample-period">
+<h2>adc_set_sample_period<a class="headerlink" href="#adc-set-sample-period" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><p>设置一个指定通道的采样周期。调用 adc_add_sample_ch 后默认设置为 0。</p>
+</div></blockquote>
+<p>原型:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u32</span><span class="w"> </span><span class="nf">adc_set_sample_period</span><span class="p">(</span><span class="k">enum</span><span class="w"> </span><span class="n">AD_CH</span><span class="w"> </span><span class="n">ch</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">ms</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>参数:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 70%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>ch</p></td>
+<td><p>指定通道</p></td>
+</tr>
+<tr class="row-even"><td><p>ms</p></td>
+<td><p>采样周期，单位：ms</p></td>
+</tr>
+<tr class="row-odd"><td><p>返回值</p></td>
+<td><p>指定通道所在队列的编号</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="adc-get-value">
+<h2>adc_get_value<a class="headerlink" href="#adc-get-value" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><p>获取一个指定通道的 adc 原始值。</p>
+</div></blockquote>
+<p>原型:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u32</span><span class="w"> </span><span class="nf">adc_get_value</span><span class="p">(</span><span class="k">enum</span><span class="w"> </span><span class="n">AD_CH</span><span class="w"> </span><span class="n">ch</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>参数:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 67%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>ch</p></td>
+<td><p>指定通道</p></td>
+</tr>
+<tr class="row-even"><td><p>返回值</p></td>
+<td><p>adc原始值</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="adc-get-voltage">
+<h2>adc_get_voltage<a class="headerlink" href="#adc-get-voltage" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><p>获取一个指定通道的实际电压值，单位mv。</p>
+</div></blockquote>
+<p>原型:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u32</span><span class="w"> </span><span class="nf">adc_get_voltage</span><span class="p">(</span><span class="k">enum</span><span class="w"> </span><span class="n">AD_CH</span><span class="w"> </span><span class="n">ch</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>参数:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 67%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>ch</p></td>
+<td><p>指定通道</p></td>
+</tr>
+<tr class="row-even"><td><p>返回值</p></td>
+<td><p>实际电压值 单位:mv</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="adc-get-value-blocking">
+<h2>adc_get_value_blocking<a class="headerlink" href="#adc-get-value-blocking" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><p>阻塞式获取一个指定通道的 adc 原始值。会立即获取，调用时不需要延时等待。</p>
+</div></blockquote>
+<p>原型:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u32</span><span class="w"> </span><span class="nf">adc_get_value_blocking</span><span class="p">(</span><span class="k">enum</span><span class="w"> </span><span class="n">AD_CH</span><span class="w"> </span><span class="n">ch</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>参数:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 67%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>ch</p></td>
+<td><p>指定通道</p></td>
+</tr>
+<tr class="row-even"><td><p>返回值</p></td>
+<td><p>adc原始值</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="adc-get-voltage-blocking">
+<h2>adc_get_voltage_blocking<a class="headerlink" href="#adc-get-voltage-blocking" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><p>阻塞式获取一个指定通道的实际电压值。会立即获取，调用时不需要延时等待。</p>
+</div></blockquote>
+<p>原型:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u32</span><span class="w"> </span><span class="nf">adc_get_voltage_blocking</span><span class="p">(</span><span class="k">enum</span><span class="w"> </span><span class="n">AD_CH</span><span class="w"> </span><span class="n">ch</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>参数:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 67%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>ch</p></td>
+<td><p>指定通道</p></td>
+</tr>
+<tr class="row-even"><td><p>返回值</p></td>
+<td><p>实际电压值 单位:mv</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="adc-value-to-voltage">
+<h2>adc_value_to_voltage<a class="headerlink" href="#adc-value-to-voltage" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><p>将 adc 原始值转换为电压值。使用传入的 vbg 值进行电压值换算。</p>
+</div></blockquote>
+<p>原型:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u32</span><span class="w"> </span><span class="nf">adc_value_to_voltage</span><span class="p">(</span><span class="n">u32</span><span class="w"> </span><span class="n">adc_vbg</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">adc_value</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>参数:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 67%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>adc_vbg</p></td>
+<td><p>传入的vbg参考值</p></td>
+</tr>
+<tr class="row-even"><td><p>adc_value</p></td>
+<td><p>adc原始值</p></td>
+</tr>
+<tr class="row-odd"><td><p>返回值</p></td>
+<td><p>实际电压值 单位:mv</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="adc-value-to-voltage-filter">
+<h2>adc_value_to_voltage_filter<a class="headerlink" href="#adc-value-to-voltage-filter" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><p>将adc原始值转换为电压值。使用内部滤波后的 vbg 值进行电压换算。（推荐使用）</p>
+</div></blockquote>
+<p>原型:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u32</span><span class="w"> </span><span class="nf">adc_value_to_voltage_filter</span><span class="p">(</span><span class="n">u32</span><span class="w"> </span><span class="n">adc_value</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>参数:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 67%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>adc_value</p></td>
+<td><p>adc原始值</p></td>
+</tr>
+<tr class="row-even"><td><p>返回值</p></td>
+<td><p>实际电压值 单位:mv</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="adc-io2ch">
+<h2>adc_io2ch<a class="headerlink" href="#adc-io2ch" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><p>将传入的 IO 口转换成对应的 AD_CH 并返回。</p>
+</div></blockquote>
+<p>原型:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">u32</span><span class="w"> </span><span class="nf">adc_io2ch</span><span class="p">(</span><span class="k">enum</span><span class="w"> </span><span class="n">gpio_group</span><span class="w"> </span><span class="n">gpio</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>参数:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 67%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>gpio</p></td>
+<td><p>指定IO口</p></td>
+</tr>
+<tr class="row-even"><td><p>返回值</p></td>
+<td><p>adc_ch</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="adc-io-ch-set">
+<h2>adc_io_ch_set<a class="headerlink" href="#adc-io-ch-set" title="Permalink to this headline"></a></h2>
+<blockquote>
+<div><p>设置 IO 通道的模式。调用 adc_add_ch 后默认为浮空输入模式。</p>
+</div></blockquote>
+<p>原型:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">adc_io_set_mode</span><span class="p">(</span><span class="k">enum</span><span class="w"> </span><span class="n">AD_CH</span><span class="w"> </span><span class="n">ch</span><span class="p">,</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="n">gpio_mode</span><span class="w"> </span><span class="n">mode</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>参数:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 67%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>–</p></td>
+<td><p>无</p></td>
+</tr>
+<tr class="row-even"><td><p>返回值</p></td>
+<td><p>无</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="id1">
+<h2>gpadc采样流程图<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<figure class="align-center" id="adc-sample-flow-chart">
+<a class="reference internal image-reference" href="../../_images/gpadc流程图.svg"><img alt="gpadc采样流程图" height="1600" src="../../_images/gpadc流程图.svg" width="1200" /></a>
+</figure>
+</section>
+<section id="id2">
+<h2>gpadc采样时序图<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<figure class="align-center" id="adc-sample-timing">
+<a class="reference internal image-reference" href="../../_images/gpadc时序图.svg"><img alt="gpadc采样时序图" height="826" src="../../_images/gpadc时序图.svg" width="1169" /></a>
+</figure>
+</section>
+<section id="id3">
+<h2>gpadc各级通道示意图<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<figure class="align-center" id="adc-ch">
+<a class="reference internal image-reference" href="../../_images/gpadc各级通道示意图.svg"><img alt="gpadc各级通道示意图" height="1600" src="../../_images/gpadc各级通道示意图.svg" width="1200" /></a>
+</figure>
+</section>
+<section id="demo">
+<h2>参考demo<a class="headerlink" href="#demo" title="Permalink to this headline"></a></h2>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">adc_test_demo</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">adc_init</span><span class="p">();</span><span class="w"> </span><span class="c1">//板级配置中默认会调用，实际使用时无需重复调用。</span>
+
+<span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">user_ad_ch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">adc_io2ch</span><span class="p">(</span><span class="n">IO_PORTA_02</span><span class="p">);</span><span class="w"> </span><span class="c1">//获取 PA2 对应的 AD_CH。</span>
+
+<span class="w">    </span><span class="n">adc_add_sample_ch</span><span class="p">(</span><span class="n">user_ad_ch</span><span class="p">);</span><span class="w"> </span><span class="c1">//添加 PA2 到采集队列。</span>
+<span class="w">    </span><span class="n">adc_set_sample_period</span><span class="p">(</span><span class="n">user_ad_ch</span><span class="p">,</span><span class="w"> </span><span class="mi">500</span><span class="p">);</span><span class="w"> </span><span class="c1">//设置 PA2 的采样周期为500ms。</span>
+
+<span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">user_ad_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">adc_get_value</span><span class="p">(</span><span class="n">user_ad_ch</span><span class="p">);</span><span class="w"> </span><span class="c1">//获取 PA2 的 ad原始值。</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;user_ad_value = %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">user_ad_value</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">user_ad_voltage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">adc_get_voltage</span><span class="p">(</span><span class="n">user_ad_ch</span><span class="p">);</span><span class="w"> </span><span class="c1">//获取 PA2 的电压值，单位：mv。</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;user_ad_voltage = %d mv</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">user_ad_voltage</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">user_ad_voltage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">adc_value_to_voltage_filter</span><span class="p">(</span><span class="n">user_ad_value</span><span class="p">);</span><span class="w"> </span><span class="c1">//将采集到的 ad原始值转换成电压值，单位：mv。</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;user_ad_value = %d ------&gt; user_ad_voltage = %d mv</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">user_ad_value</span><span class="p">,</span><span class="w"> </span><span class="n">user_ad_voltage</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">adc_value_pa6</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">adc_get_value_blocking</span><span class="p">(</span><span class="n">io_port_to_ad_ch</span><span class="p">(</span><span class="n">IO_PORTA_06</span><span class="p">));</span><span class="w"> </span><span class="c1">//阻塞式获取 PA6 的 ad原始值。</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;adc_value_pa6 = %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">adc_value_pa6</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">adc_voltage_pa6</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">adc_get_voltage_blocking</span><span class="p">(</span><span class="n">io_port_to_ad_ch</span><span class="p">(</span><span class="n">IO_PORTA_06</span><span class="p">));</span><span class="w"> </span><span class="c1">//阻塞式获取 PA6 的电压值，单位：mv。</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;adc_voltage_pa6 = %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">adc_voltage_pa6</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2010-2026, 杰理科技股份有限公司.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

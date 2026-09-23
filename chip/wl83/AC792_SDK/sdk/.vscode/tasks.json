@@ -1,0 +1,188 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "all",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat all"
+            },
+            "command": "make all -j`nproc`",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+        ,{
+            "label": "clean",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat clean"
+            },
+            "command": "make clean -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+        ,{
+            "label": "ac792n_wifi_camera",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat ac792n_wifi_camera"
+            },
+            "command": "make ac792n_wifi_camera -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+        ,{
+            "label": "ac792n_wifi_soundbox",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat ac792n_wifi_soundbox"
+            },
+            "command": "make ac792n_wifi_soundbox -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+        ,{
+            "label": "ac792n_wifi_bbm",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat ac792n_wifi_bbm"
+            },
+            "command": "make ac792n_wifi_bbm -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+        ,{
+            "label": "ac792n_demo_demo_ble",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat ac792n_demo_demo_ble"
+            },
+            "command": "make ac792n_demo_demo_ble -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+        ,{
+            "label": "ac792n_demo_demo_wifi_ext",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat ac792n_demo_demo_wifi_ext"
+            },
+            "command": "make ac792n_demo_demo_wifi_ext -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+        ,{
+            "label": "ac792n_demo_demo_ui",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat ac792n_demo_demo_ui"
+            },
+            "command": "make ac792n_demo_demo_ui -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+        ,{
+            "label": "ac792n_demo_demo_hello",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat ac792n_demo_demo_hello"
+            },
+            "command": "make ac792n_demo_demo_hello -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+        ,{
+            "label": "ac792n_demo_demo_wifi",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat ac792n_demo_demo_wifi"
+            },
+            "command": "make ac792n_demo_demo_wifi -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+        ,{
+            "label": "clean_ac792n_wifi_camera",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat clean_ac792n_wifi_camera"
+            },
+            "command": "make clean_ac792n_wifi_camera -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+        ,{
+            "label": "clean_ac792n_wifi_soundbox",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat clean_ac792n_wifi_soundbox"
+            },
+            "command": "make clean_ac792n_wifi_soundbox -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+        ,{
+            "label": "clean_ac792n_wifi_bbm",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat clean_ac792n_wifi_bbm"
+            },
+            "command": "make clean_ac792n_wifi_bbm -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+        ,{
+            "label": "clean_ac792n_demo_demo_ble",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat clean_ac792n_demo_demo_ble"
+            },
+            "command": "make clean_ac792n_demo_demo_ble -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+        ,{
+            "label": "clean_ac792n_demo_demo_wifi_ext",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat clean_ac792n_demo_demo_wifi_ext"
+            },
+            "command": "make clean_ac792n_demo_demo_wifi_ext -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+        ,{
+            "label": "clean_ac792n_demo_demo_ui",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat clean_ac792n_demo_demo_ui"
+            },
+            "command": "make clean_ac792n_demo_demo_ui -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+        ,{
+            "label": "clean_ac792n_demo_demo_hello",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat clean_ac792n_demo_demo_hello"
+            },
+            "command": "make clean_ac792n_demo_demo_hello -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+        ,{
+            "label": "clean_ac792n_demo_demo_wifi",
+            "type": "shell",
+            "windows": {
+                "command": ".vscode/winmk.bat clean_ac792n_demo_demo_wifi"
+            },
+            "command": "make clean_ac792n_demo_demo_wifi -j`nproc`",
+            "problemMatcher": [],
+            "group": "build"
+        }
+    ]
+}

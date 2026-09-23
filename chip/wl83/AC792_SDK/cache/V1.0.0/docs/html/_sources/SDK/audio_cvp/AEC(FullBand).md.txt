@@ -1,0 +1,55 @@
+# **单麦AEC(FullBand)算法**调试指引
+
+**单麦AEC(FullBand)** 只集成了回音消除算法
+
+## 模块特征
+- **采样率**
+  - 48kHz 
+- **位宽**
+  - 16bit
+- **声道**
+  - 单声道
+
+## 资源统计
+算法资源消耗统计（统计包含所有的算法模块）
+
+|RAM (k) | MIPS (MHz) |
+|--------:|------------:|
+| 36 | 67 |
+
+## 算法说明
+### 回音消除AEC
+AEC主要用来消除回音中的线性部分。参数设置如下：<br>
+![](./assets/cvp_sms_aec.png)
+- **AEC_EN** : 是否使能回音消除模块</br>
+- **AEC_DT_AGGRES** : 原音追踪等级</br>
+- **AEC_REFENGTHR** : 进入回音消除参考值</br>
+
+&emsp;&emsp;AEC模块的参数基本不用调试，这里是为了兼容性考虑，所以放到配置工具。如有需要，由原开发人员指导修改。
+
+### 非线性压制NLP
+NLP主要用来消除回音中的非线性部分，参数设置如下：<br>
+![](./assets/cvp_sms_nlp.png)
+
+NLP模块根据回声的大小，进行相应的压制。
+- **ES_AGGRESS_FACTOR** ：回声侵略系数，该参数会根据回声大小进行动态自适应压制。</br>
+- **ES_MIN_SUPPRESS** : 回声压制最小压制阈值，偏向静态。</br>
+![](./assets/cvp_sms_nlp_1.png)
+
+- 调整步骤：</br>
+(1)减小ES_AGGRESS_FACTOR，直到回声没有，或者有部分小回声泄露。</br>
+(2)调整ES_MIN_SUPRESS，直到没有回声，该值影响双工效果。</br>
+(3)测双工效果，如果双工效果不满意，则需要减少回声路径增益（减小ADC增益，或者减小DAC增益），并且恢复NLP_AGGRESS_FACTOR与NLP_SUPPRESS_FACTOR到默认系数，并回到步骤1。</br>
+- 调试Tips：</br>
+&emsp;&emsp;ES_AGGRESS_FACTOR参数是让算法自动调整，那如果在ES_AGGRESS_FACTOR比较小的情况下，还有小小的回声，这个时候建议调整ES_MIN_SUPPRESS，即以上步骤2。
+&emsp;&emsp;ES_MIN_SUPPRESS这个参数的副作用是越大，压制效果越明显，相应的，双工效果越差，甚至没有双工。具体数值根据实际样机的回声大小而定。</br>
+
+## 使用说明
+- 修改可视化音频配置
+![](./assets/cvp_siglemic/aec_48k_1.png)
+- 修改**esco_recoder.c**中ADC的中断点数
+![](./assets/cvp_siglemic/aec_48k_2.png)
+- 修改**adc_file.c**中ADC的采样率为48K
+![](./assets/cvp_siglemic/aec_48k_3.png)
+- 注释**cvp_sms_vf_node.c**中协商
+![](./assets/cvp_siglemic/aec_48k_4.png)

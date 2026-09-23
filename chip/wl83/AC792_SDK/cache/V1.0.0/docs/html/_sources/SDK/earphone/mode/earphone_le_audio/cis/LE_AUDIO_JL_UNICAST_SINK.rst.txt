@@ -1,0 +1,420 @@
+游戏耳机 - LE_AUDIO_JL_UNICAST_SINK开发说明
+############
+
+#. 该章节以讲解LE_Audio头戴式游戏耳机与Dongle为主。
+#. LE_Audio TWS游戏耳机(Beta)，持续更新中。
+
+开发简介
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#. 基于《LE_Audio技术简介》说明，我们运用了LE_AUDIO的特性来开发实现低延时的游戏耳机。即通过LE_AUDIO_UNICAST dongle与LE_AUDIO_UNICAST earphone之间建立CIS链接来实现音频数据的低延时传输。
+
+#. LE_AUDIO_UNICAST dongle是指杰理自研的蓝牙转换头，通过USB连接手机或者电脑等设备，使一些不支持LE_AUDIO_UNICAST功能的电脑和手机能够支持LE_AUDIO_UNICAST。允许自定义帧长、采样率、重发次数、码率等等。
+
+
+底层链路说明
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+     .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/开发说明1.png
+
+ACL与CIS链路的关系
+===================
+
+#. ACL链路负责命令数据传输，CIS链路负责音频数据传输（播歌、通话）；
+#. 耳机连上Dongle，则ACL链路必然已经建立。反之，如果ACL链路断开，则耳机与Dongle必然已经断开连接；
+#. 如果ACL链路断开，则CIS链路必然会断开。
+
+
+工程配置
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+耳机工程配置
+===================
+
+#. 根据产品类型开关：蓝牙配置->TWS功能
+
+#. 打开BLE开关
+     .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/工程配置0.png
+
+#. LE_AUDIO配置选择LE_AUDIO_JL_UNICAST_SINK_EN
+     .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/工程配置1.png
+
+#. “蓝牙音乐”或“媒体”导航栏处的音频流程图选择LE_Audio流程图
+     .. figure:: imgs/leaudio音频流程图1.png
+
+#. “蓝牙通话”导航栏处的音频流程图选择LE_Audio流程图
+     .. figure:: imgs/leaudio音频流程图2.png
+          
+#. 耳机项目的蓝牙名需要同Dongle可视化工程的蓝牙配置->经典蓝牙->蓝牙名、LE_AUDIO配置->UNICAST配置->配对名一致。
+     .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/工程配置2.png
+    
+#. 全局采样率选择48000Hz
+     .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/工程配置3.png       
+          
+
+#. 头戴式耳机选择双声道，TWS耳机选择单声道
+     .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/工程配置5.png
+
+#. “LE_Audio”导航栏处的音频流程图使能，并导出配置
+     .. figure:: imgs/leaudio音频流程图3.png
+
+#. 点击编译
+     
+Dongle工程配置
+===================
+
+#. Dongle项目创建(创建可视化工程->dongle->Dongle_3in1_v2)：
+     .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/dongle_project.png
+
+#. Dongle项目的蓝牙配置->EDR（经典蓝牙），右边选择功能关闭，不关闭就需要通过按键来切换经典蓝牙和cis模式：
+	.. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/dongle配置蓝牙名1.png
+
+#. Dongle项目的LE_AUDIO配置->UNICAST配置->配对名：
+     .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/dongle配置蓝牙名2.png
+
+#. Dongle项目头戴式单链接，“unicast”导航栏处的音频流程图选择“默认分组”：
+     .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/dongle音频流程配置.png
+
+#. 点击编译
+
+#. （选配，TWS耳机项目开启）Dongle项目的TWS双链接的LE_AUDIO配置：
+     .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/dongle配置TWS双链接.png
+
+#. （选配，TWS耳机项目开启）Dongle项目TWS双链接，“unicast”导航栏处的音频流程图选择unicast_double_conn流程图：
+     .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/dongle双链接音频流程配置.png
+        
+
+参数规格
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+LE_AUDIO_JL_UNICAST资源统计如下：
+
+Bluetooth: 支持蓝牙CIS+ACL 双工传输
+
+代码量：249kb
+
+Codec: LC3编码器（RAM13.3K）， LC3解码器（RAM13.1K），播歌（48k）；通话：上行（48k） 、下行（48k）；码率：主机128kbps（发射器） 从机40kbps（耳机）
+
+MIPS：LC3解码：20MHz（64kbps）、40MHz（80kbps），LC3编码：40-50MHz
+
+Algorithm: 音频同步，变采样
+
+流程说明（一拖一流程）
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+     .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/流程说明1.png
+
+接口说明
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: c
+
+     /**
+     * @brief le_audio功能总初始化
+     */
+     void le_audio_profile_init()
+   
+     /**
+     * @brief 蓝牙线程消息按需处理，包括连接、断开、超时等事件处理
+     */
+     static int le_audio_conn_btstack_event_handler(int *_event)
+
+     /**
+     * @brief le_audio广播开关，只有开启广播才能被扫描到进行连接
+     *
+     * @param en:1:开广播   0：关广播
+     */
+     void le_audio_adv_api_enable(u8 en)
+
+     /**
+     * @brief  le_audio媒体控制接口
+     *
+     * @param data[0] :CIG_EVENT_OPID_VOLUME_UP音量加、CIG_EVENT_OPID_PLAY开始播放等cmd命令
+     */
+     void le_audio_media_control_cmd(u8 *data, u8 len)
+
+     /**
+     * @brief CIG从机连接成功事件处理，在这个接口里面会打开播歌和通话的编解码器
+     *
+     * @param priv:连接成功附带的句柄参数
+     *
+     * @return 是否执行成功 -- 0为成功，其他为失败
+     */
+     int connected_perip_connect_deal(void *priv)
+
+     /**
+     * @brief CIG从机连接断开成功处理接口，在这个接口里面会关闭播歌和通话的编解码器
+     *
+     * @param priv:断连成功附带的句柄参数
+     *
+     * @return 是否执行成功 -- 0为成功，其他为失败
+     */
+     int connected_perip_disconnect_deal(void *priv)
+
+      /**
+     * @brief  CIG状态处理函数，包括接收到CIG_EVENT_PERIP_CONNECT、CIG_EVENT_ACL_CONNECT、CIG_EVENT_JL_DONGLE_CONNECT等事件的处理
+     *
+     * @param msg:状态事件附带的返回参数
+     *
+     * @return 是否执行成功 -- 0为成功，其他为失败
+     */    
+     static int app_connected_conn_status_event_handler(int *msg)
+
+ 
+.. tip::
+     
+     其余更多接口使用说明，详细见app_le_connected.h/.c和le_connected.h/.c
+
+     - Dongle和耳机交互协议 :download:`JL_Unicast私有命令通信协议开发文档<LE_AUDIO_JL_UNICAST_SINK_doc/JL_Unicast私有命令通信协议开发文档_v0.0.4 - 20251015.pdf>`
+
+CIG事件说明
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: c
+
+     typedef enum {
+     // for CIS
+
+     // ...
+
+     CIG_EVENT_PERIP_CONNECT,                    // Receiver connect succ.创建了CIS链路，运行开启编解码器
+     CIG_EVENT_PERIP_DISCONNECT,                 // Receiver disconnect.断开了CIS链路，关闭关闭编解码器
+
+     // ...
+
+     // for ACL
+     CIG_EVENT_ACL_CONNECT,                       // 创建ACL链路
+     CIG_EVENT_ACL_DISCONNECT,                    // 断开ACL链路。如果ACL链路断开则CIS链路一定会断开
+
+     //for phone
+     CIG_EVENT_PHONE_CONNECT,
+     CIG_EVENT_PHONE_DISCONNECT,
+     CIG_EVENT_JL_DONGLE_CONNECT,
+     CIG_EVENT_JL_DONGLE_DISCONNECT,
+
+     // ...
+
+     } CIG_EVENT;
+
+模式切换功能
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+允许在经典蓝牙与LE_Audio模式之间进行切换，单模式能极大保证通讯的稳定性及低延时（因为单模式可以保证帧长够短）。
+
+     .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/mode_switch.png
+
+.. code-block:: c
+
+     /**
+     * @brief 获取当前JLUNICAST模式的状态
+     *
+     * @return JL_UNICAST_MODE
+     */
+     u8 jl_unicast_edr_mode_get();
+
+     /**
+     * @brief 控制dongle模式和手机模式切换，切换后复位生效
+     */
+     void jl_unicast_edr_mode_switch();
+
+切换到经典蓝牙模式
+=============
+
+#. 断开ACL、CIS链路，关闭LE_Audio广播
+#. 开启可连接可发现、回连设备等，开启BLE广播
+#. 具体见：void jl_unicast_edr_mode_switch();函数实现
+
+LE_Audio模式
+=============
+
+#. 关闭可连接可发现、回连设备等，断开经典蓝牙连接，关闭BLE广播
+#. 开启LE_Audio广播
+#. 具体见：void jl_unicast_edr_mode_switch();函数实现
+
+.. tip::
+
+     目前仅经典蓝牙模式中BLE连接手机APP后支持走升级流程，LE_Audio的一拖二（经典蓝牙、LE_Audio）同时连接手机APP进行升级功能（仅限JL708N、JL709N、AC710、AC689系列）持续开发中。
+
+低延时配置
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+耳机工程低延时配置
+=============
+
+设置unicast耳机端的LE_AUDIO播放延时（头戴式耳机，Dongle配置5ms帧长，LE_AUDIO播放延时设置为2.5ms； TWS耳机，Dongle配置10ms帧长，LE_AUDIO播放延时设置为5.0ms）
+
+     .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/耳机低延时.png
+     
+.. tip::
+     当需要实测耳机与dongle的延时时，除了上述耳机工程LE_AUDIO播放延时需要配置，还需要以下代码更改：（如果是作为终端产品生产请保留默认配置即可）
+
+.. code-block:: c
+
+     // apps/earphone/log_config/lib_media_config.c文件中，
+
+     // 开发者需要实测耳机与dongle的延时时，请设置config_audio_dac_noisefloor_optimize_enable变量为0.
+     // 不然测出来的延时会抖动，是个范围值
+     const int config_audio_dac_noisefloor_optimize_enable = 0;
+     
+     // 注意：如果不是延时测试，作为终端产品生产请保留以下的默认配置即可
+     //<DAC NoiseGate>
+     #if (defined(TCFG_AUDIO_DAC_NOISEGATE_ENABLE) && TCFG_AUDIO_DAC_NOISEGATE_ENABLE)
+     const int config_audio_dac_noisefloor_optimize_enable = BIT(0) | BIT(2);
+     #else
+     const int config_audio_dac_noisefloor_optimize_enable = 0;
+     #endif
+	
+.. tip::
+     杰理实验室测试耳机与dongle的LE_AUDIO_JL_UNICAST连接LE_AUDIO播放延时设置最低是支持2.5ms(默认音频流程图+近距离)，如需要拉距离或音频流程图有更多音效等造成播歌卡顿，请按5-10ms的幅度往上进行校准调试。
+
+Dongle工程低延时配置
+=============
+
+    Dongle工程低延时配置说明，详细看Dongle的可视化工程帮助文档
+    具体请看 :download:`Dongle低延时测试配置说明<LE_AUDIO_JL_UNICAST_SINK_doc/Dongle低延时测试配置说明.pdf>`
+
+.. tip::
+     杰理实验室测试，按照上述低延时配置耳机程序与Dongle程序：从Dongle端开始进行音频数据采样到耳机端输出的总延时约为:16.8ms
+
+影响距离与延时的因素
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dongle端影响距离与延时的因素
+=============
+
+#. 帧长，帧长越长说明单次通讯周期越长则延时越大。
+#. 重发次数，重发次数越多延时越大，距离也越好。
+#. 音频流节点中的同步延时，数值越大延时越大，也可以增加距离。
+#. Dongle音频流的复杂度，音效节点越多延时越大。
+#. 常见帧长与重发次数的搭配推荐，一般有头戴式耳机：Dongle配置帧长5ms+重发4-5次；TWS耳机：Dongle配置帧长10ms+重发3次。
+#. 降低码率，可以增加距离
+#. 其他，芯片性能（需要进行DUT、CI测试）、样机（硬件检查，软件需要进行暗室测试等）、蓝牙库（跳频）策略等。部分蓝牙测试可以参考：性能指标进阶->蓝牙性能分析和调试。
+
+Earphone端影响距离与延时的因素
+=============
+
+1、 通过蓝牙传输策略优化距离
+
+- 开启afh跳频配置，BLE特征开启LL_FEAT_CHANNEL_CLASSIFICATION，同时开启频道监测
+- 具体请看 :download:`JL_Unicast跳频说明文档<LE_AUDIO_JL_UNICAST_SINK_doc/CIS 添加跳频验证说明_v1.pdf>`
+
+.. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/Dongle端影响距离与延时的因素1.png
+
+2、 通过音频算法修复优化距离
+
+- 若蓝牙确实由于空中环境的干扰导致丢包，或者距离已经足够远实在是收不到包，可通过音频算法的丢包修复（PLC）功能，模拟丢包数据，达到听感上数据的连贯。
+
+- 丢包修复一定是在“接收端”进行处理的，播歌的丢包修复在接收端（耳机）进行处理，通话下行在接收端（如耳机）进行处理，通话上行（即mic录音数据）在接收端（dongle）进行处理。
+
+- 目前耳机端PLC模式有多种，默认没有启用效果更好的ADVANCE模式和JL_ADVANCE模式:
+
+.. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/plc选择.png
+
+.. note:: 注意的是开启JL_UNICAST模式，PLC ADVANCE模式和JL_ADVANCE模式需要耳机和dongle同时开效果最好，具体PLC模式效果和资源占用见（音频配置->音频算法配置->专用PLC类型配置）。
+
+3、可视化工具界面上配置的LE_AUDIO播放延时配置，数值越大延时越大、距离越大。（蓝牙接收、解码、同步、DAC输出等音频流相关的流程皆一并包含在里面）
+
+.. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/耳机低延时.png
+
+4、其他影响因素还有:芯片性能（需要进行DUT、CI测试）、样机（硬件检查，软件需要进行暗室测试等）。部分蓝牙测试可以参考：性能指标进阶->蓝牙性能分析和调试。
+
+断连（ACL断连）、无声（CIS断连）问题的分析帮助
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+一般需要结合dongle日志一起分析，大部分断开是Dongle设备（如播放器关闭音乐）与蓝牙底层发起的。
+
+1、CIS音频链路断开了，0x16指是本地发起的，一般是蓝牙底层发起的。
+
+.. code-block:: c
+
+     <error> [LL_CIS]-> LL_CIS_MSG_DISCONNECT 0x60, 0x16
+
+2、CIS音频链路断开了，0x13指是对方设备发起的，需要检查Dongle日志（如播放器关闭音乐，USB驱动收到关闭信息会断开CIS）。
+
+.. code-block:: c
+
+     <error> [LL_CIS]-> LL_CIS_MSG_DISCONNECT 0x60, 0x13
+
+3、CIS音频链路断开了，断开原因是0x8，蓝牙底层通讯超时导致。
+
+.. code-block:: c
+
+     <error> [LL_E] - CONNECTION_TIMEOUT
+     <error> [LL_CIS]-> LL_CIS_MSG_DISCONNECT 0x60, 0x8
+     <error> [LL_E]LL HCI_EVENT_DISCONNECTION_COMPLETE: 0x8
+
+4、ACL链路断开，这时候耳机与Dongle之间的通讯会完全断开。
+
+.. code-block:: c
+
+     [APP]E<- ACL disconnect, hdl:0x50
+
+5、其余断开原因：0x3e，信号不好
+
+6、应用层断开接口，参考耳机代码
+
+.. code-block:: c
+
+     /**
+     * @brief 断开ACL handle的cis链路（即关闭音频通道）
+     * 
+     * @param handle acl句柄
+     * @param reason 断连原因。0x13：指因为对端设备业务的原因，0x16：指因为本设备业务的原因
+     */
+     int ll_hci_disconnect(u16 handle, u8 reason);
+
+     // 参考耳机应用层代码应用
+     ll_hci_disconnect(acl_handle_for_disconnect_cis, 0x13);
+
+LE_AUDIO_JL_UNICAST播歌无声卡顿问题的分析帮助
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1、检查是否创建了CIS链路
+
+.. code-block:: c
+
+     [LE_CONNECTED]connected_perip_event_callback, CIG_EVENT_CIS_CONNECT
+
+     connected_perip_connect_deal
+
+2、音频流有无正常创建，查看log：[JLSTREAM]create_stream
+
+3、音频流有无正常释放：检索"create_stream"、"free_stream"是否成对出现。常见于客户改了UI流程。
+
+4、"SE"说明收到空包（一般是发送端发的数据包是空包需要检查发送端的原因，也可能这个现象是正常的）；
+
+5、"SL"说明没有收到包（可能被干扰了，可以使用蓝牙分析仪捉包检查一下）；
+
+6、相关打印：uuu，UUU，dac will empty，DA : （dac播空就会有这个打印）
+怀疑：（时钟、LE_AUDIO播放延时不够等等）
+
+7、其他杂音原因如：硬件、音频流算法节点等
+
+其余问题汇总
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+LE_AUDIO_JL_UNICAST常见异常打印
+==========================
+
+     常见异常打印汇总如下
+     具体请看 :download:`LE_AUDIO_JL_UNICAS常见异常打印<LE_AUDIO_JL_UNICAST_SINK_doc/常见log打印字符含义解析_20251113.pdf>`
+
+运行时钟与低延时配置的关系是怎么样的？
+=============
+
+     LE_AUDIO_JL_UNICAST播歌通话默认固定使用了芯片的最高时钟，确保低延时配置不会有播歌通话音频流卡顿的问题（耳机无法知道dongle那边配置了低延时配置）。
+     如果Dongle工程不是使用低延时配置而是采用默认配置，则下述截图代码clock_alloc("le_audio", clk_get_max_frequency());可以考虑屏蔽达到降低功耗的需求。
+
+     .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/le_audio_jl_unicast_clock.png
+
+耳机调用ll_hci_vendor_send_priv_cmd发送自定义数据给dongle，出现lea断链：
+==========================
+
+#. 最大发送数据长度过长，会出现lea断连或断言的现象:
+ 将耳机和dongle的aclMaxPduCToP和aclMaxPduPToC都改为 16（改大到同一数值）
+
+ .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/dongle耳机断连1.png
+
+ 将耳机和dongle的aclMaxPduPToC和aclMaxPduCToP都改为 36（改大到同一数值）
+
+ .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/dongle耳机断连2.png
+
+2.改小重发次数
+
+ .. figure:: LE_AUDIO_JL_UNICAST_SINK_imgs/dongle耳机断连3.png
+

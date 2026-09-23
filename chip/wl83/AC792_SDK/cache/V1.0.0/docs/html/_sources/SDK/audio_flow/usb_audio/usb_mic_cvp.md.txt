@@ -1,0 +1,6 @@
+# USB MIC通话算法
+
+## 注意事项 
+
+## 预设流程
+![](./assets/usb_mic_cvp.png)

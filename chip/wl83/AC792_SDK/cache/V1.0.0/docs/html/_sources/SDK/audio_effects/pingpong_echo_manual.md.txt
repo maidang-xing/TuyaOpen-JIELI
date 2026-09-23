@@ -1,0 +1,22 @@
+# 双耳回声效果（Pingpong Echo）
+* 实现左右耳间歇出现的echo效果 
+
+
+## 功能介绍
+* 实现左右耳间歇出现的echo效果，可以调节声音间隔，衰减速度，低通滤波频率，湿声增益，干声增益，第一湿声距离干声的延时等参数。
+
+
+## 参数简述
+* **Delay** ：影响声音间隔，范围是1到max_delay_ms,单位ms
+* **Decay Val** ：声音衰减速度，单位dB
+* **Filt Enable** ：是否低通滤波
+* **Lowpass Filter Freq** ：低通滤波的频率，单位Hz
+* **Wet Gain** ：湿声增益， 单位%，效果声的音量
+* **Dry Gain** ：干声增益，单位%，原声的音量
+* **Pre Delay** : 左耳第一湿声距离干声的延时，建议值等于Delay，范围是1到max_delay_ms,单位ms
+* **Max Delay** ：影响申请的最大buf，单位ms
+
+
+
+
+

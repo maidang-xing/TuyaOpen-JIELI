@@ -3,7 +3,7 @@
  * @brief Per-chip configuration for the Jieli platform adapter.
  *
  * The platform serves one vendor family with several silicon revisions
- * (wl82/AC79NN today, wl83/AC792N planned). The TKL sources stay shared;
+ * (wl82/AC79NN and wl83/AC792N). The TKL sources stay shared;
  * every known silicon difference is funnelled into this header so the
  * per-chip delta remains auditable in one place.
  *
@@ -38,10 +38,12 @@
 
 /*
  * Known-compatible surface (measured against both SDKs, 2026-09):
- *   - WiFi event enum: core values 0..21 are identical on both chips.
- *   - TKL vendor symbols: 58/59 identical, only bt_get_mac_addr differs.
+ *   - WiFi event enum values 0..21 are identical; later WL83 values diverge.
+ *   - WiFi connection-state values diverge after DISCONNECT because WL83
+ *     inserts CONNECTING; tkl_wifi.c maps those values per chip.
+ *   - BLE address acquisition and derivation use different SDK entry points.
  *
- * Porting checklist when enabling wl83 (do NOT hand-copy these):
+ * Chip-specific items handled by the shared adapter:
  *   - WIFI_EVENT values >= 22 differ (792 inserts 5 events at 22).
  *   - ATT_CTRL_BLOCK_SIZE / ATT_PACKET_HEAD_SIZE values in le_common_define.h.
  *   - struct lan_setting field layout in the lwip port header.

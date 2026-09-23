@@ -1,4 +1,0 @@
-[submodule "AC79_AIoT_SDK"]
-	path = chip/wl82/AC79_AIoT_SDK
-	url = https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git
-	branch = release/AC79NN_SDK_V1.2.0

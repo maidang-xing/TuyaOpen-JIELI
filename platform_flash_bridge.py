@@ -20,28 +20,25 @@ from typing import Any
 
 MODULE_ROOT = Path(__file__).resolve().parent
 
-# (sdk_subdir, tools_subdir, isd -dev argument, boot address)
+# (sdk_subdir, tools_subdir, isd -dev argument, boot address, reboot delay)
 _FLASH_CHIPS = {
-    "wl82": ("chip/wl82/AC79_AIoT_SDK", "cpu/wl82/tools", "wl82", "0x1c02000"),
-    # wl83 (AC792N): entry kept for the bring-up; verify -dev/-boot against the
-    # vendor docs before first use (chip/wl83/README.md).
-    "wl83": ("chip/wl83/AC792_SDK", "sdk/cpu/wl83/tools", "wl83", "0x1c02000"),
+    "wl82": ("chip/wl82/AC79_AIoT_SDK", "cpu/wl82/tools", "wl82", "0x1c02000", "500"),
+    "wl83": ("chip/wl83/AC792_SDK", "sdk/cpu/wl83/tools", "wl83", "0x103000", "50"),
 }
 
 
-def _resolve_flash_chip() -> tuple[str, Path, str, str] | None:
-    name = os.environ.get("JIELI_CHIP", "wl82").strip() or "wl82"
+def _resolve_flash_chip(name: str) -> tuple[str, Path, str, str, str] | None:
     entry = _FLASH_CHIPS.get(name)
     if entry is None:
         return None
-    sdk_dir, tools_subdir, dev, boot = entry
+    sdk_dir, tools_subdir, dev, boot, reboot = entry
     candidates = [MODULE_ROOT / sdk_dir / tools_subdir]
     if name == "wl82":
         # Legacy layout fallback for checkouts predating the chip/ split.
         candidates.append(MODULE_ROOT / "AC79_AIoT_SDK" / "cpu/wl82" / "tools")
     for tools_dir in candidates:
         if (tools_dir / "isd_download.exe").is_file():
-            return dev, tools_dir, dev, boot
+            return dev, tools_dir, dev, boot, reboot
     return None
 
 
@@ -62,15 +59,15 @@ def _split_command(command_text: str) -> list[str]:
     ]
 
 
-def _default_flash_command(image: Path) -> tuple[list[str], Path] | None:
+def _default_flash_command(image: Path, chip_name: str) -> tuple[list[str], Path] | None:
     """Return the SDK's Windows USB downloader command when it is available."""
     if os.name != "nt":
         return None
 
-    resolved = _resolve_flash_chip()
+    resolved = _resolve_flash_chip(chip_name)
     if resolved is None:
         return None
-    dev, tools_dir, _, boot_addr = resolved
+    dev, tools_dir, _, boot_addr, reboot_delay = resolved
     executable = tools_dir / "isd_download.exe"
     config = tools_dir / "isd_config.ini"
     uboot = tools_dir / "uboot.boot"
@@ -99,7 +96,7 @@ def _default_flash_command(image: Path) -> tuple[list[str], Path] | None:
             "-res",
             "cfg",
             "-reboot",
-            "500",
+            reboot_delay,
             "-extend-bin",
         ],
         tools_dir,
@@ -126,7 +123,7 @@ def platform_flash(
         "port": port,
         "baud": str(baud or 0),
         "chip": using_data.get("CONFIG_CHIP_CHOICE", "wl82"),
-        "board": using_data.get("CONFIG_BOARD_CHOICE", "AC7916A"),
+        "board": using_data.get("CONFIG_BOARD_CHOICE", "AC79_DevKitBoard"),
     }
     command_text = os.environ.get("JIELI_FLASH_CMD", "").strip()
     staged_dir = None
@@ -148,7 +145,7 @@ def platform_flash(
             upload_image = Path(staged_dir.name) / "app.bin"
             shutil.copyfile(image, upload_image)
 
-        default = _default_flash_command(upload_image)
+        default = _default_flash_command(upload_image, values["chip"])
         if default is None:
             if staged_dir is not None:
                 staged_dir.cleanup()

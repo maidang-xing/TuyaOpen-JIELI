@@ -1,0 +1,12 @@
+{
+ "activeFile": {
+  "type": 4,
+  "fileName": "src\\音频流程\\媒体.x6flow",
+  "binName": "stream.bin",
+  "showName": "媒体",
+  "data": ""
+ },
+ "currentVariant": {
+  "name": ""
+ }
+}

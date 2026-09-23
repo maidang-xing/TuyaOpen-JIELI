@@ -1,0 +1,60 @@
+music模式配置
+#############
+
+耳机SDK需要节省flash和ram空间，默认将music模式相关的配置关闭，需要手动打开。以下是一些music模式需要打开的配置项。
+
+**打开音乐模式**
+
+.. image:: imgs/music_config_001.png
+
+**解码格式配置**
+
+.. image:: imgs/music_config_002.png
+
+**配置SD卡**
+
+.. image:: imgs/music_config_003.png
+
+**配置U盘（可选）**
+
+.. image:: imgs/music_config_004.png
+
+**VDDIO提高到3.3V**
+
+.. note::
+
+    SD卡、U盘的IO电压要求 >= 3.3V。
+
+.. image:: imgs/music_config_005.png
+
+**音乐模式音频流程图配置**
+
+.. note::
+
+    也可以自己在其他流程图添加 本地音乐 支路
+
+.. image:: imgs/music_config_006.png
+
+**提示音配置（可选）**
+
+.. image:: imgs/music_config_007.png
+
+**按键配置**
+
+.. note::
+
+    用AD按键，IO按键按键数不够
+
+.. image:: imgs/music_config_008.png
+
+**串口打印配置**
+
+.. note::
+
+    注意串口默认DP，跟USB相关功能冲突，需要修改成其他IO
+
+.. image:: imgs/music_config_009.png
+
+**USB读卡器功能兼容性注意**
+
+.. image:: imgs/music_config_010.png

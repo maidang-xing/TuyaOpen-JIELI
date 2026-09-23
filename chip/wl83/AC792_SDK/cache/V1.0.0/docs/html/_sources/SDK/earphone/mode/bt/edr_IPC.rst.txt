@@ -1,0 +1,118 @@
+蓝牙的可发现可连接与回连
+##############
+
+- 可发现：指设备可被发现
+- 可连接：指设备可被进行蓝牙连接
+- 回连：指设备曾经被连接过，根据连接的设备地址来进行回连
+
+蓝牙的可发现可连接及回连流程图
+^^^^^^^^^^^^^
+
+.. image:: media/总体设计005.png
+   :alt: 经典蓝牙可发现可连接.drawio
+
+* 上图蓝牙的可发现可连接及回连业务流程简述如下：
+    - 没有设备连接：开启可发现可连接；
+    - 有连接记录：短时内开启回连，超时没连接则开启可发现可连接；
+    - 连接后如果还有连接记录：短时内开启回连，超时没连接开启可连接；
+    - 全部连接成功或已连接一台设备后等待连接超时：关闭可发现可连接。
+
+.. tip::
+    以上流程图为SDK默认流程，开发者可根据自身业务需求对其进行更改。
+
+蓝牙的可发现可连接及回连的设置
+^^^^^^^^^^^^^
+
+.. image:: media/edr_ipc_setting.png
+
+蓝牙的可发现可连接及回连打印与函数调用说明
+^^^^^^^^^^^^^
+
+经典蓝牙可发现可连接与回连常见打印：“I”、“P”、“C”的打印，相关说明如下
+---------
+
+.. code-block:: c
+
+    /********edr蓝牙相关状态debug打印说明***********************
+    *** 等待被发现inquiry_scan   打印 'I'(大写)
+    *** 回连手机page:            打印 'C'(大写)
+    *** 等待手机连接page_scan:   打印 'P'(大写)
+    *********************************************************/
+
+
+设置蓝牙的可发现可连接
+---------
+
+write_scan_conn_enable -> lmp_hci_write_scan_enable
+
+.. code-block:: c
+
+    /**
+    * @brief 设置inquiry scan和page scan
+    *
+    * @param scan_enable inquiry_scan_en
+    * @param conn_enable page_scan_en
+    */
+    void write_scan_conn_enable(bool scan_enable, bool conn_enable);
+
+    /**
+    * @brief 蓝牙库API设置inquiry scan和page scan
+    *
+    * @param enable BIT(0):设置可发现; BIT(1):设置可连接
+    */
+    int lmp_hci_write_scan_enable(u8 enable);
+
+
+获取蓝牙的已连接记录与回连
+---------
+
+.. tip::
+    回连阶段，建议回连与可发现可连接是交替的，保证回连的时候还可以被其他手机连接。增加蓝牙设备的灵活性。
+
+.. code-block:: c
+
+    /**
+    * @brief 蓝牙库API获取当前设备曾经连接过的设备数量
+    *
+    * @return 曾经连接过的设备数量
+    */
+    int btstack_get_num_of_remote_device_recorded();
+
+    /**
+    * @brief 蓝牙库API获取index的蓝牙设备地址
+    *
+    * @param addr 蓝牙设备地址
+    * @param index 范围0-(btstack_get_num_of_remote_device_recorded() - 1)
+    * 
+    * @return 获取结果
+    */
+    bool btstack_get_remote_addr(u8 *addr, u8 index);
+
+    /**
+    * @brief 回连设备函数调用
+    *
+    * @param USER_CTRL_START_CONNEC_VIA_ADDR 回连设备命令
+    * @param mac_addr_len mac_addr的长度
+    * @param mac_addr 回连设备蓝牙地址
+    */
+    bt_cmd_prepare(USER_CTRL_START_CONNEC_VIA_ADDR, 6, mac_addr);
+
+    /**
+    * @brief 取消回连设备函数调用
+    *
+    * @param USER_CTRL_PAGE_CANCEL 取消回连设备命令
+    */
+    bt_cmd_prepare(USER_CTRL_PAGE_CANCEL, 0, NULL);
+
+
+蓝牙的连接消息
+^^^^^^^^^^^^^
+
+.. code-block:: c
+
+    BT_STATUS_INIT_OK,          /*初始化完成*/
+    BT_STATUS_FIRST_CONNECTED,        /*连接成功*/
+    BT_STATUS_SECOND_CONNECTED,        /*连接成功*/
+    BT_STATUS_FIRST_DISCONNECT,       /*断开连接*/
+    BT_STATUS_SECOND_DISCONNECT,        /*断开连接*/
+ 

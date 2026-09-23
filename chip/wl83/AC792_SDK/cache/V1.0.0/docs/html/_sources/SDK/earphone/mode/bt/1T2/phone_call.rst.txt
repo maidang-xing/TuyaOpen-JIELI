@@ -1,0 +1,344 @@
+蓝牙通话
+##############
+
+eSCO链路概念
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+* eSCO（Extended Synchronous Connection-Oriented link，扩展的同步面向连接链路）是蓝牙协议中专门为优化语音通话等实时音频传输而设计的一种数据链路类型。它在传统 SCO 链路的基础上，增加了重传机制和更灵活的时序参数，从而在保证低延迟的同时，显著提高了通话的语音质量和可靠性。
+* 作用：传输通话上下行音频数据，传输带内铃声。
+* 创建时机：打电话、来电播手机铃声、iPhone唤起Siri时等。
+* 编解码器：mSBC等。
+* 一次只能与一台手机存在一条esco链路。即一次只能存在一个手机的通话，或者来电铃声只能播一台手机的手机铃声另外一台手机的来电铃声只能使用本地铃声。
+
+.. tip::
+    代码中，来电/去电消息与esco链路创建是两回事，有来电去电消息的时候，esco链路不一定创建了；但是通话中，esco链路必然已经创建。
+
+HFP协议简介
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+* 目的：专门用于蓝牙语音通话和控制。如接通来电、挂断电话、回拨、增加音量、减少音量等见下面：《通话按键相关命令》章节。
+* 工作方式：在手机和免提设备之间建立双向、低带宽的音频链路和控制信道。
+* 与蓝牙播歌区别：听音乐用A2DP，打电话则主要用HFP，两者是不同的协议。
+
+铃声概念
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+* 带内铃声：即手机铃声，呼叫电话时（未接通）手机会与蓝牙设备创建esco链路，通过esco来传输手机的呼叫铃声。
+* 带外铃声：即本地铃声，呼叫电话时（未接通）如果手机不支持带内铃声或者esco链路已经被占用了，则蓝牙设备会设计为播放本地铃声文件。
+
+通话常见流程
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   1. 来电铃声叠加，主要是在tws_phone_call.c/phone_call.c中的static int bt_phone_status_event_handler(int *msg)，处理设备A和设备B之间的铃声叠加。
+   2. 通话抢占通话，主要是在dual_phone_call.c中的void bt_dual_phone_call_msg_handler(int *msg);中，收到设备A的电话相关的蓝牙事件，判断设备B的电话状态实现抢占策略。
+   3. 优先级：通话中 > 去电 > 来电 > 播歌。
+   4. 本质就是只允许一条通话esco链路，两台手机都打电话就要根据业务需求踢掉指定的另一台。
+
+`````````````````````````````````````````````````
+通话相关文件
+`````````````````````````````````````````````````
+
+.. code-block:: c
+
+   apps\earphone\mode\bt\tws_phone_call.c // （TWS耳机）
+   apps\earphone\mode\bt\phone_call.c // （头戴式耳机）
+   apps\earphone\mode\bt\dual_phone_call.c // （通话抢占）
+
+`````````````````````````````````````````````````
+通话相关消息
+`````````````````````````````````````````````````
+
+.. code-block:: c
+
+   typedef enum {
+      // ...
+      BT_STATUS_PHONE_INCOME,     /*来电*/            // 在这里处理本地来电铃声
+      BT_STATUS_PHONE_NUMBER,     /*来电话号码*/
+      // ...
+      BT_STATUS_PHONE_OUT,        /*打出电话*/
+      BT_STATUS_PHONE_ACTIVE,     /*接通电话*/        // 接通电话时收到，关闭本地来电铃声，同步通话音量。电脑录音或部分手机接通电话不会有这个消息。
+      BT_STATUS_PHONE_HANGUP,     /*挂断电话*/        // 如果有另一个来电，则需要处理来电铃声
+      // ...
+      BT_STATUS_LAST_CALL_TYPE_CHANGE,    /*最后拨打电话的类型，只区分打入和打出两种状态*///23
+      // ...
+      BT_STATUS_CALL_VOL_CHANGE,     /*通话过程中设置音量会产生这个状态变化*/
+      BT_STATUS_SCO_STATUS_CHANGE,    /*当esco/sco连接或者断开时会产生这个状态变化*/ // 在这里开关音频流的编解码
+      // ...
+      BT_STATUS_INBAND_RINGTONE,
+      // ...
+      BT_STATUS_SIRI_OPEN,             // Siri开启
+      BT_STATUS_SIRI_CLOSE,            // Siri关闭
+      // ...
+      BT_STATUS_SCO_CONNECTION_REQ,    // sco链路创建
+      BT_STATUS_SCO_DISCON,            // sco链路断开
+      // ...
+      BT_STATUS_PHONE_NAME,   /*获取来电号码name*/
+      // ...
+   } STATUS_FOR_USER;
+
+`````````````````````````````````````````````````
+通话相关状态
+`````````````````````````````````````````````````
+
+.. code-block:: c
+
+   typedef enum {
+      BT_ESCO_STATUS_CLOSE = 0,
+      BT_ESCO_STATUS_OPEN,
+   } BT_ESCO_STATE;  //esco状态
+
+   typedef enum {
+      BT_CALL_BATTERY_CHG = 0, //电池电量改变
+      BT_CALL_SIGNAL_CHG,      //网络信号改变
+      BT_CALL_INCOMING,   //电话打入
+      BT_CALL_OUTGOING,   //电话打出
+      BT_CALL_ACTIVE,     //接通电话
+      BT_CALL_HANGUP,      //电话挂断
+      BT_CALL_ALERT,       //远端reach
+      BT_SIRI_STATE,       //SIRI状态
+      BT_CALL_VOL_CHANGED,
+   } BT_CALL_IND_STA;
+
+`````````````````````````````````````````````````
+来电铃声叠加流程分解
+`````````````````````````````````````````````````
+
+1. 先后来电:
+
+.. figure:: image/先后来电.png
+
+2. 通话中来电
+
+.. figure:: image/通话中来电.png
+
+3. 先来电再去电
+
+.. figure:: image/先来电再去电.png
+
+4. 来电接听
+
+.. figure:: image/来电接听.png
+
+5. 通话挂断
+
+.. figure:: image/通话挂断.png
+
+`````````````````````````````````````````````````
+通话相关流程
+`````````````````````````````````````````````````
+
+1. 先来电 > 后来电
+
+   - 设备A(支持带内铃声)来电播带内铃声，设备B(支持带内铃声)来电，设备B断开esco，叠加本地铃声；
+   - 设备A(支持带内铃声)来电播带内铃声，设备B(不支持带内铃声)来电，叠加本地铃声；
+   - 设备A(不支持带内铃声)来电播本地铃声，设备B(支持带内铃声)来电，叠加带内铃声；
+   - 设备A(不支持带内铃声)来电播本地铃声，设备B(不支持带内铃声)来电，播本地铃声；
+
+2. 先来电 < 后通话
+   
+   - 两个设备都在来电状态，接听其中一个，另一个断开esco，转为本地铃声与通话声音叠加；
+
+3. 先去电 > 后来电
+
+   -  设备A去电，设备B(支持 or 不支持带内铃声)来电，设备B断开esco，叠加本地铃声；
+
+4. 先来电 < 后去电   
+
+   - 设备A(支持带内铃声)来电，设备B去电，设备A断开esco，无论设备A来电铃声是带内或是本地，都转为本地铃声，与设备B去电声音叠加；
+
+5. 先通话 > 后来电
+   
+   - 设备A通话中，设备B(支持带内铃声)来电，设备B断开esco，叠加本地铃声，接听设备B，通话声音用设备输出，不由耳机输出。
+
+6. 挂断恢复来电铃声
+   
+   - 设备A通话中，设备B来电中(本地铃声)，挂断设备A，先停设备B本地铃声，设备A断开esco，再恢复设备B铃声
+
+以上1-5点详细见：dual_phone_call.c中的void bt_dual_phone_call_msg_handler(int *msg);函数的处理，第6点详细见int bt_phone_hangup(u8 *bt_addr);函数。
+
+`````````````````````````````````````````````````
+通话抢占功能流程图
+`````````````````````````````````````````````````
+
+优先级：通话中>去电>来电>播歌
+
+.. figure:: image/通话和通话抢占.png
+
+`````````````````````````````````````````````````
+通话消息处理相关函数
+`````````````````````````````````````````````````
+
+.. code-block:: c
+
+   /**
+   * @brief 来电、去电、esco连接断开等事件响应处理，然后发送CMD_PHONE_INCOME等命令
+   * 注：该函数的实现请参考耳机SDK的
+   *
+   * @param msg 蓝牙事件消息
+   */
+   static int bt_phone_status_event_handler(int *msg);
+
+   /**
+   * @brief 一拖二时，电话相关蓝牙事件消息处理函数 包含通话和通话的抢占
+   * 注：如果通话抢占在应用层3秒内没有被处理，蓝牙底层会使用最新的通话链路
+   * 注：该函数的实现请参考耳机SDK的
+   *
+   * @param msg 蓝牙事件消息
+   */
+   void bt_dual_phone_call_msg_handler(int *msg);
+   
+   /**
+   * @brief 来电铃声处理流程,由于加了来电铃声叠加，
+   * 这里只处理第一台手机来电(记录第一台手机的地址，带内还是本地铃声，播放铃声等)，
+   * 第二台手机来电交给bt_phone_outband_ring()做
+   *
+   * @param bt_addr 来电设备蓝牙地址
+   */
+   int bt_phone_income(u8 after_conn, u8 *bt_addr);
+
+   /**
+   * @brief 挂断处理,如果另一台手机是来电状态，就需要恢复播放来电手机的铃声
+   *
+   * @param bt_addr 挂断的设备蓝牙地址
+   */
+   int bt_phone_hangup(u8 *bt_addr);
+
+   /**
+   * @brief 获取已经连接的蓝牙设备
+   *
+   * @param addr_a 设备A地址
+   * @param device_a 设备A
+   * @param device_b 设备B
+   * @param device_c 设备C
+   */
+   void bt_get_btstack_device(u8 *addr_a, void **device_a, void **device_b);
+   void bt_get_btstack_device3(u8 *addr_a, void **device_a, void **device_b, void **device_c);
+
+   /**
+   * @brief 获取蓝牙设备的蓝牙地址
+   *
+   * @param device 设备
+   * @return 设备地址
+   */
+   u8 *btstack_get_device_mac_addr(void *device);
+
+   /**
+   * @brief 获取蓝牙设备的通话状态
+   *
+   * @param device 设备
+   * @return 设备的通话状态，如：BT_CALL_HANGUP（默认）、BT_CALL_INCOMING、BT_CALL_OUTGOING、BT_CALL_ACTIVE
+   */
+   int btstack_bt_get_call_status(void *device);
+
+   /**
+   * @brief 获取蓝牙设备的通话状态
+   *
+   * @param addr 设备的蓝牙地址
+   * @return 设备的通话状态，如：BT_CALL_HANGUP（默认）、BT_CALL_INCOMING、BT_CALL_OUTGOING、BT_CALL_ACTIVE
+   */
+   u8 bt_get_call_status_for_addr(u8 *addr);
+
+   /**
+   * @brief 获取指定设备的esco状态
+   *
+   * @param device 设备
+   * @return BT_ESCO_STATUS_CLOSE:esco链路关闭; BT_ESCO_STATUS_OPEN:esco链路已建立
+   */
+   int btstack_get_call_esco_status(void *device);
+
+   /**
+   * @brief 下发指令到指定设备
+   *
+   * @param device 设备
+   * 比如btstack_device_control(device_a, USER_CTRL_DISCONN_SCO);让设备A断开esco链路
+   */
+   int btstack_device_control(void *device, int cmd);
+
+
+`````````````````````````````````````````````````
+通话音频流相关函数
+`````````````````````````````````````````````````
+
+.. code-block:: c
+
+   /**
+   * @brief 播放本地铃声
+   *
+   * @param file_name 本地铃声文件名
+   */
+   int play_ring_file_alone(const char *file_name);
+
+   /**
+   * @brief 关闭提示音与铃声
+   */
+   void tone_ring_player_stop();
+
+   /**
+   * @brief 设置通话音量
+   *
+   * @param APP_AUDIO_STATE_CALL 通话场景
+   * @param call_vol 通话音量
+   * @param fade 1:淡入淡出
+   */
+   app_audio_set_volume(APP_AUDIO_STATE_CALL, call_vol, 1);
+
+   /**
+   * @brief esco链路创建后，开启通话的解码器
+   *
+   * @param bt_addr 通话设备蓝牙地址
+   */
+   int esco_player_open(u8 *bt_addr);
+
+   /**
+   * @brief esco链路创建后，开启通话的编码器
+   *
+   * @param link_type 填：COMMON_SCO
+   * @param bt_addr 通话设备蓝牙地址
+   */
+   int esco_recoder_open(u8 link_type, void *bt_addr);
+
+   /**
+   * @brief 关闭通话的解码器
+   */
+   void esco_player_close();
+
+   /**
+   * @brief 关闭通话的编码器
+   */
+   void esco_recoder_close();
+
+   /**
+   * @brief ESCO解码器状态
+   *
+   * @param btaddr 目标设备蓝牙地址
+   * 
+   * @result 是否正在解码 
+   */
+   int esco_player_is_playing(u8 *btaddr);
+
+`````````````````````````````````````````````````
+通话音频流程图
+`````````````````````````````````````````````````
+
+.. figure:: image/phonecall_jlstream.png
+
+`````````````````````````````````````````````````
+通话按键相关命令
+`````````````````````````````````````````````````
+
+详细见：APP_MSG_CALL_ANSWER、APP_MSG_CALL_HANGUP、APP_MSG_CALL_LAST_NO、APP_MSG_VOL_UP、APP_MSG_VOL_DOWN等按键消息。
+
+.. code-block:: c
+
+   // APP_MSG_CALL_ANSWER，接通电话
+   bt_cmd_prepare(USER_CTRL_HFP_CALL_ANSWER, 0, NULL);
+
+   // APP_MSG_CALL_HANGUP，挂断电话
+   bt_cmd_prepare(USER_CTRL_HFP_CALL_HANGUP, 0, NULL);
+   
+   // APP_MSG_CALL_LAST_NO，回拨
+   bt_cmd_prepare(USER_CTRL_HFP_CALL_LAST_NO, 0, NULL);
+
+   // APP_MSG_VOL_UP，通话音量增
+   bt_cmd_prepare(USER_CTRL_HFP_CALL_VOLUME_UP, 0, NULL);
+
+   // APP_MSG_VOL_DOWN，通话音量减
+   bt_cmd_prepare(USER_CTRL_HFP_CALL_VOLUME_DOWN, 0, NULL);
+          
