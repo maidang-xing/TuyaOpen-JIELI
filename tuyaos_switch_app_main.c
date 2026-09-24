@@ -15,6 +15,19 @@ const struct task_info task_info_table[] = {
     { "sys_event", 29, 512, 0 },
     { "systimer", 14, 256, 0 },
     { "sys_timer", 9, 512, 128 },
+    /* Match the vendor task table; Wi-Fi scan/association runs on tasklet. */
+    { "tcpip_thread", 16, 800, 0 },
+#if defined(TCFG_WIFI_ENABLE) && TCFG_WIFI_ENABLE
+    { "tasklet", 10, 1400, 0 },
+    { "RtmpMlmeTask", 17, 900, 0 },
+    { "RtmpCmdQTask", 17, 300, 0 },
+    { "wl_rx_irq_thread", 5, 256, 0 },
+#elif defined(CONFIG_WIFI_ENABLE)
+    { "tasklet", 10, 1400, 0 },
+    { "RtmpMlmeTask", 17, 700, 0 },
+    { "RtmpCmdQTask", 17, 300, 0 },
+    { "wl_rx_irq_thread", 5, 256, 0 },
+#endif
 #ifdef CONFIG_BT_ENABLE
 #if CPU_CORE_NUM > 1
     { "#C0btctrler", 19, 512, 384 },

@@ -14,6 +14,14 @@
 static WIFI_EVENT_CB s_wifi_event_cb;
 static WF_WK_MD_E s_wifi_mode = WWM_STATION;
 
+/* Keep the native association and DHCP timeouts below Tuya netmgr's 20s retry. */
+#define JIELI_WIFI_STA_CONNECT_TIMEOUT_SEC 10
+#define JIELI_WIFI_DHCP_TIMEOUT_SEC 5
+
+/* wifi_connect.h is not included here because its wifi_def.h uses C++ enum
+ * syntax, so declare this C-compatible SDK entry point directly. */
+extern void wifi_set_sta_connect_timeout(int sec);
+
 /* Both SDKs' wifi_def.h headers use C++-only enum underlying-type syntax.
  * Keep the ABI declarations C-compatible, while preserving the per-chip
  * wifi_sta_connect_state values (WL83 inserts CONNECTING after DISCONNECT). */
@@ -189,10 +197,13 @@ static int jieli_wifi_event_cb(void *priv, int event)
     case JIELI_WIFI_MODULE_INIT:
         /* tkl_wifi_init() defers the native start, so apply the vendor-module
          * knobs here, on the first real wifi_on() from start_ap/station_connect.
-         * Keep connect non-blocking and the best-SSID auto reconnect off so
+        * Keep connect non-blocking and the best-SSID auto reconnect off so
          * provisioning credentials are the only thing the module dials. */
         wifi_set_connect_sta_block(0);
         wifi_set_sta_connect_best_ssid(0);
+        /* Bound association + DHCP failure reporting before Tuya's 20s retry. */
+        wifi_set_sta_connect_timeout(JIELI_WIFI_STA_CONNECT_TIMEOUT_SEC);
+        lwip_set_dhcp_timeout(JIELI_WIFI_DHCP_TIMEOUT_SEC);
         break;
     case JIELI_WIFI_AP_START:
         /* The AP transition is asynchronous and may restore STA auto-connect. */
@@ -593,10 +604,10 @@ static void jieli_sta_connect_work(const jieli_sta_work_t *work)
         result = wifi_enter_sta_mode(s_sta_ssid, s_sta_passwd);
         printf("[JIELI][WIFI] station connect ssid_len:%u passwd_len:%u native_result:%d\n",
                (unsigned int)strlen(s_sta_ssid), (unsigned int)strlen(s_sta_passwd), result);
-        if (result != 0 && s_wifi_event_cb != NULL) {
-            /* A rejected association request produces no vendor event. */
-            s_wifi_event_cb(WFE_CONNECT_FAILED, NULL);
-        }
+        /* STA connect is configured as asynchronous. The SDK's return value
+         * is not the association result; native Wi-Fi events report success
+         * or failure. Let netmgr's connection timeout handle a request that
+         * never produces an event instead of forcing an immediate retry. */
     }
 }
 
@@ -638,6 +649,8 @@ OPERATE_RET tkl_wifi_station_connect(const int8_t *ssid, const int8_t *passwd)
 {
     jieli_sta_work_t work = {0};
     OPERATE_RET rt;
+    size_t ssid_len;
+    size_t passwd_len;
 
     if (!ssid || !passwd) {
         return OPRT_INVALID_PARM;
@@ -645,12 +658,21 @@ OPERATE_RET tkl_wifi_station_connect(const int8_t *ssid, const int8_t *passwd)
     if (s_sta_work_queue == NULL) {
         return OPRT_COM_ERROR;
     }
-    strncpy(work.ssid, (const char *)ssid, sizeof(work.ssid) - 1);
-    strncpy(work.passwd, (const char *)passwd, sizeof(work.passwd) - 1);
+
+    ssid_len = strnlen((const char *)ssid, sizeof(work.ssid));
+    passwd_len = strnlen((const char *)passwd, sizeof(work.passwd));
+    if (ssid_len == 0 || ssid_len > WIFI_SSID_LEN || passwd_len > WIFI_PASSWD_LEN) {
+        printf("[JIELI][WIFI] station connect rejected ssid_len:%u passwd_len:%u\n",
+               (unsigned int)ssid_len, (unsigned int)passwd_len);
+        return OPRT_INVALID_PARM;
+    }
+    memcpy(work.ssid, ssid, ssid_len);
+    memcpy(work.passwd, passwd, passwd_len);
 
     s_wifi_mode = WWM_STATION;
     rt = tkl_queue_post(s_sta_work_queue, &work, 0);
-    printf("[JIELI][WIFI] station connect queued ssid_len:%u rt:%d\n", (unsigned int)strlen(work.ssid), rt);
+    printf("[JIELI][WIFI] station connect queued ssid_len:%u passwd_len:%u rt:%d\n",
+           (unsigned int)ssid_len, (unsigned int)passwd_len, rt);
     if (rt != OPRT_OK) {
         return rt;
     }

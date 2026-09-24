@@ -33,7 +33,9 @@ OPERATE_RET tkl_queue_post(const TKL_QUEUE_HANDLE queue, void *data, uint32_t ti
         return OPRT_MALLOC_FAILED;
     }
     memcpy(copy, data, jieli_queue->message_size);
-    result = os_q_post_to_back(&jieli_queue->queue, &copy,
+    /* Jieli queue APIs enqueue the message pointer value; only os_q_pend
+     * receives the address of a pointer as its output parameter. */
+    result = os_q_post_to_back(&jieli_queue->queue, copy,
                                timeout == 0xFFFFFFFFu ? -1 : (int)timeout);
     if (result != 0) {
         free(copy);
@@ -63,6 +65,15 @@ void tkl_queue_free(const TKL_QUEUE_HANDLE queue)
 {
     if (queue != NULL) {
         JIELI_TKL_QUEUE *jieli_queue = (JIELI_TKL_QUEUE *)queue;
+        void *copy = NULL;
+
+        /* The queue owns a heap copy for each posted message. Drain pending
+         * messages before deleting the OS queue so their allocations are not
+         * leaked. Callers must stop queue users before freeing the handle. */
+        while (os_q_accept(&jieli_queue->queue, &copy) == 0) {
+            free(copy);
+            copy = NULL;
+        }
         (void)os_q_del(&jieli_queue->queue, OS_DEL_ALWAYS);
         free(jieli_queue);
     }
