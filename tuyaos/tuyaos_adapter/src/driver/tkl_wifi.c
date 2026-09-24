@@ -593,10 +593,10 @@ static void jieli_sta_connect_work(const jieli_sta_work_t *work)
         result = wifi_enter_sta_mode(s_sta_ssid, s_sta_passwd);
         printf("[JIELI][WIFI] station connect ssid_len:%u passwd_len:%u native_result:%d\n",
                (unsigned int)strlen(s_sta_ssid), (unsigned int)strlen(s_sta_passwd), result);
-        if (result != 0 && s_wifi_event_cb != NULL) {
-            /* A rejected association request produces no vendor event. */
-            s_wifi_event_cb(WFE_CONNECT_FAILED, NULL);
-        }
+        /* STA connect is configured as asynchronous. The SDK's return value
+         * is not the association result; native Wi-Fi events report success
+         * or failure. Let netmgr's connection timeout handle a request that
+         * never produces an event instead of forcing an immediate retry. */
     }
 }
 
