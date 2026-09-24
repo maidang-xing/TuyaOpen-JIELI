@@ -65,6 +65,15 @@ void tkl_queue_free(const TKL_QUEUE_HANDLE queue)
 {
     if (queue != NULL) {
         JIELI_TKL_QUEUE *jieli_queue = (JIELI_TKL_QUEUE *)queue;
+        void *copy = NULL;
+
+        /* The queue owns a heap copy for each posted message. Drain pending
+         * messages before deleting the OS queue so their allocations are not
+         * leaked. Callers must stop queue users before freeing the handle. */
+        while (os_q_accept(&jieli_queue->queue, &copy) == 0) {
+            free(copy);
+            copy = NULL;
+        }
         (void)os_q_del(&jieli_queue->queue, OS_DEL_ALWAYS);
         free(jieli_queue);
     }
