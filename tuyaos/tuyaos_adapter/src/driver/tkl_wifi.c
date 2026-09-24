@@ -638,6 +638,8 @@ OPERATE_RET tkl_wifi_station_connect(const int8_t *ssid, const int8_t *passwd)
 {
     jieli_sta_work_t work = {0};
     OPERATE_RET rt;
+    size_t ssid_len;
+    size_t passwd_len;
 
     if (!ssid || !passwd) {
         return OPRT_INVALID_PARM;
@@ -645,12 +647,21 @@ OPERATE_RET tkl_wifi_station_connect(const int8_t *ssid, const int8_t *passwd)
     if (s_sta_work_queue == NULL) {
         return OPRT_COM_ERROR;
     }
-    strncpy(work.ssid, (const char *)ssid, sizeof(work.ssid) - 1);
-    strncpy(work.passwd, (const char *)passwd, sizeof(work.passwd) - 1);
+
+    ssid_len = strnlen((const char *)ssid, sizeof(work.ssid));
+    passwd_len = strnlen((const char *)passwd, sizeof(work.passwd));
+    if (ssid_len == 0 || ssid_len > WIFI_SSID_LEN || passwd_len > WIFI_PASSWD_LEN) {
+        printf("[JIELI][WIFI] station connect rejected ssid_len:%u passwd_len:%u\n",
+               (unsigned int)ssid_len, (unsigned int)passwd_len);
+        return OPRT_INVALID_PARM;
+    }
+    memcpy(work.ssid, ssid, ssid_len);
+    memcpy(work.passwd, passwd, passwd_len);
 
     s_wifi_mode = WWM_STATION;
     rt = tkl_queue_post(s_sta_work_queue, &work, 0);
-    printf("[JIELI][WIFI] station connect queued ssid_len:%u rt:%d\n", (unsigned int)strlen(work.ssid), rt);
+    printf("[JIELI][WIFI] station connect queued ssid_len:%u passwd_len:%u rt:%d\n",
+           (unsigned int)ssid_len, (unsigned int)passwd_len, rt);
     if (rt != OPRT_OK) {
         return rt;
     }
