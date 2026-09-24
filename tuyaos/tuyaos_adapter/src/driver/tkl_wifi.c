@@ -14,6 +14,13 @@
 static WIFI_EVENT_CB s_wifi_event_cb;
 static WF_WK_MD_E s_wifi_mode = WWM_STATION;
 
+/* Tuya netmgr retries after 20 seconds without a Wi-Fi event. */
+#define JIELI_WIFI_STA_CONNECT_TIMEOUT_SEC 15
+
+/* wifi_connect.h is not included here because its wifi_def.h uses C++ enum
+ * syntax, so declare this C-compatible SDK entry point directly. */
+extern void wifi_set_sta_connect_timeout(int sec);
+
 /* Both SDKs' wifi_def.h headers use C++-only enum underlying-type syntax.
  * Keep the ABI declarations C-compatible, while preserving the per-chip
  * wifi_sta_connect_state values (WL83 inserts CONNECTING after DISCONNECT). */
@@ -189,10 +196,12 @@ static int jieli_wifi_event_cb(void *priv, int event)
     case JIELI_WIFI_MODULE_INIT:
         /* tkl_wifi_init() defers the native start, so apply the vendor-module
          * knobs here, on the first real wifi_on() from start_ap/station_connect.
-         * Keep connect non-blocking and the best-SSID auto reconnect off so
+        * Keep connect non-blocking and the best-SSID auto reconnect off so
          * provisioning credentials are the only thing the module dials. */
         wifi_set_connect_sta_block(0);
         wifi_set_sta_connect_best_ssid(0);
+        /* Let the native timeout event arrive before Tuya netmgr retries. */
+        wifi_set_sta_connect_timeout(JIELI_WIFI_STA_CONNECT_TIMEOUT_SEC);
         break;
     case JIELI_WIFI_AP_START:
         /* The AP transition is asynchronous and may restore STA auto-connect. */
