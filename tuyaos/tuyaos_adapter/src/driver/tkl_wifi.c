@@ -2,11 +2,11 @@
 #include "tkl_memory.h"
 #include "tkl_system.h"
 #include "tkl_thread.h"
+#include "tkl_queue.h"
 #include "tuya_error_code.h"
 #include "tkl_jieli_chip_mac.h"
 
 #include "lwip/port/lwip.h"
-#include "system/os/os_api.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -572,86 +572,13 @@ typedef struct {
 
 #define JIELI_WIFI_WORK_QUEUE_LEN 4
 
-/* Keep request payloads in fixed storage instead of freeing heap copies in
- * the worker task; the WL82 SDK faults in that allocator path. */
-static OS_MUTEX s_sta_work_mutex;
-static OS_SEM s_sta_work_sem;
-static jieli_sta_work_t s_sta_work_items[JIELI_WIFI_WORK_QUEUE_LEN];
-static uint8_t s_sta_work_head;
-static uint8_t s_sta_work_tail;
-static uint8_t s_sta_work_count;
-static uint8_t s_sta_work_mutex_ready;
-static uint8_t s_sta_work_sem_ready;
+static TKL_QUEUE_HANDLE s_sta_work_queue;
 static TKL_THREAD_HANDLE s_sta_worker_thread;
 /* The vendor Wi-Fi connect path may retain these pointers after
  * wifi_enter_sta_mode() returns. Keep the credentials in static storage, as
  * the reference ipc_ac7916a adapter does with jl_on_ssid/jl_on_password. */
 static char s_sta_ssid[WIFI_SSID_LEN + 1];
 static char s_sta_passwd[WIFI_PASSWD_LEN + 1];
-
-static OPERATE_RET jieli_wifi_work_queue_init(void)
-{
-    if (!s_sta_work_mutex_ready) {
-        if (os_mutex_create(&s_sta_work_mutex) != 0) {
-            return OPRT_COM_ERROR;
-        }
-        s_sta_work_mutex_ready = 1;
-    }
-    if (!s_sta_work_sem_ready) {
-        if (os_sem_create(&s_sta_work_sem, 0) != 0) {
-            return OPRT_COM_ERROR;
-        }
-        s_sta_work_sem_ready = 1;
-    }
-    return OPRT_OK;
-}
-
-static OPERATE_RET jieli_wifi_work_queue_post(const jieli_sta_work_t *work)
-{
-    uint8_t next_tail;
-    if (work == NULL || !s_sta_work_mutex_ready || !s_sta_work_sem_ready) {
-        return OPRT_INVALID_PARM;
-    }
-    if (os_mutex_pend(&s_sta_work_mutex, 0) != 0) {
-        return OPRT_OS_ADAPTER_MUTEX_LOCK_FAILED;
-    }
-    if (s_sta_work_count >= JIELI_WIFI_WORK_QUEUE_LEN) {
-        (void)os_mutex_post(&s_sta_work_mutex);
-        return OPRT_OS_ADAPTER_QUEUE_SEND_FAIL;
-    }
-
-    memcpy(&s_sta_work_items[s_sta_work_tail], work, sizeof(*work));
-    next_tail = (uint8_t)((s_sta_work_tail + 1u) % JIELI_WIFI_WORK_QUEUE_LEN);
-    s_sta_work_tail = next_tail;
-    ++s_sta_work_count;
-
-    /* The semaphore is only a wakeup signal. If it is already signaled,
-     * the worker will drain this request together with the pending ones. */
-    (void)os_sem_post(&s_sta_work_sem);
-    (void)os_mutex_post(&s_sta_work_mutex);
-    return OPRT_OK;
-}
-
-static OPERATE_RET jieli_wifi_work_queue_fetch(jieli_sta_work_t *work)
-{
-    if (work == NULL || !s_sta_work_mutex_ready || !s_sta_work_sem_ready) {
-        return OPRT_INVALID_PARM;
-    }
-    if (os_mutex_pend(&s_sta_work_mutex, 0) != 0) {
-        (void)os_sem_post(&s_sta_work_sem);
-        return OPRT_OS_ADAPTER_MUTEX_LOCK_FAILED;
-    }
-    if (s_sta_work_count == 0) {
-        (void)os_mutex_post(&s_sta_work_mutex);
-        return OPRT_OS_ADAPTER_QUEUE_RECV_FAIL;
-    }
-
-    memcpy(work, &s_sta_work_items[s_sta_work_head], sizeof(*work));
-    s_sta_work_head = (uint8_t)((s_sta_work_head + 1u) % JIELI_WIFI_WORK_QUEUE_LEN);
-    --s_sta_work_count;
-    (void)os_mutex_post(&s_sta_work_mutex);
-    return OPRT_OK;
-}
 
 static void jieli_sta_connect_work(const jieli_sta_work_t *work)
 {
@@ -726,19 +653,16 @@ static void jieli_sta_connect_work(const jieli_sta_work_t *work)
 static void jieli_wifi_worker(void *arg)
 {
     jieli_sta_work_t work;
-    OPERATE_RET rt;
 
     (void)arg;
     for (;;) {
-        if (os_sem_pend(&s_sta_work_sem, 0) != 0) {
-            continue;
-        }
-        while ((rt = jieli_wifi_work_queue_fetch(&work)) == OPRT_OK) {
-            printf("[JIELI][WIFI][TRACE] stage=work_dequeue_done\n");
+        /* Bounded poll. This was originally a workaround for tkl_queue_fetch()
+         * treating a 0 timeout as "do not wait" on one SDK; the fetch path is
+         * correct now, but the poll is kept so the worker's wakeup does not
+         * depend on os_q_pend()'s vendor-specific blocking behaviour. */
+        if (tkl_queue_fetch(s_sta_work_queue, &work, 100) == OPRT_OK) {
+            printf("[JIELI][WIFI][TRACE] stage=queue_fetch_done\n");
             jieli_sta_connect_work(&work);
-        }
-        if (rt == OPRT_OS_ADAPTER_MUTEX_LOCK_FAILED) {
-            os_time_dly(1);
         }
     }
 }
@@ -747,9 +671,11 @@ static OPERATE_RET jieli_wifi_worker_start(void)
 {
     OPERATE_RET rt;
 
-    rt = jieli_wifi_work_queue_init();
-    if (rt != OPRT_OK) {
-        return rt;
+    if (s_sta_work_queue == NULL) {
+        rt = tkl_queue_create_init(&s_sta_work_queue, sizeof(jieli_sta_work_t), JIELI_WIFI_WORK_QUEUE_LEN);
+        if (rt != OPRT_OK) {
+            return rt;
+        }
     }
     if (s_sta_worker_thread == NULL) {
         rt = tkl_thread_create(&s_sta_worker_thread, "tuya_wifi_sta", 6144, 3, jieli_wifi_worker, NULL);
@@ -771,7 +697,7 @@ OPERATE_RET tkl_wifi_station_connect(const int8_t *ssid, const int8_t *passwd)
     if (!ssid || !passwd) {
         return OPRT_INVALID_PARM;
     }
-    if (s_sta_worker_thread == NULL) {
+    if (s_sta_work_queue == NULL) {
         return OPRT_COM_ERROR;
     }
 
@@ -786,7 +712,7 @@ OPERATE_RET tkl_wifi_station_connect(const int8_t *ssid, const int8_t *passwd)
     memcpy(work.passwd, passwd, passwd_len);
 
     s_wifi_mode = WWM_STATION;
-    rt = jieli_wifi_work_queue_post(&work);
+    rt = tkl_queue_post(s_sta_work_queue, &work, 0);
     printf("[JIELI][WIFI] station connect queued ssid_len:%u passwd_len:%u rt:%d\n",
            (unsigned int)ssid_len, (unsigned int)passwd_len, rt);
     if (rt != OPRT_OK) {
