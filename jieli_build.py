@@ -11,11 +11,17 @@ import os
 import re
 import shutil
 import subprocess
+import urllib.error
+import urllib.request
 from pathlib import Path
 from typing import Mapping, Optional
 
 
 MODULE_ROOT = Path(__file__).resolve().parent
+WINDOWS_TOOLCHAIN_INSTALLER_URL = (
+    "https://jl-update.oss-cn-shenzhen.aliyuncs.com/2.5.2.exe"
+)
+WINDOWS_TOOLCHAIN_INSTALLER_NAME = "jieli-windows-toolchains-2.5.2.exe"
 
 
 class JielichipConfig:
@@ -465,6 +471,73 @@ def resolve_tool_dir(
         "Jieli pi32v2 toolchain not found; set JIELI_TOOL_DIR to pi32v2/bin. "
         f"Required tools: {', '.join(required)}. Searched: {searched}"
     )
+
+
+def download_windows_toolchain_installer(
+    module_root: Path = MODULE_ROOT,
+) -> Path:
+    """Download the official Windows installer when the compiler is missing."""
+    if os.name != "nt":
+        raise BuildError("automatic Jieli toolchain download is only available on Windows")
+
+    download_dir = module_root / ".tools"
+    installer = download_dir / WINDOWS_TOOLCHAIN_INSTALLER_NAME
+    partial = installer.with_suffix(installer.suffix + ".part")
+    download_dir.mkdir(parents=True, exist_ok=True)
+
+    if installer.is_file():
+        try:
+            with installer.open("rb") as stream:
+                if installer.stat().st_size >= 1024 and stream.read(2) == b"MZ":
+                    return installer
+        except OSError:
+            pass
+        installer.unlink(missing_ok=True)
+
+    request = urllib.request.Request(
+        WINDOWS_TOOLCHAIN_INSTALLER_URL,
+        headers={"User-Agent": "TuyaOpen-JieLi-build/1.0"},
+    )
+    print(
+        "[JIELI] Downloading Windows toolchain installer from "
+        f"{WINDOWS_TOOLCHAIN_INSTALLER_URL}"
+    )
+    downloaded = 0
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response, partial.open("wb") as output:
+            try:
+                content_length = int(response.headers.get("Content-Length", "0") or "0")
+            except ValueError as exc:
+                raise BuildError("toolchain installer response has an invalid Content-Length") from exc
+            while True:
+                chunk = response.read(1024 * 1024)
+                if not chunk:
+                    break
+                output.write(chunk)
+                downloaded += len(chunk)
+                if content_length:
+                    print(
+                        f"[JIELI] Downloaded {downloaded / (1024 * 1024):.1f} / "
+                        f"{content_length / (1024 * 1024):.1f} MiB",
+                        end="\r",
+                        flush=True,
+                    )
+        if content_length and downloaded != content_length:
+            raise BuildError(
+                f"incomplete toolchain installer download ({downloaded} of {content_length} bytes)"
+            )
+        with partial.open("rb") as stream:
+            if partial.stat().st_size < 1024 or stream.read(2) != b"MZ":
+                raise BuildError("downloaded toolchain installer is not a valid Windows executable")
+        partial.replace(installer)
+    except (urllib.error.URLError, OSError, TimeoutError, BuildError) as exc:
+        partial.unlink(missing_ok=True)
+        if isinstance(exc, BuildError):
+            raise
+        raise BuildError(f"failed to download Jieli toolchain installer: {exc}") from exc
+
+    print()
+    return installer
 
 
 def build_make_command(sdk_root: Path, tool_dir: Path, jobs: int = 1) -> list[str]:
