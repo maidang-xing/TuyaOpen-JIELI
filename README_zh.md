@@ -54,6 +54,22 @@ tos.py monitor -p COM3 -b 115200
 
 AC792 bring-up 固件预期打印 `TuyaOpen Jieli AC792N_Develop_Board (wl83)` 和周期性的 `TuyaOpen Jieli UART heartbeat`。只有连接实板抓取到这些日志，才能确认硬件日志链路已跑通。
 
+## 已知限制
+
+**AC792N 当前不支持 WPA3。** 原因是在 STA 关联阶段 CPU1 的 MbedTLS 会触发故障，作为规避，
+AC792 SDK 源码中的 `CONFIG_WPA3_SUPPORT` 被置为 0：
+
+```c
+// chip/wl83/AC792_SDK/sdk/apps/common/net/wifi_conf.c
+const u8 CONFIG_WPA3_SUPPORT = 0;  // 原值为 1
+```
+
+影响范围：AC792 无法加入**仅支持 WPA3/SAE** 的 AP；WPA2 及以下不受影响。这是有意保留的临时规避，
+不是配置遗漏。恢复 WPA3 需要有一个仅支持 WPA3 的 AP 来复现该故障，先定位 CPU1 MbedTLS 路径，
+再把该值改回 1；在具备该验证条件之前不要改回。
+
+**两块板的 RAM 物理容量仍未在实板上完整验证**，证据与现状见上一节。
+
 ## 历史 AC7916A 工程
 
 `D:\\tuya_proj\\jieli\\ipc_ac7916a` 曾使用 AC7916A，映射到当前统一板名 `AC79_DevKitBoard`。项目保留用于历史参考，不作为当前调试工程；其中 UART2/PB6/115200 是历史工程配置。当前 AC79 固件使用 UART1/PB3/115200 输出日志，UART0/PA5-PA6/115200 承载 TAL CLI。AC792 使用 UART0，日志与 Tuya CLI 共用，PD1/PE11，115200 baud。
