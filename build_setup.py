@@ -9,6 +9,7 @@ import sys
 
 from jieli_build import (
     BuildError,
+    download_windows_toolchain_installer,
     resolve_chip,
     resolve_sdk_root,
     resolve_tool_dir,
@@ -26,9 +27,34 @@ def main(argv: list[str] | None = None) -> int:
         os.environ["JIELI_CHIP"] = chip_name
         chip = resolve_chip()
         sdk_root = resolve_sdk_root()
+    except BuildError as exc:
+        print(f"[JIELI] build setup failed: {exc}", file=sys.stderr)
+        return 1
+
+    try:
         tool_dir = resolve_tool_dir(sdk_root)
     except BuildError as exc:
         print(f"[JIELI] build setup failed: {exc}", file=sys.stderr)
+        if os.name == "nt":
+            try:
+                installer = download_windows_toolchain_installer()
+            except BuildError as download_error:
+                print(f"[JIELI] {download_error}", file=sys.stderr)
+            else:
+                print(f"[JIELI] Installer saved to: {installer}")
+                try:
+                    os.startfile(str(installer))
+                except OSError as launch_error:
+                    print(
+                        f"[JIELI] Could not start the toolchain installer: {launch_error}",
+                        file=sys.stderr,
+                    )
+                    print(f"[JIELI] Start this installer manually: {installer}")
+                else:
+                    print(
+                        "[JIELI] Complete the installer, then run `tos.py build` again. "
+                        "Toolchain installation is interactive."
+                    )
         return 1
 
     make = shutil.which("make")

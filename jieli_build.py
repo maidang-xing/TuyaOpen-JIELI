@@ -11,11 +11,17 @@ import os
 import re
 import shutil
 import subprocess
+import urllib.error
+import urllib.request
 from pathlib import Path
 from typing import Mapping, Optional
 
 
 MODULE_ROOT = Path(__file__).resolve().parent
+WINDOWS_TOOLCHAIN_INSTALLER_URL = (
+    "https://jl-update.oss-cn-shenzhen.aliyuncs.com/2.5.2.exe"
+)
+WINDOWS_TOOLCHAIN_INSTALLER_NAME = "jieli-windows-toolchains-2.5.2.exe"
 
 
 class JielichipConfig:
@@ -216,34 +222,65 @@ def configure_ac792_log_uart(board_header: Path, uart_port: int, baudrate: int) 
 
 
 def configure_service_uart(board_file: Path) -> None:
-    """Move Tuya logical UART0/CLI to UART2, separate from UART1/PB3 logs."""
+    """Route Tuya logical UART0/TAL CLI to AC79 hardware UART0 on PA5/PA6."""
     if not board_file.is_file():
         return
 
     content = board_file.read_text(encoding="utf-8")
-    begin = "UART2_PLATFORM_DATA_BEGIN(uart2_data)"
-    end = "UART2_PLATFORM_DATA_END();"
+    begin = "UART0_PLATFORM_DATA_BEGIN(uart0_data)"
+    end = "UART0_PLATFORM_DATA_END();"
     start = content.find(begin)
     finish = content.find(end, start) if start >= 0 else -1
-    if start < 0 or finish < 0:
-        raise BuildError(f"Jieli board file has no complete UART2 service block: {board_file}")
-    finish += len(end)
-    uart_block = content[start:finish]
-    replacements = (
-        (r"\.baudrate\s*=\s*\d+\s*,", ".baudrate = 115200,"),
-        (r"\.port\s*=\s*[^,]+,", ".port = PORTB_6_7,"),
-        (r"\.tx_pin\s*=\s*[^,]+,", ".tx_pin = IO_PORTB_06,"),
-        (r"\.rx_pin\s*=\s*[^,]+,", ".rx_pin = IO_PORTB_07,"),
-        (r"\.flags\s*=\s*[^,]+,", ".flags = 0,"),
-    )
-    for pattern, replacement in replacements:
-        uart_block, count = re.subn(pattern, replacement, uart_block, count=1)
-        if count != 1:
-            raise BuildError(f"AC79 UART2 service setting was not found in {board_file}")
-    content = content[:start] + uart_block + content[finish:]
+    if start < 0:
+        uart_block = (
+            "UART0_PLATFORM_DATA_BEGIN(uart0_data)\n"
+            "    .baudrate = 115200,\n"
+            "    .port = PORTA_5_6,\n"
+            "    .tx_pin = IO_PORTA_05,\n"
+            "    .rx_pin = IO_PORTA_06,\n"
+            "    .max_continue_recv_cnt = 1024,\n"
+            "    .idle_sys_clk_cnt = 500000,\n"
+            "    .clk_src = PLL_48M,\n"
+            "    .flags = 0,\n"
+            "UART0_PLATFORM_DATA_END();\n\n"
+        )
+        insertion = content.find("UART1_PLATFORM_DATA_BEGIN(uart1_data)")
+        if insertion < 0:
+            insertion = content.find("UART2_PLATFORM_DATA_BEGIN(uart2_data)")
+        if insertion < 0:
+            raise BuildError(f"Jieli board file has no UART insertion point: {board_file}")
+        content = content[:insertion] + uart_block + content[insertion:]
+    else:
+        if finish < 0:
+            raise BuildError(f"Jieli board file has an incomplete UART0 service block: {board_file}")
+        finish += len(end)
+        uart_block = content[start:finish]
+        replacements = (
+            (r"\.baudrate\s*=\s*\d+\s*,", ".baudrate = 115200,"),
+            (r"\.port\s*=\s*[^,]+,", ".port = PORTA_5_6,"),
+            (r"\.tx_pin\s*=\s*[^,]+,", ".tx_pin = IO_PORTA_05,"),
+            (r"\.rx_pin\s*=\s*[^,]+,", ".rx_pin = IO_PORTA_06,"),
+            (r"\.flags\s*=\s*[^,]+,", ".flags = 0,"),
+        )
+        for pattern, replacement in replacements:
+            uart_block, count = re.subn(pattern, replacement, uart_block, count=1)
+            if count != 1:
+                raise BuildError(f"AC79 UART0 service setting was not found in {board_file}")
+        content = content[:start] + uart_block + content[finish:]
 
-    if '{"uart2", &uart_dev_ops, (void *)&uart2_data },' not in content:
-        raise BuildError(f"Jieli board file has no uart2 service device entry: {board_file}")
+    uart0_registered = re.search(
+        r'\{\s*"uart0"\s*,\s*&uart_dev_ops\s*,\s*\(void\s*\*\)\s*&uart0_data\s*\}',
+        content,
+    )
+    if not uart0_registered:
+        device_table = "REGISTER_DEVICES(device_table) = {"
+        if device_table not in content:
+            raise BuildError(f"Jieli board file has no device table: {board_file}")
+        content = content.replace(
+            device_table,
+            device_table + '\n    {"uart0", &uart_dev_ops, (void *)&uart0_data },',
+            1,
+        )
 
     board_file.write_text(content, encoding="utf-8")
 
@@ -322,6 +359,26 @@ def configure_full_stack_app_config(app_config_file: Path) -> None:
     if insert_at < 0:
         raise BuildError(f"Jieli app_config.h has no final #endif: {app_config_file}")
     app_config_file.write_text(content[:insert_at] + config + content[insert_at:], encoding="utf-8")
+
+
+def configure_ac79_devkit_memory(app_config_file: Path) -> None:
+    """Use the AC79 DevKit reference memory map in the staging copy."""
+    if not app_config_file.is_file():
+        raise BuildError(f"Jieli app_config.h not found: {app_config_file}")
+
+    content = app_config_file.read_text(encoding="utf-8")
+    for macro, size_mib in (("__FLASH_SIZE__", 8), ("__SDRAM_SIZE__", 8)):
+        pattern = re.compile(rf"(?m)^([ \t]*#define[ \t]+{macro}[ \t]+)[^\r\n]*$")
+        content, count = pattern.subn(
+            lambda match: f"{match.group(1)}({size_mib} * 1024 * 1024)",
+            content,
+        )
+        if count != 1:
+            raise BuildError(
+                f"Expected exactly one {macro} definition in {app_config_file}, found {count}"
+            )
+
+    app_config_file.write_text(content, encoding="utf-8")
 
 
 def configure_ac792_devkit_memory(chip_config_file: Path, board_config_file: Path) -> None:
@@ -416,6 +473,73 @@ def resolve_tool_dir(
     )
 
 
+def download_windows_toolchain_installer(
+    module_root: Path = MODULE_ROOT,
+) -> Path:
+    """Download the official Windows installer when the compiler is missing."""
+    if os.name != "nt":
+        raise BuildError("automatic Jieli toolchain download is only available on Windows")
+
+    download_dir = module_root / ".tools"
+    installer = download_dir / WINDOWS_TOOLCHAIN_INSTALLER_NAME
+    partial = installer.with_suffix(installer.suffix + ".part")
+    download_dir.mkdir(parents=True, exist_ok=True)
+
+    if installer.is_file():
+        try:
+            with installer.open("rb") as stream:
+                if installer.stat().st_size >= 1024 and stream.read(2) == b"MZ":
+                    return installer
+        except OSError:
+            pass
+        installer.unlink(missing_ok=True)
+
+    request = urllib.request.Request(
+        WINDOWS_TOOLCHAIN_INSTALLER_URL,
+        headers={"User-Agent": "TuyaOpen-JieLi-build/1.0"},
+    )
+    print(
+        "[JIELI] Downloading Windows toolchain installer from "
+        f"{WINDOWS_TOOLCHAIN_INSTALLER_URL}"
+    )
+    downloaded = 0
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response, partial.open("wb") as output:
+            try:
+                content_length = int(response.headers.get("Content-Length", "0") or "0")
+            except ValueError as exc:
+                raise BuildError("toolchain installer response has an invalid Content-Length") from exc
+            while True:
+                chunk = response.read(1024 * 1024)
+                if not chunk:
+                    break
+                output.write(chunk)
+                downloaded += len(chunk)
+                if content_length:
+                    print(
+                        f"[JIELI] Downloaded {downloaded / (1024 * 1024):.1f} / "
+                        f"{content_length / (1024 * 1024):.1f} MiB",
+                        end="\r",
+                        flush=True,
+                    )
+        if content_length and downloaded != content_length:
+            raise BuildError(
+                f"incomplete toolchain installer download ({downloaded} of {content_length} bytes)"
+            )
+        with partial.open("rb") as stream:
+            if partial.stat().st_size < 1024 or stream.read(2) != b"MZ":
+                raise BuildError("downloaded toolchain installer is not a valid Windows executable")
+        partial.replace(installer)
+    except (urllib.error.URLError, OSError, TimeoutError, BuildError) as exc:
+        partial.unlink(missing_ok=True)
+        if isinstance(exc, BuildError):
+            raise
+        raise BuildError(f"failed to download Jieli toolchain installer: {exc}") from exc
+
+    print()
+    return installer
+
+
 def build_make_command(sdk_root: Path, tool_dir: Path, jobs: int = 1) -> list[str]:
     if jobs < 1:
         raise ValueError("jobs must be at least 1")
@@ -468,6 +592,7 @@ def create_staging_tree(
     board_file = source_overlay_root / chip.board_build_relative / "board.c"
     app_config_file = source_overlay_root / "apps/demo/demo_hello/include/app_config.h"
     if chip.name == "wl82":
+        configure_ac79_devkit_memory(app_config_file)
         configure_ac79_log_uart(board_file, uart_log_port, uart_log_baudrate)
         configure_service_uart(board_file)
     else:

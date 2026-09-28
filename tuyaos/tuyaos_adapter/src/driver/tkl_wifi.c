@@ -14,8 +14,14 @@
 static WIFI_EVENT_CB s_wifi_event_cb;
 static WF_WK_MD_E s_wifi_mode = WWM_STATION;
 
-/* Keep the native association and DHCP timeouts below Tuya netmgr's 20s retry. */
-#define JIELI_WIFI_STA_CONNECT_TIMEOUT_SEC 10
+/*
+ * netmgr starts a single 20s watchdog when it calls station_connect, and this
+ * adapter only reports WFE_CONNECTED once DHCP has completed, so association
+ * and DHCP share that one budget. Keep their sum below 20s, with margin for
+ * the events to be delivered: 12 + 5 = 17s. That still leaves the native
+ * scan/association enough time to find an intermittently visible AP.
+ */
+#define JIELI_WIFI_STA_CONNECT_TIMEOUT_SEC 12
 #define JIELI_WIFI_DHCP_TIMEOUT_SEC 5
 
 /* wifi_connect.h is not included here because its wifi_def.h uses C++ enum
@@ -580,28 +586,64 @@ static char s_sta_passwd[WIFI_PASSWD_LEN + 1];
 static void jieli_sta_connect_work(const jieli_sta_work_t *work)
 {
     int result;
+    int wifi_is_started;
+    int mac_result;
+    int set_mac_result;
 
+    printf("[JIELI][WIFI][TRACE] stage=connect_work_enter\n");
     memcpy(s_sta_ssid, work->ssid, sizeof(s_sta_ssid));
     memcpy(s_sta_passwd, work->passwd, sizeof(s_sta_passwd));
     printf("[JIELI][WIFI] sta worker begin ssid_len:%u passwd_len:%u\n",
            (unsigned int)strlen(s_sta_ssid), (unsigned int)strlen(s_sta_passwd));
-    if (!wifi_is_on() && wifi_on() != 0) {
-        printf("[JIELI][WIFI] sta worker wifi_on failed\n");
-        if (s_wifi_event_cb != NULL) {
-            s_wifi_event_cb(WFE_CONNECT_FAILED, NULL);
-        }
-    } else {
-        uint8_t mac[6];
-        if (jieli_chip_mac_get_wifi(mac) != 0 || wifi_set_mac((char *)mac) != 0) {
-            printf("[JIELI][WIFI] sta worker MAC setup failed\n");
+    printf("[JIELI][WIFI][TRACE] stage=wifi_is_on_begin\n");
+    wifi_is_started = wifi_is_on();
+    printf("[JIELI][WIFI][TRACE] stage=wifi_is_on_done result:%d\n", wifi_is_started);
+    if (!wifi_is_started) {
+        printf("[JIELI][WIFI][TRACE] stage=wifi_on_begin\n");
+        result = wifi_on();
+        printf("[JIELI][WIFI][TRACE] stage=wifi_on_done result:%d\n", result);
+        if (result != 0) {
+            printf("[JIELI][WIFI] sta worker wifi_on failed\n");
             if (s_wifi_event_cb != NULL) {
                 s_wifi_event_cb(WFE_CONNECT_FAILED, NULL);
             }
             return;
         }
+    }
+
+    {
+        uint8_t mac[6];
+        printf("[JIELI][WIFI][TRACE] stage=wifi_mac_get_begin\n");
+        mac_result = jieli_chip_mac_get_wifi(mac);
+        printf("[JIELI][WIFI][TRACE] stage=wifi_mac_get_done result:%d\n", mac_result);
+        if (mac_result != 0) {
+            printf("[JIELI][WIFI] sta worker MAC setup failed at get\n");
+            if (s_wifi_event_cb != NULL) {
+                s_wifi_event_cb(WFE_CONNECT_FAILED, NULL);
+            }
+            return;
+        }
+
+        printf("[JIELI][WIFI][TRACE] stage=wifi_set_mac_begin\n");
+        set_mac_result = wifi_set_mac((char *)mac);
+        printf("[JIELI][WIFI][TRACE] stage=wifi_set_mac_done result:%d\n", set_mac_result);
+        if (set_mac_result != 0) {
+            printf("[JIELI][WIFI] sta worker MAC setup failed at set\n");
+            if (s_wifi_event_cb != NULL) {
+                s_wifi_event_cb(WFE_CONNECT_FAILED, NULL);
+            }
+            return;
+        }
+
+        printf("[JIELI][WIFI][TRACE] stage=wifi_clear_scan_result_begin\n");
         wifi_clear_scan_result();
+        printf("[JIELI][WIFI][TRACE] stage=wifi_clear_scan_result_done\n");
+        printf("[JIELI][WIFI][TRACE] stage=wifi_set_best_ssid_begin\n");
         wifi_set_sta_connect_best_ssid(0);
+        printf("[JIELI][WIFI][TRACE] stage=wifi_set_best_ssid_done\n");
+        printf("[JIELI][WIFI][TRACE] stage=wifi_enter_sta_mode_begin\n");
         result = wifi_enter_sta_mode(s_sta_ssid, s_sta_passwd);
+        printf("[JIELI][WIFI][TRACE] stage=wifi_enter_sta_mode_done result:%d\n", result);
         printf("[JIELI][WIFI] station connect ssid_len:%u passwd_len:%u native_result:%d\n",
                (unsigned int)strlen(s_sta_ssid), (unsigned int)strlen(s_sta_passwd), result);
         /* STA connect is configured as asynchronous. The SDK's return value
@@ -617,9 +659,12 @@ static void jieli_wifi_worker(void *arg)
 
     (void)arg;
     for (;;) {
-        /* tkl_queue_fetch() maps an infinite timeout to zero ticks, so poll
-         * with a bounded timeout instead of trying to block forever. */
+        /* Bounded poll. This was originally a workaround for tkl_queue_fetch()
+         * treating a 0 timeout as "do not wait" on one SDK; the fetch path is
+         * correct now, but the poll is kept so the worker's wakeup does not
+         * depend on os_q_pend()'s vendor-specific blocking behaviour. */
         if (tkl_queue_fetch(s_sta_work_queue, &work, 100) == OPRT_OK) {
+            printf("[JIELI][WIFI][TRACE] stage=queue_fetch_done\n");
             jieli_sta_connect_work(&work);
         }
     }

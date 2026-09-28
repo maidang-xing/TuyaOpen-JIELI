@@ -159,7 +159,7 @@ short CHL_PWR_THR = (-70 * 8);
 short CHL_BUSY_CONFIG = (0xe & 0x0f); //0xe
 #endif
 
-const u8 CONFIG_WPA3_SUPPORT = 1;  //1：使能wpa3支持，0：关闭wpa3支持
+const u8 CONFIG_WPA3_SUPPORT = 0;  // Temporary AC792 isolation for the CPU1 MbedTLS fault during STA association.
 /*--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
 
