@@ -15,11 +15,14 @@ static WIFI_EVENT_CB s_wifi_event_cb;
 static WF_WK_MD_E s_wifi_mode = WWM_STATION;
 
 /*
- * Leave time for the native scan/association to find an intermittently visible
- * AP, while keeping its failure callback ahead of Tuya netmgr's 20s watchdog.
+ * netmgr starts a single 20s watchdog when it calls station_connect, and this
+ * adapter only reports WFE_CONNECTED once DHCP has completed, so association
+ * and DHCP share that one budget. Keep their sum below 20s, with margin for
+ * the events to be delivered: 12 + 5 = 17s. That still leaves the native
+ * scan/association enough time to find an intermittently visible AP.
  */
-#define JIELI_WIFI_STA_CONNECT_TIMEOUT_SEC 18
-#define JIELI_WIFI_DHCP_TIMEOUT_SEC 8
+#define JIELI_WIFI_STA_CONNECT_TIMEOUT_SEC 12
+#define JIELI_WIFI_DHCP_TIMEOUT_SEC 5
 
 /* wifi_connect.h is not included here because its wifi_def.h uses C++ enum
  * syntax, so declare this C-compatible SDK entry point directly. */
