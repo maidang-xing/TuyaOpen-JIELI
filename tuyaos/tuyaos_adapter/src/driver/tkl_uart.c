@@ -19,8 +19,11 @@ static void *s_uart_handles[TUYA_UART_NUM_MAX];
 static const char *jieli_uart_device_name(TUYA_UART_NUM_E port_id)
 {
 #if defined(CONFIG_CPU_WL82)
-    /* UART1 is reserved for the AC79 board's PB3 debug console. */
-    return port_id == 0u ? "uart2" : NULL;
+    /* TAL CLI uses Tuya UART0; AC79 routes it to hardware UART0 (PA5/PA6). */
+    return port_id == 0u ? "uart0" : NULL;
+#elif defined(CONFIG_CPU_WL83)
+    /* AC792N shares UART0 between the debug log and Tuya CLI. */
+    return port_id == 0u ? "uart0" : "uart2";
 #else
     return port_id == 0u ? "uart1" : "uart2";
 #endif
