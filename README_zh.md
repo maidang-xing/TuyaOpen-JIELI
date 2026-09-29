@@ -70,6 +70,10 @@ const u8 CONFIG_WPA3_SUPPORT = 0;  // 原值为 1
 
 **两块板的 RAM 物理容量仍未在实板上完整验证**，证据与现状见上一节。
 
+**工具链校验闸门拦住了你？** 自动下载的安装器会按固定 SHA-256 校验（`jieli_build.py` 的
+`WINDOWS_TOOLCHAIN_INSTALLER_SHA256`）。如果 Jieli 重新上传了同版本号的安装器导致校验不通过，
+手动安装工具链并把 `JIELI_TOOL_DIR` 指向其 `pi32v2/bin` 即可跳过自动下载。
+
 ## 历史 AC7916A 工程
 
 `D:\\tuya_proj\\jieli\\ipc_ac7916a` 曾使用 AC7916A，映射到当前统一板名 `AC79_DevKitBoard`。项目保留用于历史参考，不作为当前调试工程；其中 UART2/PB6/115200 是历史工程配置。当前 AC79 固件使用 UART1/PB3/115200 输出日志，UART0/PA5-PA6/115200 承载 TAL CLI。AC792 使用 UART0，日志与 Tuya CLI 共用，PD1/PE11，115200 baud。

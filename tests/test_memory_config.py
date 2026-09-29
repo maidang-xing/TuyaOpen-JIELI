@@ -100,6 +100,36 @@ class Ac792DevkitMemoryConfigTest(unittest.TestCase):
             with self.assertRaises(BuildError):
                 configure_ac792_devkit_memory(chip, board)
 
+    def test_rejects_a_duplicate_macro_definition(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            chip, board = self._write(
+                temp_dir,
+                "#define __FLASH_SIZE__    (1 * 1024 * 1024)\n"
+                "#define __FLASH_SIZE__    (1 * 1024 * 1024)\n"
+                "#define __SDRAM_SIZE__    (2 * 1024 * 1024)\n",
+            )
+
+            with self.assertRaises(BuildError):
+                configure_ac792_devkit_memory(chip, board)
+
+    def test_accepts_crlf_line_endings(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            chip = Path(temp_dir) / "chip_cfg.h"
+            board = Path(temp_dir) / "board_demo.h"
+            # write_bytes, because write_text would translate the newlines away.
+            chip.write_bytes(
+                b"#define __FLASH_SIZE__    (1 * 1024 * 1024)\r\n"
+                b"#define __SDRAM_SIZE__    (2 * 1024 * 1024)\r\n"
+            )
+            board.write_bytes(b"#define CONFIG_NO_SDRAM_ENABLE\r\n")
+
+            configure_ac792_devkit_memory(chip, board)
+
+            content = chip.read_text(encoding="utf-8")
+            self.assertIn("#define __FLASH_SIZE__    (8 * 1024 * 1024)", content)
+            self.assertIn("#define __SDRAM_SIZE__    (16 * 1024 * 1024)", content)
+            self.assertNotIn("CONFIG_NO_SDRAM_ENABLE", board.read_text(encoding="utf-8"))
+
 
 if __name__ == "__main__":
     unittest.main()

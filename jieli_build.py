@@ -539,7 +539,12 @@ def download_windows_toolchain_installer(
             return installer
         except BuildError as exc:
             print(f"[JIELI] Discarding the cached installer: {exc}")
-            installer.unlink(missing_ok=True)
+            try:
+                installer.unlink(missing_ok=True)
+            except OSError as unlink_exc:
+                raise BuildError(
+                    f"cannot discard the cached toolchain installer {installer}: {unlink_exc}"
+                ) from unlink_exc
 
     request = urllib.request.Request(
         WINDOWS_TOOLCHAIN_INSTALLER_URL,
