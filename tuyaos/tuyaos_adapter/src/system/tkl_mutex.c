@@ -22,6 +22,7 @@ OPERATE_RET tkl_mutex_create_init(TKL_MUTEX_HANDLE *handle)
 OPERATE_RET tkl_mutex_lock(const TKL_MUTEX_HANDLE handle)
 {
     JIELI_TKL_MUTEX *mutex = (JIELI_TKL_MUTEX *)handle;
+    /* 0 ticks means "wait forever" on both SDKs, which is what a lock wants. */
     return mutex == NULL ? OPRT_INVALID_PARM :
            (os_mutex_pend(&mutex->mutex, 0) == 0 ? OPRT_OK : OPRT_OS_ADAPTER_MUTEX_LOCK_FAILED);
 }
@@ -29,6 +30,14 @@ OPERATE_RET tkl_mutex_lock(const TKL_MUTEX_HANDLE handle)
 OPERATE_RET tkl_mutex_trylock(const TKL_MUTEX_HANDLE handle)
 {
     JIELI_TKL_MUTEX *mutex = (JIELI_TKL_MUTEX *)handle;
+    /* KNOWN ISSUE (no callers today - nothing in-tree uses tal_mutex_trylock):
+     * os_mutex_accept() is not portable. On AC79NN it returns 0 on success and
+     * OS_TIMEOUT on failure, but on AC792N it is a tail call to uCOS-II
+     * OSMutexAccept(), whose non-zero-means-success sense is inverted, so this
+     * would report a free lock as busy. Unlike the semaphore case there is no
+     * portable alternative: os_mutex_pend(m, -1) still blocks on AC792N, so
+     * fixing this needs a per-chip path (which CONFIG_CPU_WL83 cannot express -
+     * the adapter build defines CONFIG_CPU_WL82 for both chips). */
     return mutex == NULL ? OPRT_INVALID_PARM :
            (os_mutex_accept(&mutex->mutex) == 0 ? OPRT_OK : OPRT_OS_ADAPTER_MUTEX_LOCK_FAILED);
 }

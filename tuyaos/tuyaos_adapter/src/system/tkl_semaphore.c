@@ -29,11 +29,15 @@ OPERATE_RET tkl_semaphore_wait(const TKL_SEM_HANDLE handle, uint32_t timeout)
     }
 
     /* TKL timeout 0 means "do not wait" and 0xFFFFFFFF means "wait forever".
-     * os_sem_pend() reads 0 ticks as portMAX_DELAY on AC79NN, so passing a TKL
-     * 0 straight to it made trylock-style callers block forever - lwip's
-     * sys_mutex_trylock() in src/liblwip/port/sys_arch.c is one. */
+     * Both SDKs read a 0 tick timeout as "wait forever", so passing a TKL 0
+     * straight to os_sem_pend() made trylock-style callers block forever -
+     * lwip's sys_mutex_trylock() in src/liblwip/port/sys_arch.c is one. */
     result = jieli_tkl_sem_wait(&sem->sem, timeout);
-    if (result == -2) {
+
+    /* Both SDKs report a timed-out wait as OS_TIMEOUT (11 in os_error.h); the
+     * previous "== -2" comparison never matched, so timeouts were reported as
+     * generic failures. */
+    if (result == OS_TIMEOUT) {
         return OPRT_OS_ADAPTER_SEM_WAIT_TIMEOUT;
     }
     return result == 0 ? OPRT_OK : OPRT_OS_ADAPTER_SEM_WAIT_FAILED;
