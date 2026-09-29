@@ -120,8 +120,23 @@ def build(params: dict[str, str]) -> Path:
     jobs = max(1, int(os.environ.get("JIELI_BUILD_JOBS", "1")))
     env = os.environ.copy()
     vendor_source_root = sdk_root / resolve_chip().sdk_source_relative
+    inherited_path = env.get("PATH", "").split(os.pathsep)
+    if os.name == "nt":
+        # GnuWin32 make prefers sh.exe as its recipe shell whenever it can find
+        # one, and sh eats the backslashes in the Windows paths the vendor
+        # Makefile interpolates (the -I<tuyaopen_root>/... includes and
+        # TOOL_DIR=...). That surfaces as "tkl_init.h file not found" or
+        # "C:JLpi32bin/clang.exe: No such file or directory", which reads like a
+        # broken toolchain. The vendor Makefile is written for cmd.exe, and make
+        # ignores SHELL on Windows, so the PATH it sees is the only lever: drop
+        # any directory that provides sh.exe and make falls back to cmd.exe.
+        inherited_path = [
+            entry
+            for entry in inherited_path
+            if entry and not os.path.exists(os.path.join(entry, "sh.exe"))
+        ]
     env["PATH"] = os.pathsep.join(
-        (str(tool_dir), str(vendor_source_root / "tools/utils"), env.get("PATH", ""))
+        (str(tool_dir), str(vendor_source_root / "tools/utils"), *inherited_path)
     )
     env["OBJDUMP"] = str(resolve_tool_path(tool_dir, "objdump"))
     env["OBJSIZEDUMP"] = str(resolve_tool_path(tool_dir, "objsizedump"))
