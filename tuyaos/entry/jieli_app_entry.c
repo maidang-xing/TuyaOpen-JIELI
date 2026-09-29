@@ -1,6 +1,5 @@
 #include "app_config.h"
 #include "system/includes.h"
-#include "os/os_api.h"
 
 #include "tkl_init.h"
 
@@ -15,9 +14,11 @@ const struct task_info task_info_table[] = {
     { "sys_event", 29, 512, 0 },
     { "systimer", 14, 256, 0 },
     { "sys_timer", 9, 512, 128 },
-    /* Match the vendor task table; Wi-Fi scan/association runs on tasklet. */
+#if (defined(CONFIG_NET_ENABLE) && CONFIG_NET_ENABLE) || (defined(TCFG_WIFI_ENABLE) && TCFG_WIFI_ENABLE)
     { "tcpip_thread", 16, 800, 0 },
+#endif
 #if defined(TCFG_WIFI_ENABLE) && TCFG_WIFI_ENABLE
+    /* Wi-Fi scan and association run on the vendor tasklet. */
     { "tasklet", 10, 1400, 0 },
     { "RtmpMlmeTask", 17, 900, 0 },
     { "RtmpCmdQTask", 17, 300, 0 },

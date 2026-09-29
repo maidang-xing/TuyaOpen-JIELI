@@ -5,8 +5,8 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from jieli_build import (
-    BuildError,
+from tools.jieli_build.errors import BuildError
+from tools.jieli_build.toolchain import (
     WINDOWS_TOOLCHAIN_INSTALLER_NAME,
     WINDOWS_TOOLCHAIN_INSTALLER_SHA256,
     _sha256_of,
@@ -60,7 +60,7 @@ class InstallerChecksumTest(unittest.TestCase):
             target = Path(temp_dir) / "installer.exe"
             digest = _write(target, b"MZ" + b"payload")
 
-            with mock.patch("jieli_build.WINDOWS_TOOLCHAIN_INSTALLER_SHA256", digest):
+            with mock.patch("tools.jieli_build.toolchain.WINDOWS_TOOLCHAIN_INSTALLER_SHA256", digest):
                 _verify_installer(target)
 
     def test_verify_installer_rejects_a_mismatched_digest(self):
@@ -95,7 +95,7 @@ class InstallerDownloadTest(unittest.TestCase):
             cached.parent.mkdir(parents=True)
             cached.write_bytes(b"MZ" + b"stale payload" * 256)
 
-            with mock.patch("jieli_build.WINDOWS_TOOLCHAIN_INSTALLER_SHA256", digest), \
+            with mock.patch("tools.jieli_build.toolchain.WINDOWS_TOOLCHAIN_INSTALLER_SHA256", digest), \
                     mock.patch("urllib.request.urlopen", return_value=_FakeResponse(payload)):
                 result = download_windows_toolchain_installer(root)
 
@@ -124,7 +124,7 @@ class InstallerDownloadTest(unittest.TestCase):
             cached.parent.mkdir(parents=True)
             cached.write_bytes(payload)
 
-            with mock.patch("jieli_build.WINDOWS_TOOLCHAIN_INSTALLER_SHA256", digest), \
+            with mock.patch("tools.jieli_build.toolchain.WINDOWS_TOOLCHAIN_INSTALLER_SHA256", digest), \
                     mock.patch("urllib.request.urlopen", side_effect=AssertionError("must not download")):
                 result = download_windows_toolchain_installer(root)
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the host inputs needed by the Jieli wl82 build bridge."""
+"""Validate the host inputs needed by the Jieli WL82/WL83 build bridge."""
 
 from __future__ import annotations
 
@@ -7,11 +7,10 @@ import os
 import shutil
 import sys
 
-from jieli_build import (
-    BuildError,
+from tools.jieli_build.chip_profiles import resolve_chip, resolve_sdk_root
+from tools.jieli_build.errors import BuildError
+from tools.jieli_build.toolchain import (
     download_windows_toolchain_installer,
-    resolve_chip,
-    resolve_sdk_root,
     resolve_tool_dir,
     resolve_tool_path,
 )
@@ -20,13 +19,12 @@ from jieli_build import (
 def main(argv: list[str] | None = None) -> int:
     args = sys.argv if argv is None else argv
     try:
-        requested_chip = args[4].strip() if len(args) > 4 else ""
-        chip_name = requested_chip or resolve_chip().name
-        if chip_name not in ("wl82", "wl83"):
-            raise BuildError(f"unsupported Jieli chip '{chip_name}'")
-        os.environ["JIELI_CHIP"] = chip_name
-        chip = resolve_chip()
-        sdk_root = resolve_sdk_root()
+        chip_name = args[4].strip() if len(args) > 4 else ""
+        if not chip_name:
+            raise BuildError("CONFIG_CHIP_CHOICE is missing from build hook arguments")
+        chip = resolve_chip(chip_name=chip_name)
+        os.environ["JIELI_CHIP"] = chip.name
+        sdk_root = resolve_sdk_root(chip_name=chip.name)
     except BuildError as exc:
         print(f"[JIELI] build setup failed: {exc}", file=sys.stderr)
         return 1

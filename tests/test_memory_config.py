@@ -2,11 +2,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from jieli_build import (
-    BuildError,
+from tools.jieli_build.board_config import (
     configure_ac79_devkit_memory,
     configure_ac792_devkit_memory,
 )
+from tools.jieli_build.errors import BuildError
 
 
 class Ac79DevkitMemoryConfigTest(unittest.TestCase):

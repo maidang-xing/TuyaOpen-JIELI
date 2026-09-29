@@ -1,9 +1,13 @@
 #include "tkl_mutex.h"
 
-#include "jieli_tkl_os.h"
+#include "system/os/os_api.h"
 #include "tuya_error_code.h"
 
 #include <stdlib.h>
+
+typedef struct {
+    OS_MUTEX mutex;
+} JIELI_TKL_MUTEX;
 
 OPERATE_RET tkl_mutex_create_init(TKL_MUTEX_HANDLE *handle)
 {

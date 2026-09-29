@@ -4,15 +4,126 @@
 #include "tkl_thread.h"
 #include "tkl_queue.h"
 #include "tuya_error_code.h"
-#include "tkl_jieli_chip_mac.h"
 
+#include "asm/sfc_norflash_api.h"
 #include "lwip/port/lwip.h"
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
 static WIFI_EVENT_CB s_wifi_event_cb;
 static WF_WK_MD_E s_wifi_mode = WWM_STATION;
+static uint8_t s_wifi_mac[6];
+static uint8_t s_mac_initialized;
+
+#define JIELI_FLASH_UID_LEN 16U
+
+/*
+ * Both SDKs expose the same UID type through this header; only the WL83 call
+ * takes a flash index. Keep that small compile-time difference in the Wi-Fi
+ * TKL so no private cross-file prototype is needed.
+ */
+static int jieli_read_flash_uid(uint8_t uid[JIELI_FLASH_UID_LEN])
+{
+    const uint8_t *sdk_uid;
+
+    if (uid == NULL) {
+        return -1;
+    }
+#if defined(JIELI_SELECTED_CHIP_WL82)
+    sdk_uid = get_norflash_uuid();
+#elif defined(JIELI_SELECTED_CHIP_WL83)
+    sdk_uid = get_norflash_uuid(0);
+#else
+#error "Jieli Wi-Fi MAC requires a selected chip"
+#endif
+    if (sdk_uid == NULL) {
+        return -1;
+    }
+    memcpy(uid, sdk_uid, JIELI_FLASH_UID_LEN);
+    return 0;
+}
+
+static int jieli_bytes_are(const uint8_t *bytes, uint32_t length, uint8_t value)
+{
+    uint32_t i;
+
+    for (i = 0; i < length; i++) {
+        if (bytes[i] != value) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int jieli_mac_is_unicast(const uint8_t mac[6])
+{
+    return mac != NULL && !jieli_bytes_are(mac, 6, 0x00) && !jieli_bytes_are(mac, 6, 0xFF) &&
+           (mac[0] & 0x01U) == 0U;
+}
+
+static uint64_t jieli_uid_hash(const uint8_t uid[JIELI_FLASH_UID_LEN])
+{
+    uint64_t hash = UINT64_C(14695981039346656037);
+    uint32_t i;
+    static const uint8_t domain[] = "TuyaOpen-JieLi-dev-mac-v1";
+
+    for (i = 0; i < sizeof(domain) - 1U; i++) {
+        hash ^= domain[i];
+        hash *= UINT64_C(1099511628211);
+    }
+    for (i = 0; i < JIELI_FLASH_UID_LEN; i++) {
+        hash ^= uid[i];
+        hash *= UINT64_C(1099511628211);
+    }
+    return hash;
+}
+
+static int jieli_mac_initialize(void)
+{
+    uint8_t uid[JIELI_FLASH_UID_LEN];
+    uint64_t hash;
+    uint32_t i;
+
+    if (s_mac_initialized) {
+        return 0;
+    }
+    if (jieli_read_flash_uid(uid) != 0 || jieli_bytes_are(uid, sizeof(uid), 0x00) ||
+        jieli_bytes_are(uid, sizeof(uid), 0xFF)) {
+        return -1;
+    }
+
+    hash = jieli_uid_hash(uid);
+    for (i = 0; i < 6U; i++) {
+        s_wifi_mac[i] = (uint8_t)(hash >> (40U - (i * 8U)));
+    }
+    /* IEEE 802 locally administered unicast address for development Wi-Fi. */
+    s_wifi_mac[0] = (uint8_t)((s_wifi_mac[0] & 0xFCU) | 0x02U);
+    memset(uid, 0, sizeof(uid));
+    s_mac_initialized = 1;
+    printf("[JIELI][MAC] dev UID-derived WiFi %02X:%02X:%02X:%02X:%02X:%02X\n",
+           s_wifi_mac[0], s_wifi_mac[1], s_wifi_mac[2], s_wifi_mac[3], s_wifi_mac[4], s_wifi_mac[5]);
+    return 0;
+}
+
+static int jieli_mac_get_wifi(uint8_t mac[6])
+{
+    if (mac == NULL || jieli_mac_initialize() != 0) {
+        return -1;
+    }
+    memcpy(mac, s_wifi_mac, sizeof(s_wifi_mac));
+    return 0;
+}
+
+static int jieli_mac_set_wifi(const uint8_t mac[6])
+{
+    if (!jieli_mac_is_unicast(mac) || jieli_mac_initialize() != 0) {
+        return -1;
+    }
+    memcpy(s_wifi_mac, mac, sizeof(s_wifi_mac));
+    return 0;
+}
 
 /*
  * netmgr starts a single 20s watchdog when it calls station_connect, and this
@@ -27,22 +138,6 @@ static WF_WK_MD_E s_wifi_mode = WWM_STATION;
 /* wifi_connect.h is not included here because its wifi_def.h uses C++ enum
  * syntax, so declare this C-compatible SDK entry point directly. */
 extern void wifi_set_sta_connect_timeout(int sec);
-
-/* Both SDKs' wifi_def.h headers use C++-only enum underlying-type syntax.
- * Keep the ABI declarations C-compatible, while preserving the per-chip
- * wifi_sta_connect_state values (WL83 inserts CONNECTING after DISCONNECT). */
-enum jieli_wifi_state {
-    JIELI_WIFI_DISCONNECT,
-#if defined(CONFIG_CPU_WL83)
-    JIELI_WIFI_CONNECTING,
-#endif
-    JIELI_WIFI_CONNECT_SUCC,
-    JIELI_WIFI_CONNECT_NO_SSID,
-    JIELI_WIFI_CONNECT_ASSOC_FAIL,
-    JIELI_WIFI_CONNECT_ASSOC_TIMEOUT,
-    JIELI_WIFI_STATE_DHCP_SUCC,
-    JIELI_WIFI_STATE_DHCP_TIMEOUT,
-};
 
 enum jieli_wifi_event {
     JIELI_WIFI_MODULE_INIT,
@@ -119,8 +214,8 @@ extern int wifi_scan_req(void);
 extern struct jieli_wifi_scan_info *wifi_get_scan_result(unsigned int *count);
 extern void wifi_clear_scan_result(void);
 extern char wifi_get_rssi(void);
-extern enum jieli_wifi_state wifi_get_sta_connect_state(void);
 extern int wifi_enter_smp_cfg_mode(void);
+extern int wifi_get_sta_connect_state(void);
 
 static OPERATE_RET jieli_result(int result)
 {
@@ -450,7 +545,7 @@ OPERATE_RET tkl_wifi_set_mac(const WF_IF_E wf, const NW_MAC_S *mac)
     if (!mac) {
         return OPRT_INVALID_PARM;
     }
-    if (jieli_chip_mac_set_wifi(mac->mac) != 0) {
+    if (jieli_mac_set_wifi(mac->mac) != 0) {
         return OPRT_INVALID_PARM;
     }
     if (!wifi_is_on()) {
@@ -466,7 +561,7 @@ OPERATE_RET tkl_wifi_get_mac(const WF_IF_E wf, NW_MAC_S *mac)
     if (!mac) {
         return OPRT_INVALID_PARM;
     }
-    return jieli_chip_mac_get_wifi(mac->mac) == 0 ? OPRT_OK : OPRT_COM_ERROR;
+    return jieli_mac_get_wifi(mac->mac) == 0 ? OPRT_OK : OPRT_COM_ERROR;
 }
 
 OPERATE_RET tkl_wifi_set_work_mode(const WF_WK_MD_E mode)
@@ -614,7 +709,7 @@ static void jieli_sta_connect_work(const jieli_sta_work_t *work)
     {
         uint8_t mac[6];
         printf("[JIELI][WIFI][TRACE] stage=wifi_mac_get_begin\n");
-        mac_result = jieli_chip_mac_get_wifi(mac);
+        mac_result = jieli_mac_get_wifi(mac);
         printf("[JIELI][WIFI][TRACE] stage=wifi_mac_get_done result:%d\n", mac_result);
         if (mac_result != 0) {
             printf("[JIELI][WIFI] sta worker MAC setup failed at get\n");
@@ -747,27 +842,63 @@ OPERATE_RET tkl_wifi_station_get_conn_ap_rssi(int8_t *rssi)
 
 OPERATE_RET tkl_wifi_station_get_status(WF_STATION_STAT_E *stat)
 {
+    int sdk_state;
+
     if (!stat) {
         return OPRT_INVALID_PARM;
     }
-    switch (wifi_get_sta_connect_state()) {
-    case JIELI_WIFI_CONNECT_SUCC:
+
+    sdk_state = wifi_get_sta_connect_state();
+#if defined(JIELI_SELECTED_CHIP_WL82)
+    /*
+     * AC79's wifi_sta_connect_state values: disconnect=0, success=1,
+     * no-SSID=2, association-failed=3, association-timeout=4, DHCP=5.
+     */
+    switch (sdk_state) {
+    case 1:
         *stat = WSS_CONN_SUCCESS;
         break;
-    case JIELI_WIFI_STATE_DHCP_SUCC:
-        *stat = WSS_GOT_IP;
-        break;
-    case JIELI_WIFI_CONNECT_NO_SSID:
+    case 2:
         *stat = WSS_NO_AP_FOUND;
         break;
-    case JIELI_WIFI_CONNECT_ASSOC_FAIL:
-    case JIELI_WIFI_CONNECT_ASSOC_TIMEOUT:
+    case 3:
+    case 4:
         *stat = WSS_CONN_FAIL;
+        break;
+    case 5:
+        *stat = WSS_GOT_IP;
         break;
     default:
         *stat = WSS_IDLE;
         break;
     }
+#elif defined(JIELI_SELECTED_CHIP_WL83)
+    /*
+     * AC792 adds CONNECTING before success: disconnect=0, connecting=1,
+     * success=2, no-SSID=3, association-failed=4, association-timeout=5,
+     * DHCP=6.
+     */
+    switch (sdk_state) {
+    case 2:
+        *stat = WSS_CONN_SUCCESS;
+        break;
+    case 3:
+        *stat = WSS_NO_AP_FOUND;
+        break;
+    case 4:
+    case 5:
+        *stat = WSS_CONN_FAIL;
+        break;
+    case 6:
+        *stat = WSS_GOT_IP;
+        break;
+    default:
+        *stat = WSS_IDLE;
+        break;
+    }
+#else
+#error "Jieli Wi-Fi status mapping requires a selected chip"
+#endif
     return OPRT_OK;
 }
 

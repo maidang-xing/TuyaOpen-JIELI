@@ -1,10 +1,19 @@
 #include "tkl_thread.h"
 
-#include "jieli_tkl_os.h"
+#include "system/os/os_api.h"
 #include "tuya_error_code.h"
 
 #include <stdlib.h>
 #include <string.h>
+
+#define JIELI_TKL_THREAD_MAGIC 0x4A544852u
+
+typedef struct {
+    uint32_t magic;
+    char name[configMAX_TASK_NAME_LEN];
+    void (*func)(void *arg);
+    void *arg;
+} JIELI_TKL_THREAD;
 
 static JIELI_TKL_THREAD s_current_thread;
 

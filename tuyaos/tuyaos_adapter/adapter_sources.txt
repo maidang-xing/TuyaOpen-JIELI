@@ -1,0 +1,15 @@
+src/system/tkl_output.c
+src/system/tkl_system.c
+src/driver/tkl_uart.c
+src/system/tkl_thread.c
+src/system/tkl_mutex.c
+src/system/tkl_semaphore.c
+src/system/tkl_queue.c
+src/system/tkl_sleep.c
+src/driver/tkl_flash.c
+src/driver/tkl_ota.c
+src/system/tkl_assert.c
+src/driver/tkl_bluetooth.c
+src/system/tuyaopen_license.c
+src/driver/tkl_network.c
+src/driver/tkl_wifi.c
