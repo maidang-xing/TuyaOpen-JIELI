@@ -66,7 +66,7 @@ def _ignore_demo_build_outputs(directory: str, names: list[str]) -> set[str]:
 
 
 def stage_sdk_inputs(sdk_root: Path, build_root: Path, chip) -> Path:
-    """Copy every SDK path that the make/post-build flow may write to."""
+    """Copy writable SDK paths and link SDK directories used only as inputs."""
     vendor_root = sdk_root / chip.sdk_source_relative
     source_root = build_root / chip.sdk_source_relative
     source_root.mkdir(parents=True, exist_ok=True)
@@ -75,6 +75,8 @@ def stage_sdk_inputs(sdk_root: Path, build_root: Path, chip) -> Path:
         source = vendor_root / name
         if not source.is_dir():
             raise BuildError(f"Jieli SDK input directory is missing: {source}")
+        # The make/post-build flow reads these trees; generated artifacts are
+        # written under cpu/<chip>/tools, which is part of the copied CPU tree.
         link_directory(source_root / name, source)
 
     vendor_cpu_root = vendor_root / "cpu" / chip.cpu
@@ -84,6 +86,7 @@ def stage_sdk_inputs(sdk_root: Path, build_root: Path, chip) -> Path:
     shutil.copytree(vendor_cpu_root, staged_cpu_root, ignore=_ignore_cpu_build_outputs)
     vendor_liba = vendor_cpu_root / "liba"
     if vendor_liba.is_dir():
+        # The linker consumes the prebuilt archives without modifying them.
         link_directory(staged_cpu_root / "liba", vendor_liba)
 
     vendor_common = vendor_root / "apps" / "common"
@@ -93,6 +96,7 @@ def stage_sdk_inputs(sdk_root: Path, build_root: Path, chip) -> Path:
     for item in vendor_common.iterdir():
         destination = staged_common / item.name
         if item.name == "movable" and item.is_dir():
+            # pre_build writes section.txt here, so keep this tree local.
             shutil.copytree(item, destination, ignore=_ignore_demo_build_outputs)
         elif item.is_dir():
             link_directory(destination, item)
