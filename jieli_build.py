@@ -602,7 +602,11 @@ def build_make_command(sdk_root: Path, tool_dir: Path, jobs: int = 1) -> list[st
         "make",
         "-C",
         str(board_dir),
-        f"TOOL_DIR={tool_dir}",
+        # as_posix() so the value survives either recipe shell; the vendor
+        # Makefile interpolates it into "sh"-run recipes, and a Windows path
+        # with backslashes would be mangled. See the PATH handling in
+        # build_example.py for why a sh may still be in play.
+        f"TOOL_DIR={tool_dir.as_posix()}",
         f"-j{jobs}",
         "pre_build",
         elf_target,
