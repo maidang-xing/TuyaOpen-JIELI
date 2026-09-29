@@ -1,9 +1,79 @@
 #include "tkl_semaphore.h"
 
-#include "jieli_tkl_os.h"
+#include "system/os/os_api.h"
 #include "tuya_error_code.h"
 
 #include <stdlib.h>
+
+typedef struct {
+    OS_SEM sem;
+} JIELI_TKL_SEM;
+
+#define JIELI_TKL_TICK_MS 10u
+#define JIELI_TKL_NO_WAIT 0u
+#define JIELI_TKL_WAIT_FOREVER 0xFFFFFFFFu
+#define JIELI_TKL_MAX_TICKS 65535u
+
+static int jieli_tkl_timeout_to_ticks(uint32_t timeout_ms)
+{
+    uint32_t ticks = timeout_ms / JIELI_TKL_TICK_MS +
+                     (timeout_ms % JIELI_TKL_TICK_MS != 0u ? 1u : 0u);
+
+    /* AC792 stores the timeout in a u16 task-control-block field. */
+    return (int)(ticks > JIELI_TKL_MAX_TICKS ? JIELI_TKL_MAX_TICKS : ticks);
+}
+
+/*
+ * The two SDKs return opposite success values from os_sem_accept(). Detect the
+ * linked OS convention once with a count-one semaphore, then normalise both to
+ * 0 on success and OS_TIMEOUT on failure. Use OS_TIMEOUT itself: the vendor
+ * timeout sentinel is not a portable literal such as -2. Build flags are not
+ * reliable here: both chip variants compile the same adapter source through
+ * different staged vendor Makefiles, so a chip #if can select the wrong OS
+ * convention.
+ */
+static int jieli_tkl_sem_accept(OS_SEM *sem)
+{
+    static int accept_returns_count = -1;
+    int result;
+
+    if (accept_returns_count < 0) {
+        OS_SEM probe;
+
+        /* Fall back to the AC79 convention if the probe cannot be created. */
+        accept_returns_count = 0;
+        if (os_sem_create(&probe, 1) == 0) {
+            accept_returns_count = (os_sem_accept(&probe) != 0);
+            (void)os_sem_del(&probe, OS_DEL_ALWAYS);
+        }
+    }
+
+    result = os_sem_accept(sem);
+    if (accept_returns_count) {
+        return (result > 0) ? 0 : OS_TIMEOUT;
+    }
+    return result;
+}
+
+/* Normalize vendor semaphore behavior for the public TKL wait API. */
+static int jieli_tkl_sem_wait(OS_SEM *sem, uint32_t timeout_ms)
+{
+    /*
+     * TKL timeout 0 means "do not wait". Both vendor os_sem_pend() APIs use
+     * zero ticks for wait-forever, so passing 0 here would block forever.
+     * The lwIP sys_mutex_trylock path relies on this non-blocking behavior.
+     * Do not substitute -1: AC79 treats it as an invalid timeout and emits an
+     * OS warning. os_sem_accept() is the actual try-wait API.
+     */
+    if (timeout_ms == JIELI_TKL_NO_WAIT) {
+        return jieli_tkl_sem_accept(sem);
+    }
+    if (timeout_ms == JIELI_TKL_WAIT_FOREVER) {
+        return os_sem_pend(sem, 0);
+    }
+    /* Finite, non-zero waits are rounded up and capped to AC792's u16 range. */
+    return os_sem_pend(sem, jieli_tkl_timeout_to_ticks(timeout_ms));
+}
 
 OPERATE_RET tkl_semaphore_create_init(TKL_SEM_HANDLE *handle, uint32_t sem_cnt, uint32_t sem_max)
 {
@@ -27,16 +97,8 @@ OPERATE_RET tkl_semaphore_wait(const TKL_SEM_HANDLE handle, uint32_t timeout)
     if (handle == NULL) {
         return OPRT_INVALID_PARM;
     }
-
-    /* TKL timeout 0 means "do not wait" and 0xFFFFFFFF means "wait forever".
-     * Both SDKs read a 0 tick timeout as "wait forever", so passing a TKL 0
-     * straight to os_sem_pend() made trylock-style callers block forever -
-     * lwip's sys_mutex_trylock() in src/liblwip/port/sys_arch.c is one. */
     result = jieli_tkl_sem_wait(&sem->sem, timeout);
-
-    /* Both SDKs report a timed-out wait as OS_TIMEOUT (11 in os_error.h); the
-     * previous "== -2" comparison never matched, so timeouts were reported as
-     * generic failures. */
+    /* jieli_tkl_sem_wait() normalizes a timeout to the SDK's OS_TIMEOUT value. */
     if (result == OS_TIMEOUT) {
         return OPRT_OS_ADAPTER_SEM_WAIT_TIMEOUT;
     }

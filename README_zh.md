@@ -12,18 +12,24 @@
 AC79 完整应用（例如 `apps/tuya_cloud/switch_demo`）：
 
 ```powershell
-tos.py config set CONFIG_BOARD_CHOICE_AC79_DEVKITBOARD=y CONFIG_JIELI_MINIMAL_HELLO=n CONFIG_JIELI_UART_LOG_PORT=1 CONFIG_JIELI_UART_LOG_BAUDRATE=115200
+tos.py config set CONFIG_BOARD_CHOICE_AC79_DEVKITBOARD=y CONFIG_JIELI_UART_LOG_PORT=1 CONFIG_JIELI_UART_LOG_BAUDRATE=115200
 tos.py build
 ```
 
 AC792 完整 Tuya `switch_demo`：
 
 ```powershell
-tos.py config set CONFIG_BOARD_CHOICE_AC792N_DEVELOP_BOARD=y CONFIG_JIELI_MINIMAL_HELLO=n CONFIG_JIELI_UART_LOG_PORT=0 CONFIG_JIELI_UART_LOG_BAUDRATE=115200
+tos.py config set CONFIG_BOARD_CHOICE_AC792N_DEVELOP_BOARD=y CONFIG_JIELI_UART_LOG_PORT=0 CONFIG_JIELI_UART_LOG_BAUDRATE=115200
 tos.py build
 ```
 
 该镜像包含 Tuya TKL Wi-Fi/BLE、BLE 配网、Tuya IoT 和 `switch_demo` DP 业务。AC792 SDK 的 WPA/SAE 还需链接 `libcrypto_mbedtls.a`。2026-09-24 已完成完整镜像构建，并由 `tos.py flash` 通过 USB 烧录成功；此前实板日志已有联网、云端激活及 DP 收发记录。UART 改为共用 UART0/115200 后已重新烧录，仍需抓取新日志核对本次串口配置。
+
+## TKL 头文件兼容基线
+
+`tuyaos/tuyaos_adapter/include/<域>/tkl_*.h` 是 Jieli 平台随仓维护的兼容快照，构建时优先于 TuyaOpen 公共 include 路径。当前 15 个头文件按内容（忽略 Git 换行差异）与 TuyaOpen 提交 `66e4c7000d2137e31f26433d01d1c92ac399c814` 的 `tools/porting/adapter/` 对应接口一致；`tkl_init.h` 对应 `tools/porting/adapter/init/include/tkl_init.h`。
+
+TuyaOpen 更新 TKL 接口时，以集成所用 TuyaOpen 提交中的 `tools/porting/adapter/` 为同步来源，逐项比较并更新本地快照，再检查 WL82、WL83 的构建。若 Jieli 为兼容性需要保留差异，应在改动处说明原因并更新本基线记录。不要从 T5AI 复制可能已分叉的头文件，也不要在 `include/` 中加入 Jieli 私有实现声明。
 
 ## 板级串口与内存参考
 
@@ -52,7 +58,7 @@ tos.py monitor -p COM3
 tos.py monitor -p COM3 -b 115200
 ```
 
-AC792 bring-up 固件预期打印 `TuyaOpen Jieli AC792N_Develop_Board (wl83)` 和周期性的 `TuyaOpen Jieli UART heartbeat`。只有连接实板抓取到这些日志，才能确认硬件日志链路已跑通。
+通用 Jieli 入口调用所选 TuyaOpen 应用的 `tuya_app_main()`。日志内容由应用和 TKL 实现输出。
 
 ## 已知限制
 
@@ -70,7 +76,7 @@ const u8 CONFIG_WPA3_SUPPORT = 0;  // 原值为 1
 
 **两块板的 RAM 物理容量仍未在实板上完整验证**，证据与现状见上一节。
 
-**工具链校验闸门拦住了你？** 自动下载的安装器会按固定 SHA-256 校验（`jieli_build.py` 的
+**工具链校验闸门拦住了你？** 自动下载的安装器会按固定 SHA-256 校验（`tools/jieli_build/toolchain.py` 的
 `WINDOWS_TOOLCHAIN_INSTALLER_SHA256`）。如果 Jieli 重新上传了同版本号的安装器导致校验不通过，
 手动安装工具链并把 `JIELI_TOOL_DIR` 指向其 `pi32v2/bin` 即可跳过自动下载。
 

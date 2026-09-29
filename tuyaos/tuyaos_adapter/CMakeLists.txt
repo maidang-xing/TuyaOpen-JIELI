@@ -1,29 +1,42 @@
 set(JIELI_ADAPTER_NAME jieli_tuya_adapter)
-set(JIELI_ADAPTER_SRC
-    ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_output.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_system.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_uart.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_thread.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_mutex.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_semaphore.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_queue.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_sleep.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_flash.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_ota.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/system/tkl_assert.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_bluetooth.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_jieli_chip_mac.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/system/tuyaopen_license.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_network.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/driver/tkl_wifi.c
-)
+
+if(CONFIG_CHIP_CHOICE STREQUAL "wl82")
+    set(JIELI_SELECTED_CHIP_DEFINE JIELI_SELECTED_CHIP_WL82)
+elseif(CONFIG_CHIP_CHOICE STREQUAL "wl83")
+    set(JIELI_SELECTED_CHIP_DEFINE JIELI_SELECTED_CHIP_WL83)
+else()
+    message(FATAL_ERROR "JIELI requires CONFIG_CHIP_CHOICE to be wl82 or wl83")
+endif()
+
+file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/adapter_sources.txt" JIELI_ADAPTER_RELATIVE_SRC
+    REGEX "^[^#].*\\.c$")
+set(JIELI_ADAPTER_SRC)
+foreach(source IN LISTS JIELI_ADAPTER_RELATIVE_SRC)
+    if(source MATCHES "^src/chip/(wl82|wl83)/")
+        set(source_chip "${CMAKE_MATCH_1}")
+        if(NOT source_chip STREQUAL "${CONFIG_CHIP_CHOICE}")
+            continue()
+        endif()
+    endif()
+    list(APPEND JIELI_ADAPTER_SRC "${CMAKE_CURRENT_LIST_DIR}/${source}")
+endforeach()
+
+file(GLOB JIELI_ADAPTER_INCLUDE_ENTRIES LIST_DIRECTORIES true
+    "${CMAKE_CURRENT_LIST_DIR}/include/*")
+set(JIELI_ADAPTER_INCLUDE_DIRS)
+foreach(include_entry IN LISTS JIELI_ADAPTER_INCLUDE_ENTRIES)
+    if(IS_DIRECTORY "${include_entry}")
+        list(APPEND JIELI_ADAPTER_INCLUDE_DIRS "${include_entry}")
+    endif()
+endforeach()
+list(APPEND JIELI_ADAPTER_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include/init/include")
 
 add_library(${JIELI_ADAPTER_NAME} STATIC ${JIELI_ADAPTER_SRC})
+target_compile_definitions(${JIELI_ADAPTER_NAME} PRIVATE "${JIELI_SELECTED_CHIP_DEFINE}=1")
 target_include_directories(${JIELI_ADAPTER_NAME}
     PUBLIC
         ${CMAKE_CURRENT_LIST_DIR}/include
-        ${CMAKE_CURRENT_LIST_DIR}/include/system
-        ${CMAKE_CURRENT_LIST_DIR}/include/driver
+        ${JIELI_ADAPTER_INCLUDE_DIRS}
         ${TOP_SOURCE_DIR}/tools/porting/adapter/system
         ${TOP_SOURCE_DIR}/tools/porting/adapter/uart
         ${TOP_SOURCE_DIR}/tools/porting/adapter/init/include
@@ -52,5 +65,4 @@ target_include_directories(${JIELI_ADAPTER_NAME}
         ${JIELI_SDK_ROOT}/include_lib/net/lwip_2_2_0/lwip/src/include
         ${JIELI_SDK_ROOT}/include_lib/net/lwip_2_2_0/lwip/src/include/compat
         ${JIELI_SDK_ROOT}/include_lib/net/lwip_2_2_0/lwip/port
-        ${JIELI_SDK_ROOT}/include_lib
 )

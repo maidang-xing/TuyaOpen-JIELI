@@ -4,37 +4,66 @@
 #include "device.h"
 #include "uart.h"
 
-#if defined(CONFIG_CPU_WL83)
-#define JIELI_UART_SET_RECV_BLOCK IOCTL_UART_SET_RECV_BLOCK
-#define JIELI_UART_SET_BAUDRATE  IOCTL_UART_SET_BAUDRATE
-#define JIELI_UART_START         IOCTL_UART_START
-#else
-#define JIELI_UART_SET_RECV_BLOCK UART_SET_RECV_BLOCK
-#define JIELI_UART_SET_BAUDRATE  UART_SET_BAUDRATE
-#define JIELI_UART_START         UART_START
-#endif
+#define TKL_UART_PORT_MAX 2
 
-static void *s_uart_handles[TUYA_UART_NUM_MAX];
+enum jieli_uart_ioctl_cmd {
+    JIELI_UART_IOCTL_SET_RECV_BLOCK,
+    JIELI_UART_IOCTL_SET_BAUDRATE,
+    JIELI_UART_IOCTL_START,
+};
+
+static void *s_uart_handles[TKL_UART_PORT_MAX];
 
 static const char *jieli_uart_device_name(TUYA_UART_NUM_E port_id)
 {
-#if defined(CONFIG_CPU_WL82)
-    /* TAL CLI uses Tuya UART0; AC79 routes it to hardware UART0 (PA5/PA6). */
-    return port_id == 0u ? "uart0" : NULL;
-#elif defined(CONFIG_CPU_WL83)
-    /* AC792N shares UART0 between the debug log and Tuya CLI. */
-    return port_id == 0u ? "uart0" : "uart2";
+    if (port_id == 0u) {
+        return "uart0";
+    }
+#if defined(JIELI_SELECTED_CHIP_WL83)
+    if (port_id == 1u) {
+        return "uart2";
+    }
+#endif
+    return NULL;
+}
+
+static uint32_t jieli_uart_ioctl(enum jieli_uart_ioctl_cmd cmd)
+{
+#if defined(JIELI_SELECTED_CHIP_WL83)
+    switch (cmd) {
+    case JIELI_UART_IOCTL_SET_RECV_BLOCK:
+        return IOCTL_UART_SET_RECV_BLOCK;
+    case JIELI_UART_IOCTL_SET_BAUDRATE:
+        return IOCTL_UART_SET_BAUDRATE;
+    case JIELI_UART_IOCTL_START:
+        return IOCTL_UART_START;
+    default:
+        return 0u;
+    }
+#elif defined(JIELI_SELECTED_CHIP_WL82)
+    switch (cmd) {
+    case JIELI_UART_IOCTL_SET_RECV_BLOCK:
+        return UART_SET_RECV_BLOCK;
+    case JIELI_UART_IOCTL_SET_BAUDRATE:
+        return UART_SET_BAUDRATE;
+    case JIELI_UART_IOCTL_START:
+        return UART_START;
+    default:
+        return 0u;
+    }
 #else
-    return port_id == 0u ? "uart1" : "uart2";
+#error "Jieli UART mapping requires a selected chip"
 #endif
 }
 
 OPERATE_RET tkl_uart_init(TUYA_UART_NUM_E port_id, TUYA_UART_BASE_CFG_T *cfg)
 {
-    if (port_id >= TUYA_UART_NUM_MAX || cfg == NULL) {
+    const char *device_name;
+
+    if (port_id >= TUYA_UART_NUM_MAX || port_id >= TKL_UART_PORT_MAX || cfg == NULL) {
         return OPRT_INVALID_PARM;
     }
-    const char *device_name = jieli_uart_device_name(port_id);
+    device_name = jieli_uart_device_name(port_id);
     if (device_name == NULL) {
         return OPRT_NOT_SUPPORTED;
     }
@@ -44,9 +73,9 @@ OPERATE_RET tkl_uart_init(TUYA_UART_NUM_E port_id, TUYA_UART_BASE_CFG_T *cfg)
 
     s_uart_handles[port_id] = dev_open(device_name, NULL);
     if (s_uart_handles[port_id] != NULL &&
-        (dev_ioctl(s_uart_handles[port_id], JIELI_UART_SET_RECV_BLOCK, 1u) != 0 ||
-         dev_ioctl(s_uart_handles[port_id], JIELI_UART_SET_BAUDRATE, cfg->baudrate) != 0 ||
-         dev_ioctl(s_uart_handles[port_id], JIELI_UART_START, 0u) != 0)) {
+        (dev_ioctl(s_uart_handles[port_id], jieli_uart_ioctl(JIELI_UART_IOCTL_SET_RECV_BLOCK), 1u) != 0 ||
+         dev_ioctl(s_uart_handles[port_id], jieli_uart_ioctl(JIELI_UART_IOCTL_SET_BAUDRATE), cfg->baudrate) != 0 ||
+         dev_ioctl(s_uart_handles[port_id], jieli_uart_ioctl(JIELI_UART_IOCTL_START), 0u) != 0)) {
         dev_close(s_uart_handles[port_id]);
         s_uart_handles[port_id] = NULL;
     }
@@ -58,7 +87,7 @@ OPERATE_RET tkl_uart_init(TUYA_UART_NUM_E port_id, TUYA_UART_BASE_CFG_T *cfg)
 
 OPERATE_RET tkl_uart_deinit(TUYA_UART_NUM_E port_id)
 {
-    if (port_id >= TUYA_UART_NUM_MAX || s_uart_handles[port_id] == NULL) {
+    if (port_id >= TUYA_UART_NUM_MAX || port_id >= TKL_UART_PORT_MAX || s_uart_handles[port_id] == NULL) {
         return OPRT_INVALID_PARM;
     }
     dev_close(s_uart_handles[port_id]);
@@ -68,7 +97,8 @@ OPERATE_RET tkl_uart_deinit(TUYA_UART_NUM_E port_id)
 
 int tkl_uart_write(TUYA_UART_NUM_E port_id, void *buff, uint16_t len)
 {
-    if (port_id >= TUYA_UART_NUM_MAX || s_uart_handles[port_id] == NULL || buff == NULL) {
+    if (port_id >= TUYA_UART_NUM_MAX || port_id >= TKL_UART_PORT_MAX || s_uart_handles[port_id] == NULL ||
+        buff == NULL) {
         return OPRT_INVALID_PARM;
     }
     int ret = dev_write(s_uart_handles[port_id], buff, len);
@@ -89,7 +119,8 @@ void tkl_uart_tx_irq_cb_reg(TUYA_UART_NUM_E port_id, TUYA_UART_IRQ_CB tx_cb)
 
 int tkl_uart_read(TUYA_UART_NUM_E port_id, void *buff, uint16_t len)
 {
-    if (port_id >= TUYA_UART_NUM_MAX || s_uart_handles[port_id] == NULL || buff == NULL) {
+    if (port_id >= TUYA_UART_NUM_MAX || port_id >= TKL_UART_PORT_MAX || s_uart_handles[port_id] == NULL ||
+        buff == NULL) {
         return OPRT_INVALID_PARM;
     }
     int ret = dev_read(s_uart_handles[port_id], buff, len);

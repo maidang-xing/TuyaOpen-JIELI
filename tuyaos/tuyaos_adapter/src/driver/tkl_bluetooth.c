@@ -1,4 +1,5 @@
 #include "tkl_bluetooth.h"
+#include "tkl_wifi.h"
 
 #include "att.h"
 #include "avctp_user.h"
@@ -12,10 +13,39 @@
 #include "ble/hci_ll.h"
 #include "le_common_define.h"
 #include "le_user.h"
-#include "tkl_jieli_chip_mac.h"
 
+#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+
+extern int le_controller_set_random_mac(void *addr);
+
+static int jieli_ble_set_local_address(void)
+{
+    NW_MAC_S wifi_mac;
+    uint8_t ble_mac[6];
+    uint8_t payload_is_zero;
+    uint8_t payload_is_one;
+
+    if (tkl_wifi_get_mac(WF_STATION, &wifi_mac) != OPRT_OK) {
+        return -1;
+    }
+    memcpy(ble_mac, wifi_mac.mac, sizeof(ble_mac));
+    ble_mac[5]++;
+    ble_mac[0] = (uint8_t)((ble_mac[0] & 0x3FU) | 0xC0U);
+    payload_is_zero = (uint8_t)((ble_mac[0] & 0x3FU) == 0U &&
+                                ble_mac[1] == 0U && ble_mac[2] == 0U && ble_mac[3] == 0U &&
+                                ble_mac[4] == 0U && ble_mac[5] == 0U);
+    payload_is_one = (uint8_t)((ble_mac[0] & 0x3FU) == 0x3FU &&
+                               ble_mac[1] == 0xFFU && ble_mac[2] == 0xFFU && ble_mac[3] == 0xFFU &&
+                               ble_mac[4] == 0xFFU && ble_mac[5] == 0xFFU);
+    if (payload_is_zero) {
+        ble_mac[5] = 0x01U;
+    } else if (payload_is_one) {
+        ble_mac[5] = 0xFEU;
+    }
+    return le_controller_set_random_mac(ble_mac);
+}
 
 /*
  * wl82 BLE integration notes
@@ -683,14 +713,8 @@ OPERATE_RET tkl_ble_stack_init(uint8_t role)
     /* Use a stable UID-derived random-static address. Do not query the vendor
      * EDR getter here: its fallback can wait for WiFi while WiFi is deferred. */
     void lmp_set_sniff_disable(void);
-    int le_controller_set_random_mac(void *addr);
-    u8 ble_addr[6];
-
     lmp_set_sniff_disable();
-    if (jieli_chip_mac_get_ble(ble_addr) != 0) {
-        return OPRT_COM_ERROR;
-    }
-    if (le_controller_set_random_mac(ble_addr) != 0) {
+    if (jieli_ble_set_local_address() != 0) {
         return OPRT_COM_ERROR;
     }
     s_ble_own_address_type = TKL_BLE_GAP_ADDR_TYPE_RANDOM;
