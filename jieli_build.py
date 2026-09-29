@@ -7,6 +7,7 @@ Select the target with the JIELI_CHIP environment variable (default: wl82).
 
 from __future__ import annotations
 
+import hashlib
 import os
 import re
 import shutil
@@ -22,6 +23,13 @@ WINDOWS_TOOLCHAIN_INSTALLER_URL = (
     "https://jl-update.oss-cn-shenzhen.aliyuncs.com/2.5.2.exe"
 )
 WINDOWS_TOOLCHAIN_INSTALLER_NAME = "jieli-windows-toolchains-2.5.2.exe"
+# SHA-256 of the official 2.5.2 installer served at the URL above. Jieli does
+# not publish a digest, so this is pinned on first use: it detects later CDN
+# corruption or substitution, but it cannot vouch for the first download.
+# Update it together with WINDOWS_TOOLCHAIN_INSTALLER_URL/NAME.
+WINDOWS_TOOLCHAIN_INSTALLER_SHA256 = (
+    "1ec78e3315a5987d4e82ecd002536c84240e5c832b1875beff7ce55450124ee5"
+)
 
 
 class JielichipConfig:
@@ -361,13 +369,17 @@ def configure_full_stack_app_config(app_config_file: Path) -> None:
     app_config_file.write_text(content[:insert_at] + config + content[insert_at:], encoding="utf-8")
 
 
-def configure_ac79_devkit_memory(app_config_file: Path) -> None:
-    """Use the AC79 DevKit reference memory map in the staging copy."""
-    if not app_config_file.is_file():
-        raise BuildError(f"Jieli app_config.h not found: {app_config_file}")
+def _rewrite_memory_macros(config_file: Path, sizes: Mapping[str, int]) -> None:
+    """Force a reference memory map, requiring each macro to appear exactly once.
 
-    content = app_config_file.read_text(encoding="utf-8")
-    for macro, size_mib in (("__FLASH_SIZE__", 8), ("__SDRAM_SIZE__", 8)):
+    Matching on the macro name matters: replacing the first "(N * 1024 * 1024)"
+    occurrence would silently rewrite whichever macro happens to come first.
+    """
+    if not config_file.is_file():
+        raise BuildError(f"Jieli config not found: {config_file}")
+
+    content = config_file.read_text(encoding="utf-8")
+    for macro, size_mib in sizes.items():
         pattern = re.compile(rf"(?m)^([ \t]*#define[ \t]+{macro}[ \t]+)[^\r\n]*$")
         content, count = pattern.subn(
             lambda match: f"{match.group(1)}({size_mib} * 1024 * 1024)",
@@ -375,21 +387,35 @@ def configure_ac79_devkit_memory(app_config_file: Path) -> None:
         )
         if count != 1:
             raise BuildError(
-                f"Expected exactly one {macro} definition in {app_config_file}, found {count}"
+                f"Expected exactly one {macro} definition in {config_file}, found {count}"
             )
 
-    app_config_file.write_text(content, encoding="utf-8")
+    config_file.write_text(content, encoding="utf-8")
+
+
+def configure_ac79_devkit_memory(app_config_file: Path) -> None:
+    """Use the AC79 DevKit reference memory map in the staging copy."""
+    _rewrite_memory_macros(app_config_file, {"__FLASH_SIZE__": 8, "__SDRAM_SIZE__": 8})
 
 
 def configure_ac792_devkit_memory(chip_config_file: Path, board_config_file: Path) -> None:
     """Use the AC792N development-board reference SKU (AC7926A) memory map."""
-    content = chip_config_file.read_text(encoding="utf-8")
-    content = content.replace("(1 * 1024 * 1024)", "(8 * 1024 * 1024)", 1)
-    content = content.replace("(2 * 1024 * 1024)", "(16 * 1024 * 1024)", 1)
-    chip_config_file.write_text(content, encoding="utf-8")
+    _rewrite_memory_macros(chip_config_file, {"__FLASH_SIZE__": 8, "__SDRAM_SIZE__": 16})
+
+    if not board_config_file.is_file():
+        raise BuildError(f"Jieli board config not found: {board_config_file}")
 
     content = board_config_file.read_text(encoding="utf-8")
-    content = content.replace("#define CONFIG_NO_SDRAM_ENABLE", "/* External DDR is enabled for AC7926A DevKit. */", 1)
+    content, count = re.subn(
+        r"(?m)^[ \t]*#define[ \t]+CONFIG_NO_SDRAM_ENABLE[ \t]*$",
+        "/* External DDR is enabled for AC7926A DevKit. */",
+        content,
+    )
+    if count != 1:
+        raise BuildError(
+            f"Expected exactly one CONFIG_NO_SDRAM_ENABLE definition in "
+            f"{board_config_file}, found {count}"
+        )
     board_config_file.write_text(content, encoding="utf-8")
 
 
@@ -473,6 +499,28 @@ def resolve_tool_dir(
     )
 
 
+def _sha256_of(path: Path) -> str:
+    """Streaming SHA-256, so the ~50 MiB installer is never held in memory."""
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _verify_installer(path: Path) -> None:
+    """Reject anything that is not the pinned installer."""
+    try:
+        actual = _sha256_of(path)
+    except OSError as exc:
+        raise BuildError(f"cannot read the toolchain installer: {exc}") from exc
+    if actual != WINDOWS_TOOLCHAIN_INSTALLER_SHA256:
+        raise BuildError(
+            "toolchain installer checksum mismatch: expected "
+            f"{WINDOWS_TOOLCHAIN_INSTALLER_SHA256}, got {actual}"
+        )
+
+
 def download_windows_toolchain_installer(
     module_root: Path = MODULE_ROOT,
 ) -> Path:
@@ -487,12 +535,16 @@ def download_windows_toolchain_installer(
 
     if installer.is_file():
         try:
-            with installer.open("rb") as stream:
-                if installer.stat().st_size >= 1024 and stream.read(2) == b"MZ":
-                    return installer
-        except OSError:
-            pass
-        installer.unlink(missing_ok=True)
+            _verify_installer(installer)
+            return installer
+        except BuildError as exc:
+            print(f"[JIELI] Discarding the cached installer: {exc}")
+            try:
+                installer.unlink(missing_ok=True)
+            except OSError as unlink_exc:
+                raise BuildError(
+                    f"cannot discard the cached toolchain installer {installer}: {unlink_exc}"
+                ) from unlink_exc
 
     request = urllib.request.Request(
         WINDOWS_TOOLCHAIN_INSTALLER_URL,
@@ -526,9 +578,9 @@ def download_windows_toolchain_installer(
             raise BuildError(
                 f"incomplete toolchain installer download ({downloaded} of {content_length} bytes)"
             )
-        with partial.open("rb") as stream:
-            if partial.stat().st_size < 1024 or stream.read(2) != b"MZ":
-                raise BuildError("downloaded toolchain installer is not a valid Windows executable")
+        if partial.stat().st_size < 1024:
+            raise BuildError("downloaded toolchain installer is implausibly small")
+        _verify_installer(partial)
         partial.replace(installer)
     except (urllib.error.URLError, OSError, TimeoutError, BuildError) as exc:
         partial.unlink(missing_ok=True)

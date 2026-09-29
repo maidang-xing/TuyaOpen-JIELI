@@ -45,35 +45,95 @@ typedef struct {
 /* One FreeRTOS/OS tick, used to convert TKL millisecond timeouts. */
 #define JIELI_TKL_TICK_MS 10u
 
+/* TKL's timeout sentinels, so call sites do not pass bare 0 / 0xFFFFFFFF. */
+#define JIELI_TKL_NO_WAIT 0u
+#define JIELI_TKL_WAIT_FOREVER 0xFFFFFFFFu
+
+/*
+ * The AC792N build stores a pend timeout in the u16 OSTCBDly field of the task
+ * control block, so a larger tick count truncates silently - 0x7FFFFFFF would
+ * become 65535. Cap finite waits at 65535 ticks, about 11 minutes.
+ */
+#define JIELI_TKL_MAX_TICKS 65535u
+
 /*
  * Convert a TKL millisecond timeout into the tick count os_*_pend() expects.
  *
- * TKL uses 0 for "do not wait" and 0xFFFFFFFF for "wait forever". The two SDKs
- * disagree on what 0 ticks means - AC79NN maps it to portMAX_DELAY while
- * AC792N reads it as "do not wait" - so WAIT_FOREVER is expressed as a large
- * positive tick count, which both treat as a long finite wait. A TKL timeout
- * of 0 is returned as 0 and must be handled by the caller through the matching
- * os_*_accept() call, never passed to os_*_pend().
+ * Do not pass TKL's 0 or 0xFFFFFFFF through here. On BOTH SDKs a 0 tick timeout
+ * means "wait forever" (os_api.h: "取0时无限等待") and a -1 tick timeout means
+ * "do not wait", so jieli_tkl_sem_wait()/jieli_tkl_mutex_pend() handle those two
+ * cases themselves. Call this only for a finite, non-zero timeout.
  *
- * The division is written to avoid the overflow that "timeout_ms + TICK_MS - 1"
- * would hit for timeout_ms close to UINT32_MAX.
+ * The division avoids the overflow that "timeout_ms + TICK_MS - 1" would hit for
+ * timeout_ms close to UINT32_MAX.
  */
 static inline int jieli_tkl_timeout_to_ticks(uint32_t timeout_ms)
 {
-    if (timeout_ms == 0u) {
-        return 0;
-    }
-    if (timeout_ms == 0xFFFFFFFFu) {
-        return 0x7FFFFFFF;
-    }
-    return (int)(timeout_ms / JIELI_TKL_TICK_MS + (timeout_ms % JIELI_TKL_TICK_MS != 0u ? 1u : 0u));
+    uint32_t ticks = timeout_ms / JIELI_TKL_TICK_MS + (timeout_ms % JIELI_TKL_TICK_MS != 0u ? 1u : 0u);
+
+    return (int)(ticks > JIELI_TKL_MAX_TICKS ? JIELI_TKL_MAX_TICKS : ticks);
 }
 
-/* Wait on a Jieli semaphore, honouring TKL's timeout contract. */
+/*
+ * Non-blocking semaphore take, normalised to 0 on success / OS_TIMEOUT on
+ * failure on both SDKs.
+ *
+ * Neither vendor call is usable on its own:
+ *   - os_sem_accept() returns 0/OS_TIMEOUT on AC79NN, but on AC792N it is a bare
+ *     tail call to uCOS-II OSSemAccept(), which returns the PRE-decrement count:
+ *     0 when the semaphore was empty, >= 1 when a token was taken. Opposite
+ *     sense, and the token is consumed either way.
+ *   - os_sem_pend(sem, -1) is normalised on AC792N, but on AC79NN it logs
+ *     "<Error>: [OS] [Serious Warning for os_sem_pend]For blocking, please set
+ *     timeout to 0" on every call, and the non-blocking path is hot.
+ *
+ * The two SDKs cannot be told apart by a header-level #if. The same adapter
+ * sources are compiled twice: the staged vendor Makefile defines
+ * -DCONFIG_CPU_WL83 for the AC792N build (plus -DCONFIG_UCOS_ENABLE), while the
+ * CMake adapter target hardcodes -DCONFIG_CPU_WL82 even for that build, so an
+ * #if here would be correct only in whichever copy the linker happens to pick.
+ * Probe the convention once instead, which asks the OS that is actually linked:
+ * a scratch semaphore created at count 1 - AC79NN reports success as 0, AC792N
+ * as the pre-decrement count of 1.
+ */
+static inline int jieli_tkl_sem_accept(OS_SEM *sem)
+{
+    static int accept_returns_count = -1;
+    int result;
+
+    if (accept_returns_count < 0) {
+        OS_SEM probe;
+
+        /* Fall back to the AC79NN convention if the probe cannot be created. */
+        accept_returns_count = 0;
+        if (os_sem_create(&probe, 1) == 0) {
+            accept_returns_count = (os_sem_accept(&probe) != 0);
+            (void)os_sem_del(&probe, OS_DEL_ALWAYS);
+        }
+    }
+
+    result = os_sem_accept(sem);
+    if (accept_returns_count) {
+        return (result > 0) ? 0 : OS_TIMEOUT;
+    }
+    return result;
+}
+
+/*
+ * Wait on a Jieli semaphore, honouring TKL's timeout contract: 0 means "do not
+ * wait" and 0xFFFFFFFF means "wait forever".
+ *
+ * Both SDKs read a 0 tick timeout as "wait forever" (os_api.h: "取0时无限等待"),
+ * so TKL's 0 must never reach os_sem_pend(); the non-blocking case goes through
+ * the normalised os_sem_accept() above instead.
+ */
 static inline int jieli_tkl_sem_wait(OS_SEM *sem, uint32_t timeout_ms)
 {
-    if (timeout_ms == 0u) {
-        return os_sem_accept(sem);
+    if (timeout_ms == JIELI_TKL_NO_WAIT) {
+        return jieli_tkl_sem_accept(sem);
+    }
+    if (timeout_ms == JIELI_TKL_WAIT_FOREVER) {
+        return os_sem_pend(sem, 0);
     }
     return os_sem_pend(sem, jieli_tkl_timeout_to_ticks(timeout_ms));
 }
