@@ -87,10 +87,14 @@ static inline int jieli_tkl_timeout_to_ticks(uint32_t timeout_ms)
  *     "<Error>: [OS] [Serious Warning for os_sem_pend]For blocking, please set
  *     timeout to 0" on every call, and the non-blocking path is hot.
  *
- * The two SDKs cannot be told apart at compile time - this adapter is compiled
- * with -DCONFIG_CPU_WL82 for both chips - so probe the convention once with a
- * scratch semaphore that starts at 1: AC79NN reports success as 0, AC792N as the
- * pre-decrement count of 1.
+ * The two SDKs cannot be told apart by a header-level #if. The same adapter
+ * sources are compiled twice: the staged vendor Makefile defines
+ * -DCONFIG_CPU_WL83 for the AC792N build (plus -DCONFIG_UCOS_ENABLE), while the
+ * CMake adapter target hardcodes -DCONFIG_CPU_WL82 even for that build, so an
+ * #if here would be correct only in whichever copy the linker happens to pick.
+ * Probe the convention once instead, which asks the OS that is actually linked:
+ * a scratch semaphore created at count 1 - AC79NN reports success as 0, AC792N
+ * as the pre-decrement count of 1.
  */
 static inline int jieli_tkl_sem_accept(OS_SEM *sem)
 {
