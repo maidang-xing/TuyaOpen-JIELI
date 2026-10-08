@@ -28,6 +28,13 @@ def parse_build_params(path: Path) -> dict[str, str]:
     return params
 
 
+def resolve_board_name(params: dict[str, str]) -> str | None:
+    """Return the selected Jieli board profile used by the staging hooks."""
+    if params.get("CONFIG_BOARD_CHOICE_AC792N_DEVELOP_BOARD") in ("y", "true", "True"):
+        return "AC792N_Develop_Board"
+    return None
+
+
 def _run(command: list[str], cwd: Path, env: dict[str, str]) -> None:
     print(f"[JIELI] run: {shlex.join(command)}")
     result = subprocess.run(command, cwd=cwd, env=env, check=False)
@@ -64,6 +71,7 @@ def build(params: dict[str, str]) -> Path:
         uart_log_baudrate=int(params.get("CONFIG_JIELI_UART_LOG_BAUDRATE", "115200")),
         platform_root=PLATFORM_ROOT,
         chip=chip,
+        board_name=resolve_board_name(params),
     )
     jobs = max(1, int(os.environ.get("JIELI_BUILD_JOBS", "1")))
     env = os.environ.copy()

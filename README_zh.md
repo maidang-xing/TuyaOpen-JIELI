@@ -3,7 +3,7 @@
 | 统一板名 | 芯片/平台 | 状态 | SDK |
 | --- | --- | --- | --- |
 | `AC79_DevKitBoard` | AC791 / WL82 | 完整 TuyaOpen `switch_demo` 构建入口已验证；历史别名 `AC7916A` 保留 | `chip/wl82/AC79_AIoT_SDK`（`release/AC79NN_SDK_V1.2.0`，tag `AC79NN_SDK_V1.2.13_2026-04-20`）|
-| `AC792N_Develop_Board` | AC792N / WL83 | 完整 `switch_demo` 已在 Windows 构建并 USB 烧录；此前实板日志验证 Wi-Fi、Tuya 激活与 DP 收发，最新 UART0/115200 固件需补抓启动日志 | `chip/wl83/AC792_SDK`（`release/AC792N_SDK_V3`，tag `AC792N_SDK_BETA_V3.1.7_2026-08-25`）|
+| `AC792N_Develop_Board` | AC792N / WL83 | 完整 `switch_demo` 已在 Windows 构建并 USB 烧录；2026-10-08 独立冻结的 HUSB 固件在 AC792N V1.21 实板连续两轮运行时升级通过（USB VID:PID `3654:7857`）。本 PR 的 QIO 产物及 `tos.py flash` 尚未实板验收 | `chip/wl83/AC792_SDK`（`release/AC792N_SDK_V3`，tag `AC792N_SDK_BETA_V3.1.7_2026-08-25`）|
 
 所有工程均从 TuyaOpen 仓库根目录或示例目录使用 `tos.py`。Windows 是当前支持的烧录环境。AC79 与 AC792 SDK 源码直接纳入 JieLi 平台仓库的 `chip/` 目录，不使用 Git submodule；AC79 SDK 中当前未使用的 `libmatter.a` 按项目约定忽略，不提交。本地工具链默认从 `C:\\JL\\pi32\\bin` 查找，也可设置 `JIELI_TOOL_DIR`。
 
@@ -49,7 +49,26 @@ tos.py flash
 tos.py monitor -p COM3
 ```
 
-`tos.py flash` 根据当前 `CHIP_CHOICE` 选择对应 SDK 的 `isd_download.exe` 和配置文件。AC792 USB 烧录按官方流程按住 `UPDATE` 键并重新上电，确认设备枚举为 `WL83 UBOOT1.00 USB Device` 后执行下载。AC79 使用其 WL82 USB 下载模式。烧录桥不负责识别日志 COM 口；`tos.py monitor` 需要指定设备管理器中的日志 COM 号。
+`tos.py flash` 根据当前 `CHIP_CHOICE` 选择对应 SDK 的 `isd_download.exe` 和配置文件。设备为空片，或尚未烧入启用 USB 从机的应用固件时，需按对应芯片官方流程手动进入 Boot/ROM 下载模式：AC792 按住 `UPDATE` 并重新上电，AC79 使用 WL82 USB 下载模式。AC792 进入下载模式后可确认枚举为 `WL83 UBOOT1.00 USB Device`。烧录桥不负责识别日志 COM 口；`tos.py monitor` 需要指定设备管理器中的日志 COM 号。
+
+### USB 运行时自动进入 ROM 下载
+
+AC79/WL82 与 AC792/WL83 的完整 Tuya 应用构建会启用 USB Mass Storage 从机服务。**首次使用这项能力时，仍需按上面的板卡流程手动进入 Boot/ROM 下载模式，并烧入包含 USB 从机服务的固件。**这一步建立后续运行时升级的入口；空片或尚未烧入该固件的设备不会因为 `tos.py flash` 而免按键进入 ROM。
+
+此后，在设备正常运行该固件且通过板上的 USB 数据接口连接 PC 时，可尝试按平常流程重新构建并运行 `tos.py flash`。Windows 平台桥调用 SDK 自带的 `isd_download.exe`。设备侧源码确认 USB 从机服务会响应特定私有 USB 请求，并在请求长度为 0 时调用 SDK 的 `go_mask_usb_updata()`；杰理官方文档说明，固件启用 USB 从机后可在运行中下载程序。`tos.py flash`、下载器请求与设备跳转 ROM、镜像写入及重启的端到端配合仍需实板验证。正常运行且 USB 从机服务已启动时，预期无需手动按 `UPDATE` 键。现有命令为：
+
+```powershell
+tos.py build
+tos.py flash
+```
+
+该路径依赖应用固件仍能启动、USB 从机服务已运行，以及 `isd_download` 与固件/芯片配置匹配。使用板上连接到 PC 的 **USB 数据接口**；仅供充电的线缆或接口无法工作。日志 UART/COM 与这个下载 USB 接口是不同用途。平台为 USB 从机配置 Mass Storage 类并常驻服务任务；如果应用还要通过同一 OTG 物理接口使用 USB Host、U 盘、摄像头或其他 USB 类，角色和类配置可能冲突。此类组合需按目标板和接线单独验证，不能据此假定 Host 功能同时可用。
+
+AC792N 实板的独立冻结 HUSB 镜像已于 2026-10-08 连续两轮通过运行时 USB 升级，设备以 VID:PID `3654:7857` 枚举；该证据不代表本 PR 的 QIO 已经烧录或验收。升级时仍使用相同的 `tos.py flash` 命令：第一次先按板卡流程手动进入 Boot/ROM，烧入带 USB 从机服务的固件；应用启动后，后续升级保持正常运行并连接 USB 数据口，再执行同一命令，无需按 `UPDATE`。首刷的 ROM 入口和后续运行时升级是设备所处状态不同，CLI 命令相同。
+
+本 PR 仍需将生成的 QIO 通过 `tos.py flash` 实际烧录到 AC792N，并在实板确认新镜像运行；AC79/WL82 运行时 USB 升级也尚待验收。测试记录中的 COM8 当时被占用，日志 UART 未能据此验证。不要把独立冻结镜像的两轮结果记为本 PR 固件的验收结果。
+
+官方参考：[AC79 USB 下载](https://doc.zh-jieli.com/AC79/zh-cn/master/getting_started/preparation/update.html)、[AC792 USB 下载](https://doc.zh-jieli.com/AC792/zh-cn/wifi_video_master/getting_started/preparation/update.html)、[AC79 USB 配置](https://doc.zh-jieli.com/AC79/zh-cn/master/module_example/peripherals/usb.html)、[AC792 USB 配置](https://doc.zh-jieli.com/AC792/zh-cn/wifi_video_master/module_example/peripherals/usb.html)。
 
 也可以显式覆盖波特率：
 

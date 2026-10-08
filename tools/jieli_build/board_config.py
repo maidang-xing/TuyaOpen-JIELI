@@ -361,3 +361,115 @@ def configure_full_stack_board(board_file: Path, reference_board_file: Optional[
         replacement = board_init_marker + "\n#ifdef CONFIG_BT_ENABLE\n    void cfg_file_parse(void);\n    cfg_file_parse();\n#endif"
         content = content.replace(board_init_marker, replacement, 1)
     board_file.write_text(content, encoding="utf-8")
+
+
+# The vendor SDK already implements the download-mode entry point: msd_upgrade.c
+# defines go_mask_usb_updata(), and user_setup.c calls it from the private
+# GET_STATUS wValue=0xfc/wIndex=0xfe handler. Both are gated only by
+# TCFG_USB_SLAVE_ENABLE, so keeping the USB device stack serviced at runtime is
+# what makes the host tool able to command download mode without the UPDATE key.
+USB_DOWNLOAD_MARKER = "/* TuyaOpen Jieli runtime USB download-mode configuration. */"
+
+
+def _insert_before_final_endif(config_file: Path, block: str) -> None:
+    """Insert a configuration block inside a header's include guard."""
+    if not config_file.is_file():
+        raise BuildError(f"Jieli config not found: {config_file}")
+    content = config_file.read_text(encoding="utf-8")
+    if USB_DOWNLOAD_MARKER in content:
+        return
+    insert_at = content.rfind("#endif")
+    if insert_at < 0:
+        raise BuildError(f"Jieli config has no final #endif: {config_file}")
+    config_file.write_text(content[:insert_at] + block + content[insert_at:], encoding="utf-8")
+
+
+def configure_usb_download_app_config(app_config_file: Path) -> None:
+    """Enable the AC79 USB slave/MSD stack that serves download-mode requests.
+
+    MASSSTORAGE_CLASS is what pulls in msd.c/msd_upgrade.c and enables the SCSI
+    trigger; the control-endpoint GET_STATUS handshake works with any slave
+    class. USB_PC_NO_APP_MODE=2 starts the stack straight from the OTG event
+    handler, because the Tuya image has no vendor PC app state machine.
+    """
+    block = (
+        f"{USB_DOWNLOAD_MARKER}\n"
+        "#define CONFIG_USB_ENABLE                   1\n"
+        "#ifdef CONFIG_USB_ENABLE\n"
+        "#define TCFG_PC_ENABLE                      1\n"
+        "#define USB_PC_NO_APP_MODE                  2\n"
+        "#define USB_MALLOC_ENABLE                   1\n"
+        "#define USB_DEVICE_CLASS_CONFIG             (MASSSTORAGE_CLASS)\n"
+        "#define TCFG_HOST_AUDIO_ENABLE              0\n"
+        "#define TCFG_HOST_UVC_ENABLE                0\n"
+        "#define TCFG_HID_HOST_ENABLE                0\n"
+        "#define TCFG_UDISK_ENABLE                   0\n"
+        '#include "usb_std_class_def.h"\n'
+        '#include "usb_common_def.h"\n'
+        "#endif\n\n"
+    )
+    _insert_before_final_endif(app_config_file, block)
+
+
+def configure_usb_download_board_header(
+    board_header: Path, usb_device: str = "TCFG_FUSB_DEVICE"
+) -> None:
+    """Enable the AC792 USB slave/MSD stack in the staged board profile.
+
+    board_demo.h is reached from the USB sources through
+    app_config.h -> board_config.h -> board_demo.h.
+    """
+    block = (
+        f"{USB_DOWNLOAD_MARKER}\n"
+        "#define TCFG_FUSB_DEVICE                    BIT(0)\n"
+        "#define TCFG_HUSB_DEVICE                    BIT(1)\n"
+        f"#define TCFG_USB_DEVICE                     {usb_device}\n"
+        "#define TCFG_PC_ENABLE                      1\n"
+        "#define USB_PC_NO_APP_MODE                  2\n"
+        "#define USB_MALLOC_ENABLE                   1\n"
+        "#define USB_DEVICE_CLASS_CONFIG             (MASSSTORAGE_CLASS)\n"
+        '#include "usb_std_class_def.h"\n'
+        '#include "usb_common_def.h"\n\n'
+    )
+    _insert_before_final_endif(board_header, block)
+
+
+def configure_usb_download_board(board_file: Path, usb_ports: str = "0x03") -> None:
+    """Register the OTG device so the USB slave stack is started and serviced.
+
+    The OTG driver raises DEVICE_EVENT_FROM_OTG on cable events; the Tuya adapter
+    hook routes those to pc_device_event_handler(), which calls usb_start() and keeps
+    the usb_msd0 worker alive for as long as the app runs.
+    """
+    if not board_file.is_file():
+        return
+
+    content = board_file.read_text(encoding="utf-8")
+    if USB_DOWNLOAD_MARKER in content:
+        return
+
+    device_table = "REGISTER_DEVICES(device_table) = {"
+    if device_table not in content:
+        raise BuildError(f"Jieli board file has no device table: {board_file}")
+
+    platform_data = (
+        f"{USB_DOWNLOAD_MARKER}\n"
+        '#include "otg.h"\n'
+        "\n"
+        "static const struct otg_dev_data otg_data = {\n"
+        f"    .usb_dev_en = {usb_ports},\n"
+        "    .slave_online_cnt = 10,\n"
+        "    .slave_offline_cnt = 10,\n"
+        "    .host_online_cnt = 10,\n"
+        "    .host_offline_cnt = 10,\n"
+        "    .detect_mode = OTG_SLAVE_MODE | OTG_CHARGE_MODE,\n"
+        "    .detect_time_interval = 50,\n"
+        "};\n\n"
+    )
+    content = content.replace(device_table, platform_data + device_table, 1)
+    content = content.replace(
+        device_table,
+        device_table + '\n    { "otg", &usb_dev_ops, (void *)&otg_data},',
+        1,
+    )
+    board_file.write_text(content, encoding="utf-8")
