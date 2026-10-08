@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Optional
 
@@ -12,10 +13,52 @@ from .audio_profile import AUDIO_PROFILES, apply_audio_profile
 from .board_config import (
     configure_ac79_devkit_memory, configure_ac79_log_uart, configure_ac792_devkit_memory,
     configure_ac792_log_uart, configure_audio_board, configure_full_stack_app_config,
-    configure_full_stack_board, configure_service_uart,
+    configure_full_stack_board, configure_service_uart, configure_usb_download_app_config,
+    configure_usb_download_board, configure_usb_download_board_header,
 )
 from .chip_profiles import JIELI_CHIPS, PLATFORM_ROOT, resolve_chip
 from .errors import BuildError
+
+# SDK-root-relative sources that keep the vendor USB slave stack serviced while
+# the Tuya app runs. msd_upgrade.c owns go_mask_usb_updata() and user_setup.c
+# answers the private GET_STATUS download-mode request; task_pc.c owns the
+# persistent usb_msd0 worker. The adapter event hook below routes OTG events
+# without compiling the SDK's unrelated SD mount implementation.
+USB_DEVICE_SOURCES = (
+    "apps/common/usb/usb_config.c",
+    "apps/common/usb/usb_epbuf_manager.c",
+    "apps/common/usb/device/usb_device.c",
+    "apps/common/usb/device/descriptor.c",
+    "apps/common/usb/device/user_setup.c",
+    "apps/common/usb/device/msd.c",
+    "apps/common/usb/device/msd_upgrade.c",
+    "apps/common/usb/device/task_pc.c",
+)
+
+# Paths the vendor USB device stack expects on the include search path. The
+# host/ entries are needed by usb_epbuf_manager.c even for a device-only build.
+USB_INCLUDE_DIRS = (
+    "apps/common",
+    "apps/common/usb",
+    "apps/common/usb/device",
+    "apps/common/usb/host",
+    "apps/common/usb/include",
+    "apps/common/usb/include/host",
+    "include_lib/driver/device/usb",
+    "include_lib/driver/device/usb/device",
+    "include_lib/driver/device/usb/host",
+)
+
+
+def usb_device_sources() -> list[str]:
+    """Render the USB device sources relative to the demo board directory."""
+    return ["../../../../../" + source for source in USB_DEVICE_SOURCES]
+
+
+def usb_include_lines() -> list[str]:
+    """Render the USB include paths relative to the demo board directory."""
+    return ["-I../../../../../" + directory for directory in USB_INCLUDE_DIRS]
+
 
 def link_directory(link: Path, target: Path) -> None:
     try:
@@ -193,6 +236,8 @@ def build_make_command(sdk_root: Path, tool_dir: Path, jobs: int = 1, chip=None)
     ]
     if os.name == "nt":
         command.insert(4, "LINK_AT=0")
+        helper = Path(__file__).resolve().parent / "mkdir.py"
+        command.insert(5, f'MKDIR="{Path(sys.executable).as_posix()}" "{helper.as_posix()}" -p')
     return command
 
 def create_staging_tree(
@@ -205,6 +250,7 @@ def create_staging_tree(
     uart_log_baudrate: int = 115200,
     platform_root: Path = PLATFORM_ROOT,
     chip=None,
+    board_name: Optional[str] = None,
 ) -> Path:
     """Create a small overlay tree without modifying the vendor checkout."""
     if staging_root.exists():
@@ -236,11 +282,20 @@ def create_staging_tree(
     )
     configure_full_stack_board(board_file, reference_board_file)
     configure_full_stack_app_config(app_config_file)
+    configure_usb_download_board(
+        board_file, "TCFG_USB_DEVICE" if chip.name == "wl83" else "0x03",
+    )
     if chip.name == "wl83":
+        configure_usb_download_board_header(
+            source_overlay_root / "apps/demo/demo_hello/board/wl83/board_demo.h",
+            "TCFG_HUSB_DEVICE" if board_name == "AC792N_Develop_Board" else "TCFG_FUSB_DEVICE",
+        )
         configure_ac792_devkit_memory(
             source_overlay_root / "apps/demo/demo_hello/board/wl83/chip_cfg.h",
             source_overlay_root / "apps/demo/demo_hello/board/wl83/board_demo.h",
         )
+    else:
+        configure_usb_download_app_config(app_config_file)
     profile = AUDIO_PROFILES.get(chip.name)
     if profile is not None and profile.board_declarations:
         configure_audio_board(
@@ -281,6 +336,8 @@ def create_staging_tree(
             "../../../../../tuya_utilities/src/tuya_tools.c",
         ]
     )
+    extra_sources_list.extend(usb_device_sources())
+    extra_sources_list.append("../../../../../tuyaos/entry/jieli_usb_download.c")
     extra_sources_list.extend(
         [
             "../../../../../apps/common/config/bt_profile_config.c",
@@ -336,6 +393,8 @@ def create_staging_tree(
         content += f"    -I{tuyaopen_root_make}/tools/porting/adapter/kws \\\n"
     content += "    -I../../../../../apps/common/include \\\n"
     content += "    -I../../../../../apps/common/config/include \\\n"
+    for include in usb_include_lines():
+        content += f"    {include} \\\n"
     content += "    -I../../../../../include_lib/btstack \\\n"
     content += "    -I../../../../../include_lib/btstack/le \\\n"
     content += "    -I../../../../../include_lib/btctrler \\\n"

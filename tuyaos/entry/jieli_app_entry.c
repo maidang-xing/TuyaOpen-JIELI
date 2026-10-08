@@ -39,6 +39,17 @@ const struct task_info task_info_table[] = {
     { "btstack", 18, 768, 384 },
 #endif
 #endif
+    /* Match the vendor task table: WL82 pins usb_msd0 to core 0 on dual-core
+     * builds, while WL83 wifi_camera registers the unpinned name even though
+     * CPU_CORE_NUM is 2. task_pc.c creates both workers by these names. */
+#if defined(TCFG_USB_SLAVE_ENABLE) && TCFG_USB_SLAVE_ENABLE
+#if CPU_CORE_NUM > 1 && !defined(JIELI_SELECTED_CHIP_WL83)
+    { "#C0usb_msd0", 1, 512, 128 },
+#else
+    { "usb_msd0", 1, 512, 128 },
+#endif
+    { "usb_msd1", 1, 512, 128 },
+#endif
     { 0, 0, 0, 0 },
 };
 
