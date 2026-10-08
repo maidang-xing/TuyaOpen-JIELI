@@ -60,6 +60,35 @@ def usb_include_lines() -> list[str]:
     return ["-I../../../../../" + directory for directory in USB_INCLUDE_DIRS]
 
 
+# The vendor demo_hello Makefile lists its own peripheral self-test programs and
+# the dhrystone benchmark in c_SRC_FILES. Nothing in a TuyaOpen image references
+# them: -flto is on and sdk.map carries no apps/common/example entry, so all 32
+# objects are discarded at link time. They are still recompiled on every build --
+# create_staging_tree recreates the staging tree each time -- and they are about
+# 45% of the vendor-side objects, so they dominate the vendor compile.
+VENDOR_EXAMPLE_SOURCE_PREFIX = "../../../../../apps/common/example/"
+
+
+def drop_vendor_example_sources(content: str, makefile: Path) -> str:
+    """Remove the vendor demo's own example sources from c_SRC_FILES.
+
+    Every one of those lines ends with a line continuation, so removing whole
+    lines keeps the surrounding list valid.
+    """
+    kept = []
+    dropped = 0
+    for line in content.splitlines(keepends=True):
+        if line.lstrip().startswith(VENDOR_EXAMPLE_SOURCE_PREFIX):
+            dropped += 1
+            continue
+        kept.append(line)
+    if dropped == 0:
+        raise BuildError(
+            f"Jieli demo Makefile lists no vendor example sources to drop: {makefile}"
+        )
+    return "".join(kept)
+
+
 def link_directory(link: Path, target: Path) -> None:
     try:
         link.symlink_to(target, target_is_directory=True)
@@ -321,6 +350,7 @@ def create_staging_tree(
     if vendor_main not in content:
         raise BuildError(f"Jieli demo Makefile has no app_main source: {makefile}")
     content = content.replace(vendor_main, "../../../../../tuyaos/entry/jieli_app_entry.c")
+    content = drop_vendor_example_sources(content, makefile)
     extra_sources_list = [
         "../../../../../tuyaos_adapter/" + source
         for source in read_adapter_sources(platform_root, chip.name)

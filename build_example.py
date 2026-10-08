@@ -73,7 +73,10 @@ def build(params: dict[str, str]) -> Path:
         chip=chip,
         board_name=resolve_board_name(params),
     )
-    jobs = max(1, int(os.environ.get("JIELI_BUILD_JOBS", "1")))
+    # The vendor Makefile builds serially at -j1, which leaves most cores idle
+    # on the ~130 vendor objects every staging rebuild has to recompile. Default
+    # to 8 jobs; JIELI_BUILD_JOBS still overrides it per build.
+    jobs = max(1, int(os.environ.get("JIELI_BUILD_JOBS", "8")))
     env = os.environ.copy()
     vendor_source_root = sdk_root / chip.sdk_source_relative
     inherited_path = env.get("PATH", "").split(os.pathsep)
