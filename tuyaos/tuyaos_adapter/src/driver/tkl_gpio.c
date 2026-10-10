@@ -27,6 +27,17 @@ OPERATE_RET tkl_gpio_init(TUYA_GPIO_NUM_E pin_id, const TUYA_GPIO_BASE_CFG_T *cf
         return OPRT_INVALID_PARM;
     }
 
+    /* Check the mode before touching the pin. The vendor API has no open-drain
+     * setting - gpio_set_hd() selects a drive strength, not an output type - so
+     * an open-drain request cannot be honoured. Driving it push-pull instead
+     * would leave the line actively high where the caller expected it released,
+     * which on a shared line is a conflict rather than a degradation. Refuse it
+     * and leave the pin as it was. */
+    if (cfg->direct == TUYA_GPIO_OUTPUT &&
+        (cfg->mode == TUYA_GPIO_OPENDRAIN || cfg->mode == TUYA_GPIO_OPENDRAIN_PULLUP)) {
+        return OPRT_NOT_SUPPORTED;
+    }
+
     /* Digital function: the analogue alternative (die = 0) is only meaningful
      * for pins routed to the ADC, which this contract does not cover. */
     (void)gpio_set_die((u32)pin_id, 1);

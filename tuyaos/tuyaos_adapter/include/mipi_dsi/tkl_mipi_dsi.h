@@ -59,9 +59,15 @@ OPERATE_RET tkl_mipi_dsi_deinit(void);
 /**
  * @brief register mipi dsi frame-end cb
  *
- * The callback runs when the controller has finished scanning a frame, which is
- * when the buffer it just retired becomes drawable again. It is the platform's
- * frame-sync signal, not a data path: the caller decides what to do with it.
+ * The callback fires when the controller has **retired** a buffer, which is what
+ * makes the previously displayed one drawable again. It is a frame-sync signal,
+ * not a data path: the caller decides what to do with it.
+ *
+ * It is only called for a frame that actually swapped a buffer. A frame the
+ * controller scanned from the same buffer it already had retires nothing, so the
+ * callback does not fire and the caller must not treat any buffer as reusable
+ * from it. Callers that alternate two buffers can therefore rely on one
+ * notification per swap.
  *
  * @param[in] cb: callback
  *

@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#if defined(JIELI_SELECTED_CHIP_WL83)
+
 #include "device.h"
 #include "lcd_driver.h"
 #include "asm/cache.h"
@@ -39,7 +41,11 @@ static void *tkl_mipi_dsi_frame_end_hook(void)
     uint32_t next = s_next_addr;
     s_next_addr = 0;
 
-    if (s_isr_cb != NULL) {
+    /* Only a frame that actually swapped a buffer retires one. When no swap is
+     * pending the vendor driver is told to keep scanning the buffer it has, so
+     * nothing became drawable and the caller must not be told otherwise - it
+     * would redraw a buffer the controller is still reading. */
+    if (next != 0u && s_isr_cb != NULL) {
         s_isr_cb(MIPI_DSI_OUTPUT_FINISH);
     }
     return (void *)(uintptr_t)next;
@@ -153,3 +159,60 @@ OPERATE_RET tkl_mipi_dsi_display_transfer_stop(void)
 {
     return tkl_mipi_dsi_deinit();
 }
+
+#else /* !JIELI_SELECTED_CHIP_WL83 */
+
+/* The vendor LCD stack this backend drives is only present in the WL83 SDK:
+ * lcd_driver.h and the apps/common/lcd tree it needs are not shipped for WL82.
+ * The manifest lists this file for every chip, so the WL82 build compiles this
+ * translation unit too and must get a complete, honest set of symbols rather
+ * than a missing header. Every entry reports unsupported; the display path
+ * simply does not exist on that chip yet.
+ */
+OPERATE_RET tkl_mipi_dsi_init(TUYA_MIPI_DSI_BASE_CFG_T *cfg)
+{
+    (void)cfg;
+    return OPRT_NOT_SUPPORTED;
+}
+
+OPERATE_RET tkl_mipi_dsi_deinit(void)
+{
+    return OPRT_NOT_SUPPORTED;
+}
+
+OPERATE_RET tkl_mipi_dsi_irq_cb_register(TUYA_MIPI_DSI_ISR_CB cb)
+{
+    (void)cb;
+    return OPRT_NOT_SUPPORTED;
+}
+
+OPERATE_RET tkl_mipi_dsi_ppi_set(uint16_t width, uint16_t height)
+{
+    (void)width;
+    (void)height;
+    return OPRT_NOT_SUPPORTED;
+}
+
+OPERATE_RET tkl_mipi_dsi_pixel_mode_set(TUYA_DISPLAY_PIXEL_FMT_E mode)
+{
+    (void)mode;
+    return OPRT_NOT_SUPPORTED;
+}
+
+OPERATE_RET tkl_mipi_dsi_base_addr_set(uint32_t addr)
+{
+    (void)addr;
+    return OPRT_NOT_SUPPORTED;
+}
+
+OPERATE_RET tkl_mipi_dsi_display_transfer_start(void)
+{
+    return OPRT_NOT_SUPPORTED;
+}
+
+OPERATE_RET tkl_mipi_dsi_display_transfer_stop(void)
+{
+    return OPRT_NOT_SUPPORTED;
+}
+
+#endif /* JIELI_SELECTED_CHIP_WL83 */
