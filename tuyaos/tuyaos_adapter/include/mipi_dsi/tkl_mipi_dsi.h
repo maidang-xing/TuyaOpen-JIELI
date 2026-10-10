@@ -43,9 +43,16 @@ typedef struct {
 /**
  * @brief mipi dsi init
  *
+ * The panel is fixed by the board profile, so the controller can only ever scan
+ * that one geometry - it cannot be told a smaller one. width and height are
+ * therefore validated against the panel the platform was built for and a
+ * mismatch is refused rather than accepted, because accepting it would let the
+ * caller size its frame buffer for a smaller area than the controller reads.
+ *
  * @param[in] cfg: panel configuration
  *
- * @return OPRT_OK on success. Others on error, please refer to tuya_error_code.h
+ * @return OPRT_OK on success, OPRT_NOT_SUPPORTED for a geometry the panel does
+ *         not have. Others on error, please refer to tuya_error_code.h
  */
 OPERATE_RET tkl_mipi_dsi_init(TUYA_MIPI_DSI_BASE_CFG_T *cfg);
 
@@ -78,10 +85,15 @@ OPERATE_RET tkl_mipi_dsi_irq_cb_register(TUYA_MIPI_DSI_ISR_CB cb);
 /**
  * @brief ppi set
  *
+ * Recorded and reported only - the panel timing is fixed by its init table, so
+ * there is nothing to program. The value is still validated against the panel
+ * for the same reason as in init().
+ *
  * @param[in] width: ppi : width
  * @param[in] height: ppi : height
  *
- * @return OPRT_OK on success. Others on error, please refer to tuya_error_code.h
+ * @return OPRT_OK on success, OPRT_NOT_SUPPORTED for a geometry the panel does
+ *         not have. Others on error, please refer to tuya_error_code.h
  */
 OPERATE_RET tkl_mipi_dsi_ppi_set(uint16_t width, uint16_t height);
 

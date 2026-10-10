@@ -7,6 +7,7 @@
 
 #include "device.h"
 #include "lcd_driver.h"
+#include "lcd_config.h"
 #include "asm/cache.h"
 
 /* The vendor LCD stack is a framebuffer pump, not an allocator: the panel has no
@@ -35,26 +36,50 @@ static TUYA_MIPI_DSI_ISR_CB s_isr_cb;
  * It runs in interrupt context, so it only moves the address and forwards the
  * notification - no blocking, no allocation. */
 static uint32_t volatile s_next_addr;
+/* The address the controller is currently scanning. Needed to tell a real swap
+ * from a re-submission of the same buffer. */
+static uint32_t s_scan_addr;
 
 static void *tkl_mipi_dsi_frame_end_hook(void)
 {
     uint32_t next = s_next_addr;
     s_next_addr = 0;
 
-    /* Only a frame that actually swapped a buffer retires one. When no swap is
-     * pending the vendor driver is told to keep scanning the buffer it has, so
-     * nothing became drawable and the caller must not be told otherwise - it
-     * would redraw a buffer the controller is still reading. */
-    if (next != 0u && s_isr_cb != NULL) {
-        s_isr_cb(MIPI_DSI_OUTPUT_FINISH);
+    if (next == 0u) {
+        /* Nothing submitted; tell the driver to keep scanning what it has. */
+        return NULL;
+    }
+
+    /* A buffer is only retired when the controller moves to a different one.
+     * Re-submitting the address it is already scanning changes nothing, so no
+     * buffer became drawable and the caller must not be told otherwise - the
+     * only buffer in play is the one still being scanned. */
+    if (next != s_scan_addr) {
+        s_scan_addr = next;
+        if (s_isr_cb != NULL) {
+            s_isr_cb(MIPI_DSI_OUTPUT_FINISH);
+        }
     }
     return (void *)(uintptr_t)next;
+}
+
+/* The panel is fixed by the board profile, and its geometry is whatever the
+ * vendor's lcd_config.h entry for that panel says. The controller always scans
+ * that full panel: it has no way to be told a smaller one. So a caller that
+ * asked for different dimensions would get a success while its (smaller) buffer
+ * was read past the end. Accept only the geometry the panel actually has. */
+static int tkl_mipi_dsi_size_supported(uint16_t width, uint16_t height)
+{
+    return width == LCD_W && height == LCD_H;
 }
 
 OPERATE_RET tkl_mipi_dsi_init(TUYA_MIPI_DSI_BASE_CFG_T *cfg)
 {
     if (cfg == NULL) {
         return OPRT_INVALID_PARM;
+    }
+    if (!tkl_mipi_dsi_size_supported(cfg->width, cfg->height)) {
+        return OPRT_NOT_SUPPORTED;
     }
     if (s_lcd_dev != NULL) {
         return OPRT_OK;
@@ -70,6 +95,7 @@ OPERATE_RET tkl_mipi_dsi_init(TUYA_MIPI_DSI_BASE_CFG_T *cfg)
     s_cfg = *cfg;
     s_base_addr = 0;
     s_next_addr = 0;
+    s_scan_addr = 0;
     s_started = 0;
     (void)dev_ioctl(s_lcd_dev, IOCTL_LCD_RGB_SET_ISR_CB, (u32)(uintptr_t)tkl_mipi_dsi_frame_end_hook);
     return OPRT_OK;
@@ -97,12 +123,13 @@ OPERATE_RET tkl_mipi_dsi_irq_cb_register(TUYA_MIPI_DSI_ISR_CB cb)
 
 OPERATE_RET tkl_mipi_dsi_ppi_set(uint16_t width, uint16_t height)
 {
-    if (width == 0 || height == 0) {
-        return OPRT_INVALID_PARM;
+    /* Recorded and reported only. The panel timing is fixed by its init table
+     * and the frame buffer is the caller's, so there is nothing to program here
+     * - but the value is still checked, because accepting one the controller
+     * cannot scan is what lets a caller size its buffer wrongly. */
+    if (!tkl_mipi_dsi_size_supported(width, height)) {
+        return OPRT_NOT_SUPPORTED;
     }
-    /* The panel's timing is fixed by its init table and the frame buffer is the
-     * caller's, so the geometry is recorded and reported rather than programmed
-     * into the controller here. */
     s_cfg.width = width;
     s_cfg.height = height;
     return OPRT_OK;
@@ -144,6 +171,7 @@ OPERATE_RET tkl_mipi_dsi_display_transfer_start(void)
         /* Kick off scan-out. The vendor driver takes every later frame from the
          * frame-end callback, so this is called exactly once. */
         s_started = 1;
+        s_scan_addr = s_base_addr;
         (void)dev_ioctl(s_lcd_dev, IOCTL_LCD_RGB_START_DISPLAY, (u32)s_base_addr);
         return OPRT_OK;
     }
